@@ -33,7 +33,9 @@
       "Bash(git check-ignore *)",
       "Bash(git config *)",
       "Bash(echo \"name: $\\(git config user.name || echo '<vazio>'\\)\")",
-      "Bash(echo \"email: $\\(git config user.email || echo '<vazio>'\\)\")"
+      "Bash(echo \"email: $\\(git config user.email || echo '<vazio>'\\)\")",
+      "PowerShell(Set-Location \"c:\\\\Users\\\\Êxodo Tech\\\\Documents\\\\projetos\\\\exodoflowIA\"; \"=== conteudo do README remoto ===\"; git show origin/main:README.md 2>&1 | Select-Object -First 30; \"=== exodotech e user ou org? ===\"; try { $r = Invoke-RestMethod -Uri \"https://api.github.com/users/exodotech\" -Headers @{ \"User-Agent\"=\"git\" } -ErrorAction Stop; \"tipo: $\\($r.type\\)\"; \"nome: $\\($r.login\\)\" } catch { \"nao consegui consultar a API: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(Set-Location \"c:\\\\Users\\\\Êxodo Tech\\\\Documents\\\\projetos\\\\exodoflowIA\"; \"=== estado local vs remoto ===\"; git status -sb | Select-Object -First 1; \"=== ficheiros no remoto \\(amostra\\) ===\"; \\(git ls-remote origin 2>&1 | Select-Object -First 1\\); \"=== total de ficheiros versionados ===\"; \\(git ls-files | Measure-Object\\).Count; \"=== confirmacao: .env.local NAO foi para o GitHub ===\"; if \\(git ls-files | Select-String \"\\\\.env\\\\.local\"\\) { \"ALERTA: .env.local presente!\" } else { \".env.local NAO versionado \\(seguro\\)\" })"
     ],
     "additionalDirectories": [
       "c:\\Users\\Êxodo Tech\\.claude\\projects\\c--Users--xodo-Tech-Documents-projetos-exodoflowIA\\memory"
