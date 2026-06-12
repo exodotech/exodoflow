@@ -2,7 +2,7 @@
 import React from 'react'
 import SectionHeader from '@/components/design-system/SectionHeader/SectionHeader'
 import { getLabels }    from '@/lib/i18n/labels'
-import { getTaxIdLabel } from '@/lib/i18n/tax-id'
+import { getTaxIdOptions } from '@/lib/i18n/tax-id'
 import type { SupportedLocale } from '@/types/domain'
 
 interface PainelLocalizacaoProps {
@@ -37,7 +37,7 @@ export function PainelLocalizacao({ locale, settings }: PainelLocalizacaoProps) 
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Identificação fiscal</p>
-            <p className="text-sm text-gray-900">{getTaxIdLabel(locale)} — {locale === 'pt-BR' ? 'CPF / CNPJ' : 'NIF'}</p>
+            <p className="text-sm text-gray-900">{getTaxIdOptions(locale).map((o) => o.short).join(' / ')}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Terminologia de agenda</p>

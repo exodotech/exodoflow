@@ -12,8 +12,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { criarEmpresaSchema } from '@/lib/validators/admin'
 import { checkRateLimit, clientKeyFromRequest } from '@/lib/rate-limit'
 import { semearComunicacaoTenant } from '@/services/comunicacao-seed'
+import { deriveMarketSettings } from '@/lib/i18n/market'
 import { logger }            from '@/lib/logger'
-import type { SupportedLocale } from '@/types/domain/communication'
 
 export async function POST(request: Request) {
   // 0. Rate limit (readiness — in-memory em dev; trocar por store distribuído em prod)
@@ -59,10 +59,8 @@ export async function POST(request: Request) {
 
   const { email, password, full_name, country, business_type } = parsed.data
 
-  // País → locale/moeda/fuso (definidos AGORA, na criação)
-  const COUNTRY_TIMEZONE: Record<string, string> = { PT: 'Europe/Lisbon', BR: 'America/Sao_Paulo' }
-  const COUNTRY_CURRENCY: Record<string, string> = { PT: 'EUR', BR: 'BRL' }
-  const COUNTRY_LOCALE:   Record<string, string> = { PT: 'pt-PT', BR: 'pt-BR' }
+  // País → locale/moeda/fuso (definidos AGORA, na criação). Fonte única: market.ts
+  const mercado = deriveMarketSettings(country)
 
   // 4. Criar o utilizador via admin API (service_role)
   const admin = createAdminClient()
@@ -110,9 +108,9 @@ export async function POST(request: Request) {
           business_type,
           settings: {
             ...settingsAtuais,
-            timezone: COUNTRY_TIMEZONE[country],
-            currency: COUNTRY_CURRENCY[country],
-            locale:   COUNTRY_LOCALE[country],
+            timezone: mercado.timezone,
+            currency: mercado.currency,
+            locale:   mercado.locale,
             slot_interval_minutes: (settingsAtuais.slot_interval_minutes as number | undefined) ?? 15,
           },
         })
@@ -121,7 +119,7 @@ export async function POST(request: Request) {
       // Semear canais (inactivos) + templates WhatsApp no locale do país.
       // Best-effort: nunca bloqueia a criação da empresa.
       try {
-        await semearComunicacaoTenant(admin, prof.tenant_id, COUNTRY_LOCALE[country] as SupportedLocale)
+        await semearComunicacaoTenant(admin, prof.tenant_id, mercado.locale)
       } catch (e) {
         logger.warn('Falha ao semear comunicação do tenant', { tenantId: prof.tenant_id, erro: e instanceof Error ? e.message : String(e) })
       }

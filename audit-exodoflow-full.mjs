@@ -3409,6 +3409,63 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 21 — F1: Localização/Fiscalidade PT/BR + Dados da Empresa
+// ═══════════════════════════════════════════════════════════════════════════
+section('FASE 21 — F1 Localização/Fiscalidade PT/BR + Empresa');
+
+{
+const taxId   = readSafe(join(SRC, 'lib', 'i18n', 'tax-id.ts'));
+const labels  = readSafe(join(SRC, 'lib', 'i18n', 'labels.ts'));
+const market  = readSafe(join(SRC, 'lib', 'i18n', 'market.ts'));
+const valEmp  = readSafe(join(SRC, 'lib', 'validators', 'empresa.ts'));
+const svcTen  = readSafe(join(SRC, 'services', 'tenant.ts'));
+const svcAdm  = readSafe(join(SRC, 'services', 'admin.ts'));
+const painelE = readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelEmpresa.tsx'));
+const novoCli = readSafe(join(SRC, 'components', 'features', 'clientes', 'NovoClienteModal.tsx'));
+const detCli  = readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteDetalheModal.tsx'));
+const modalP  = readSafe(join(SRC, 'components', 'features', 'admin', 'AlterarPaisModal.tsx'));
+const criar   = readSafe(join(SRC, 'app', 'api', 'admin', 'criar-empresa', 'route.ts'));
+
+check(
+  'F1: tax-id país-aware — PT só NIF; BR escolhe CPF (PF) / CNPJ (PJ)',
+  /getTaxIdOptions/.test(taxId) && /isTaxIdTypeForCountry/.test(taxId) &&
+  /'cpf'.*'cnpj'|cpf[\s\S]*cnpj/.test(taxId) && /defaultTaxIdType/.test(taxId),
+  'tax-id.ts deve oferecer NIF para PT e CPF/CNPJ (PF/PJ) para BR, com validação de país.'
+);
+check(
+  'F1: REGRA fiscal sem hardcode "NIF / CPF" na UI (empresa + clientes)',
+  !/"NIF \/ CPF"|'NIF \/ CPF'|NIF \/ CPF \/ CNPJ/.test(painelE + novoCli + detCli) &&
+  /getTaxIdLabel|fiscalLabel/.test(painelE) && /fiscalLabel/.test(novoCli) && /fiscalLabel/.test(detCli),
+  'Os campos fiscais devem usar labels país-aware, sem "NIF / CPF" fixo.'
+);
+check(
+  'F1: labels têm distrito/estado (PT distrito, BR estado)',
+  /distrito/.test(labels) && /estado/.test(labels),
+  'labels.ts deve distinguir distrito (PT) de estado (BR).'
+);
+check(
+  'F1: novos campos da empresa (instagram/facebook/maps/observações) no validador + serviço',
+  /instagram/.test(valEmp) && /facebook/.test(valEmp) && /google_maps_url/.test(valEmp) && /internal_notes/.test(valEmp) &&
+  /instagram/.test(svcTen) && /google_maps_url/.test(svcTen) && /internal_notes/.test(svcTen),
+  'Os campos operacionais novos devem existir no validador e ser persistidos (settings JSONB).'
+);
+check(
+  'F1: derivação de mercado centralizada (market.ts) e usada no criar-empresa',
+  exists(join(SRC, 'lib', 'i18n', 'market.ts')) &&
+  /deriveMarketSettings/.test(market) && /deriveMarketSettings/.test(criar) &&
+  !/COUNTRY_TIMEZONE|COUNTRY_CURRENCY/.test(criar),
+  'O criar-empresa deve usar deriveMarketSettings (sem mapas país→moeda/fuso duplicados).'
+);
+check(
+  'F1: superadmin altera país com confirmação forte (nome) + re-deriva mercado + auditoria',
+  /definirPaisTenant/.test(svcAdm) && /tenant\.country_change/.test(svcAdm) &&
+  /deriveMarketSettings/.test(svcAdm) &&
+  /confirmacao\s*===\s*empresa\.name|empresa\.name\.trim\(\)/.test(modalP),
+  'A troca de país (superadmin) deve exigir o nome da empresa, re-derivar moeda/fuso/locale e auditar.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // FASE 18 — WHATSAPP CLOUD API 1A (webhook inbound real, sem envio, sem IA)
 // ═══════════════════════════════════════════════════════════════════════════
 section('FASE 18 — WhatsApp Cloud API 1A (inbound)');

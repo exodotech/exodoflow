@@ -34,6 +34,11 @@ export const atualizarEmpresaSchema = z.object({
     .max(30, 'Identificação fiscal demasiado longa')
     .optional()
     .or(z.literal('')),
+  // Tipo fiscal: PT→nif; BR escolhe cpf (Pessoa Física) ou cnpj (Pessoa Jurídica).
+  // A coerência tipo↔país é garantida na UI (getTaxIdOptions) e na derivação do país.
+  tax_id_type: z
+    .enum(['nif', 'cpf', 'cnpj'])
+    .optional(),
   // Morada (guardada em tenants.address JSONB). street = linha 1 (chave mantida
   // para não migrar dados existentes); address_line2 e region foram acrescentados.
   street:        z.string().max(200, 'Morada demasiado longa').optional().or(z.literal('')),
@@ -41,6 +46,11 @@ export const atualizarEmpresaSchema = z.object({
   city:          z.string().max(100, 'Cidade demasiado longa').optional().or(z.literal('')),
   region:        z.string().max(100, 'Região demasiado longa').optional().or(z.literal('')),
   postal_code:   z.string().max(20, 'Código postal inválido').optional().or(z.literal('')),
+  // Presença online + observações internas (guardados em settings JSONB)
+  instagram:      z.string().max(100, 'Instagram demasiado longo').optional().or(z.literal('')),
+  facebook:       z.string().max(100, 'Facebook demasiado longo').optional().or(z.literal('')),
+  google_maps_url:z.string().max(500, 'Link demasiado longo').optional().or(z.literal('')),
+  internal_notes: z.string().max(2000, 'Máximo 2000 caracteres').optional().or(z.literal('')),
 })
 
 export type AtualizarEmpresaInput = z.infer<typeof atualizarEmpresaSchema>

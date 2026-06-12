@@ -1,15 +1,52 @@
 // Helpers de identificação fiscal — NIF (PT) / CPF / CNPJ (BR)
+// Regra: PT mostra SÓ NIF; BR mostra CPF (Pessoa Física) ou CNPJ (Pessoa Jurídica).
+// Nunca mostrar CPF/CNPJ a Portugal nem NIF ao Brasil.
 import type { SupportedLocale } from './locale'
 
 export type TaxIdType = 'nif' | 'cpf' | 'cnpj' | 'other'
 
-// Label do campo de acordo com o locale do tenant
-export function getTaxIdLabel(locale: SupportedLocale): string {
-  return locale === 'pt-BR' ? 'CPF' : 'NIF'
+// Opção de tipo fiscal apresentável (BR escolhe entre PF e PJ).
+export interface TaxIdOption {
+  type:  TaxIdType
+  label: string   // ex: "CPF (Pessoa Física)"
+  short: string   // ex: "CPF"
 }
 
-export function getTaxIdPlaceholder(locale: SupportedLocale): string {
-  return locale === 'pt-BR' ? '000.000.000-00' : '000 000 000'
+// Tipos fiscais válidos por país. PT → só NIF; BR → CPF (PF) ou CNPJ (PJ).
+export function getTaxIdOptions(locale: SupportedLocale): TaxIdOption[] {
+  if (locale === 'pt-BR') {
+    return [
+      { type: 'cpf',  label: 'CPF (Pessoa Física)',    short: 'CPF' },
+      { type: 'cnpj', label: 'CNPJ (Pessoa Jurídica)', short: 'CNPJ' },
+    ]
+  }
+  return [{ type: 'nif', label: 'NIF (Número de Identificação Fiscal)', short: 'NIF' }]
+}
+
+// Tipo fiscal por omissão do país (PT → nif, BR → cpf). Nunca 'other'/'cnpj'.
+export function defaultTaxIdType(locale: SupportedLocale): 'nif' | 'cpf' {
+  return locale === 'pt-BR' ? 'cpf' : 'nif'
+}
+
+// Garante que um tipo pertence ao país (PT nunca cpf/cnpj; BR nunca nif).
+export function isTaxIdTypeForCountry(type: TaxIdType, locale: SupportedLocale): boolean {
+  return getTaxIdOptions(locale).some((o) => o.type === type)
+}
+
+// Label curta do campo conforme país + tipo. type omitido usa o tipo por omissão.
+export function getTaxIdLabel(locale: SupportedLocale, type?: TaxIdType): string {
+  if (locale === 'pt-BR') return type === 'cnpj' ? 'CNPJ' : 'CPF'
+  return 'NIF'
+}
+
+// Placeholder conforme o TIPO fiscal escolhido.
+export function getTaxIdPlaceholder(type: TaxIdType): string {
+  switch (type) {
+    case 'cpf':  return '000.000.000-00'
+    case 'cnpj': return '00.000.000/0000-00'
+    case 'nif':  return '000 000 000'
+    default:     return ''
+  }
 }
 
 // Detecta o tipo de identificador fiscal a partir do valor e locale

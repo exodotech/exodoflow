@@ -11,6 +11,7 @@ import { Badge }  from '@/components/design-system/Badge/Badge'
 import { buscarClientePorId, listarConsentimentosCliente } from '@/services/clients'
 import { listarBookingsPorCliente } from '@/services/bookings'
 import { useConverterVisitante } from '@/hooks/useClientes'
+import { useAuth } from '@/providers/AuthProvider'
 import type { ClienteEditavel } from './NovoClienteModal'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -29,6 +30,9 @@ interface Props {
 export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApagar }: Props) {
   const ativo = isOpen && !!clientId
   const converter = useConverterVisitante()
+  // Label fiscal conforme o país do tenant (PT → NIF; BR → CPF/CNPJ)
+  const { tenant } = useAuth()
+  const fiscalLabel = tenant?.country === 'BR' ? 'CPF / CNPJ' : 'NIF'
 
   const { data: cliente, isLoading } = useQuery({
     queryKey: ['cliente', clientId],
@@ -113,7 +117,7 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
           <div className="grid grid-cols-2 gap-4">
             <Campo label="Telefone" valor={cliente.phone ?? '—'} />
             <Campo label="E-mail" valor={cliente.email ?? '—'} />
-            <Campo label="NIF / CPF" valor={cliente.nif ?? '—'} />
+            <Campo label={fiscalLabel} valor={cliente.nif ?? '—'} />
             <div>
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Marketing</p>
               <Badge variant={cliente.marketing_consent ? 'success' : 'default'}>

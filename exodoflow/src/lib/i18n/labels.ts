@@ -16,6 +16,7 @@ export interface LocaleLabels {
   currencyName:   string   // "Euro" | "Real"
   // Endereço
   codigoPostal:   string   // "código postal" (PT) | "CEP" (BR)
+  distrito:       string   // "distrito" (PT) | "estado" (BR)
   // Conteúdo
   clinica:        string   // "clínica" | "clínica"
 }
@@ -30,6 +31,7 @@ const LABELS_PT: LocaleLabels = {
   currency:      '€',
   currencyName:  'Euro',
   codigoPostal:  'código postal',
+  distrito:      'distrito',
   clinica:       'clínica',
 }
 
@@ -43,6 +45,7 @@ const LABELS_BR: LocaleLabels = {
   currency:      'R$',
   currencyName:  'Real',
   codigoPostal:  'CEP',
+  distrito:      'estado',
   clinica:       'clínica',
 }
 

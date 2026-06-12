@@ -56,12 +56,17 @@ export async function atualizarDadosEmpresa(input: AtualizarEmpresaInput): Promi
   const settingsAtuais = (atual?.settings ?? {}) as Record<string, unknown>
   const addressAtual   = (atual?.address  ?? {}) as Record<string, unknown>
 
-  // 2. Merge consciente — só toca em website/tax_id; preserva locale/currency/
-  //    timezone/branding/communication e qualquer outra chave intacta.
+  // 2. Merge consciente — só toca nos campos operacionais; preserva locale/
+  //    currency/timezone/branding/communication e qualquer outra chave intacta.
   const novoSettings = {
     ...settingsAtuais,
-    website: input.website || undefined,
-    tax_id:  input.tax_id  || undefined,
+    website:         input.website         || undefined,
+    tax_id:          input.tax_id          || undefined,
+    tax_id_type:     input.tax_id_type     || undefined,
+    instagram:       input.instagram       || undefined,
+    facebook:        input.facebook        || undefined,
+    google_maps_url: input.google_maps_url || undefined,
+    internal_notes:  input.internal_notes  || undefined,
   }
   const novoAddress = {
     ...addressAtual,

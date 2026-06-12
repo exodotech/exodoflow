@@ -7,6 +7,8 @@ import { useFormWithZod }   from '@/hooks/useFormWithZod'
 import { useCriarCliente, useAtualizarCliente } from '@/hooks/useClientes'
 import { criarClienteSchema, type CriarClienteInput } from '@/lib/validators/client'
 import { MARKETING_CONSENT_TEXT, OPERATIONAL_COMMS_NOTE } from '@/lib/consent'
+import { useAuth } from '@/providers/AuthProvider'
+import { getTaxIdPlaceholder } from '@/lib/i18n/tax-id'
 import { Modal }   from '@/components/design-system/Modal/Modal'
 import { Button }  from '@/components/design-system/Button/Button'
 import { Input }   from '@/components/design-system/Input/Input'
@@ -32,6 +34,14 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
   const modoEdicao  = !!cliente
   const criar       = useCriarCliente()
   const atualizar   = useAtualizarCliente()
+
+  // Campo fiscal conforme o país do tenant: PT → NIF; BR → CPF/CNPJ.
+  // Regra: nunca mostrar CPF/CNPJ a Portugal nem NIF ao Brasil.
+  const { tenant } = useAuth()
+  const isBR = tenant?.country === 'BR'
+  const fiscalLabel       = isBR ? 'CPF / CNPJ' : 'NIF'
+  const fiscalPlaceholder = getTaxIdPlaceholder(isBR ? 'cpf' : 'nif')
+  const phonePlaceholder  = isBR ? '+55 11 91234-5678' : '+351 912 345 678'
 
   const {
     register, handleSubmit, reset,
@@ -93,9 +103,9 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
     >
       <form id="form-cliente" onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input label="Nome completo" required placeholder="Maria Oliveira" error={errors.full_name?.message} {...register('full_name')} />
-        <Input label="Telefone" type="tel" placeholder="+351 912 345 678" error={errors.phone?.message} {...register('phone')} />
-        <Input label="E-mail" type="email" placeholder="cliente@email.pt" error={errors.email?.message} {...register('email')} />
-        <Input label="NIF / CPF" placeholder="123456789" error={errors.nif?.message} {...register('nif')} />
+        <Input label="Telefone" type="tel" placeholder={phonePlaceholder} error={errors.phone?.message} {...register('phone')} />
+        <Input label="E-mail" type="email" placeholder="cliente@email.com" error={errors.email?.message} {...register('email')} />
+        <Input label={fiscalLabel} placeholder={fiscalPlaceholder} error={errors.nif?.message} {...register('nif')} />
 
         {/* Consentimento de MARKETING (RGPD/LGPD) — opcional, nunca bloqueia.
             Alterar aqui grava um novo registo imutável em legal_consents (trigger). */}

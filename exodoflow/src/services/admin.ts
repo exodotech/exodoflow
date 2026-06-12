@@ -3,6 +3,7 @@
 // se aplica ao superadmin — tenant_id é NULL). NUNCA expõe dados operacionais
 // de clientes (telefone/e-mail/notas) — só nome/e-mail do OWNER e contagens.
 import { createClient } from '@/lib/supabase/client'
+import { deriveMarketSettings, toMarketCountry, type MarketCountry } from '@/lib/i18n/market'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 export interface EmpresaAdmin {
@@ -150,6 +151,44 @@ export async function definirEstadoTenant(tenantId: string, ativo: boolean, nome
   await registarSystemAudit(ativo ? 'tenant.reactivate' : 'tenant.suspend', {
     entityType: 'tenant', entityId: tenantId, targetTenantId: tenantId,
     description: `${ativo ? 'Reactivou' : 'Suspendeu'} a empresa${nome ? ` "${nome}"` : ''}`,
+  })
+}
+
+// Alterar o PAÍS de um tenant (SÓ SUPERADMIN) + re-derivar fuso/moeda/locale.
+// Operação sensível: muda moeda, fuso e tipo de documento fiscal (NIF↔CPF/CNPJ).
+// O trigger lock_tenant_market (0018) garante que só o superadmin pode; a UI
+// exige confirmação forte (digitar o nome da empresa). Preserva o resto dos settings.
+export async function definirPaisTenant(tenantId: string, country: MarketCountry, nome?: string): Promise<void> {
+  const supabase = createClient()
+  const pais = toMarketCountry(country)
+  const mercado = deriveMarketSettings(pais)
+
+  // Carregar settings actuais para preservar tudo o que não deriva do país.
+  const { data: atual, error: loadErr } = await supabase
+    .from('tenants').select('settings').eq('id', tenantId).single()
+  if (loadErr) throw new Error(`Erro ao carregar a empresa: ${loadErr.message}`)
+  const settingsAtuais = (atual?.settings ?? {}) as Record<string, unknown>
+
+  const { data, error } = await supabase
+    .from('tenants')
+    .update({
+      country: pais,
+      settings: {
+        ...settingsAtuais,
+        timezone: mercado.timezone,
+        currency: mercado.currency,
+        locale:   mercado.locale,
+      },
+    })
+    .eq('id', tenantId)
+    .select('id')
+  if (error) throw new Error(error.message)
+  if (!data?.length) throw new Error('Nenhuma linha afectada — verifique as permissões.')
+
+  await registarSystemAudit('tenant.country_change', {
+    entityType: 'tenant', entityId: tenantId, targetTenantId: tenantId,
+    description: `Alterou o país de${nome ? ` "${nome}"` : ''} para ${pais}`,
+    metadata: { country: pais, currency: mercado.currency, locale: mercado.locale },
   })
 }
 

@@ -5,7 +5,7 @@
 // clientes finais (telefone/e-mail/notas) — só agregados e o owner.
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Building2, ShieldCheck, ShieldOff } from 'lucide-react'
+import { Building2, ShieldCheck, ShieldOff, Globe } from 'lucide-react'
 import { Badge }  from '@/components/design-system/Badge/Badge'
 import { Button } from '@/components/design-system/Button/Button'
 import LoadingState  from '@/components/design-system/LoadingState/LoadingState'
@@ -13,10 +13,12 @@ import ErrorState    from '@/components/design-system/ErrorState/ErrorState'
 import EmptyState    from '@/components/design-system/EmptyState/EmptyState'
 import ConfirmDialog from '@/components/design-system/ConfirmDialog/ConfirmDialog'
 import { CriarEmpresaForm } from '@/components/features/admin/CriarEmpresaForm'
+import { AlterarPaisModal } from '@/components/features/admin/AlterarPaisModal'
 import {
-  listarEmpresasAdmin, definirEstadoTenant, definirPlanoTenant,
+  listarEmpresasAdmin, definirEstadoTenant, definirPlanoTenant, definirPaisTenant,
   type EmpresaAdmin,
 } from '@/services/admin'
+import type { MarketCountry } from '@/lib/i18n/market'
 import { createClient } from '@/lib/supabase/client'
 
 const EMPRESAS_KEY = ['admin-empresas'] as const
@@ -34,8 +36,9 @@ function fmtData(iso: string | null) {
 
 export default function AdminEmpresasPage() {
   const qc = useQueryClient()
-  const [aSuspender, setASuspender] = useState<EmpresaAdmin | null>(null)
-  const [aReactivar, setAReactivar] = useState<EmpresaAdmin | null>(null)
+  const [aSuspender, setASuspender]   = useState<EmpresaAdmin | null>(null)
+  const [aReactivar, setAReactivar]   = useState<EmpresaAdmin | null>(null)
+  const [aAlterarPais, setAAlterarPais] = useState<EmpresaAdmin | null>(null)
 
   const { data: empresas = [], isLoading, error } = useQuery({
     queryKey: EMPRESAS_KEY,
@@ -50,6 +53,10 @@ export default function AdminEmpresasPage() {
   const plano = useMutation({
     mutationFn: ({ e, planId }: { e: EmpresaAdmin; planId: string | null }) => definirPlanoTenant(e.id, planId, e.name),
     onSuccess:  () => void qc.invalidateQueries({ queryKey: EMPRESAS_KEY }),
+  })
+  const pais = useMutation({
+    mutationFn: ({ e, country }: { e: EmpresaAdmin; country: MarketCountry }) => definirPaisTenant(e.id, country, e.name),
+    onSuccess:  () => { void qc.invalidateQueries({ queryKey: EMPRESAS_KEY }); setAAlterarPais(null) },
   })
 
   if (isLoading) return <LoadingState message="A carregar empresas..." />
@@ -103,6 +110,9 @@ export default function AdminEmpresasPage() {
                       <ShieldCheck className="w-3.5 h-3.5" /> Reactivar
                     </Button>
                   )}
+                  <Button size="sm" variant="outline" onClick={() => setAAlterarPais(e)} className="flex items-center gap-1" title="Corrigir o país (operação sensível)">
+                    <Globe className="w-3.5 h-3.5" /> País
+                  </Button>
                 </div>
               </div>
 
@@ -159,6 +169,17 @@ export default function AdminEmpresasPage() {
         confirmLabel="Reactivar"
         isLoading={estado.isPending}
         error={estado.isError ? (estado.error as Error).message : null}
+      />
+
+      {/* Alterar país (superadmin, confirmação forte). key remonta = estado fresco. */}
+      <AlterarPaisModal
+        key={aAlterarPais?.id ?? 'none'}
+        empresa={aAlterarPais}
+        isOpen={!!aAlterarPais}
+        onClose={() => { setAAlterarPais(null); pais.reset() }}
+        onConfirm={(country) => aAlterarPais && pais.mutate({ e: aAlterarPais, country })}
+        isLoading={pais.isPending}
+        error={pais.isError ? (pais.error as Error).message : null}
       />
     </div>
   )
