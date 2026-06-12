@@ -14,6 +14,8 @@ import { NovaBookingModal }    from '@/components/features/agenda/NovaBookingMod
 import { CancelarBookingModal } from '@/components/features/agenda/CancelarBookingModal'
 import { ReagendarBookingModal } from '@/components/features/agenda/ReagendarBookingModal'
 import { EnviarTemplateWhatsApp } from '@/components/features/agenda/EnviarTemplateWhatsApp'
+import { PagamentoBadge } from '@/components/features/agenda/PagamentoBadge'
+import { PAYMENT_STATUS_LABELS, type BookingPaymentStatus } from '@/types/domain/financas'
 import {
   useBookings,
   useAtualizarStatusBooking,
@@ -59,9 +61,10 @@ interface AcoesProps {
   onReagendar:     (b: BookingWithRelations) => void
   channelAtivo:    boolean
   podeEnviarTemplate: boolean
+  podePagamento:   boolean
 }
 
-function AcoesMarcacao({ booking, atualizarStatus, onCancelar, onReagendar, channelAtivo, podeEnviarTemplate }: AcoesProps) {
+function AcoesMarcacao({ booking, atualizarStatus, onCancelar, onReagendar, channelAtivo, podeEnviarTemplate, podePagamento }: AcoesProps) {
   const { status } = booking
   const isPending  = atualizarStatus.isPending
 
@@ -72,6 +75,13 @@ function AcoesMarcacao({ booking, atualizarStatus, onCancelar, onReagendar, chan
       <Badge variant={STATUS_BADGE_VARIANT[status]}>
         {STATUS_LABELS[status]}
       </Badge>
+
+      {/* Estado de pagamento (controlo de caixa) */}
+      <PagamentoBadge
+        bookingId={booking.id}
+        status={(booking.payment_status as BookingPaymentStatus) ?? 'pending'}
+        podeEditar={podePagamento}
+      />
 
       {status === 'pending' && (
         <button
@@ -162,6 +172,8 @@ export default function AgendaPage() {
   // Só owner/manager/receptionist enviam templates (STAFF não vê o botão).
   const { can } = usePermissions()
   const podeEnviarTemplate = can('conversas.reply')
+  // Front-desk (owner/manager/receptionist) pode marcar o pagamento da marcação.
+  const podePagamento = can('agenda.create')
 
   // Página não-refém: cabeçalho + "Nova Marcação" + modais sempre disponíveis;
   // só o corpo de dados mostra loading/erro/lista.
@@ -192,7 +204,7 @@ export default function AgendaPage() {
     id:          booking.id,
     title:       booking.service?.name ?? '—',
     subtitle:    booking.client?.full_name ?? '—',
-    description: `${booking.resources?.[0]?.name ?? '—'} • ${formatarDataHora(booking.start_at)}`,
+    description: `${booking.resources?.[0]?.name ?? '—'} • ${formatarDataHora(booking.start_at)} • € ${PAYMENT_STATUS_LABELS[(booking.payment_status as BookingPaymentStatus) ?? 'pending']}`,
     icon:        <Clock className="w-4 h-4 text-gray-400" />,
     action: (
       <Badge variant={STATUS_BADGE_VARIANT[booking.status]}>
@@ -223,6 +235,7 @@ export default function AgendaPage() {
         onReagendar={setBookingReagendar}
         channelAtivo={channelAtivo}
         podeEnviarTemplate={podeEnviarTemplate}
+        podePagamento={podePagamento}
       />
     ),
   }))

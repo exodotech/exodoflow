@@ -5,7 +5,10 @@ import {
   criarBooking,
   atualizarStatusBooking,
   reagendarBooking,
+  definirPagamentoBooking,
 } from '@/services/bookings'
+import type { AtualizarPagamentoInput } from '@/lib/validators/financas'
+import { FINANCAS_KEY } from '@/hooks/useFinancas'
 import {
   listarTemplatesComunicacao,
   simularEnvioComunicacao,
@@ -74,6 +77,20 @@ export function useAtualizarStatusBooking() {
       atualizarStatusBooking(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: BOOKINGS_QUERY_KEY })
+    },
+  })
+}
+
+// Hook de mutação — define o estado de pagamento da marcação.
+// Invalida bookings E finanças (o trigger pode ter criado uma receita).
+export function useDefinirPagamento() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: AtualizarPagamentoInput }) =>
+      definirPagamentoBooking(id, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: BOOKINGS_QUERY_KEY })
+      void queryClient.invalidateQueries({ queryKey: FINANCAS_KEY })
     },
   })
 }

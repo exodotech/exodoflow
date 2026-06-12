@@ -20,6 +20,8 @@ export type AuditAction =
   | 'team.role_change' | 'team.suspend' | 'team.reactivate' | 'team.create'
   | 'company.update' | 'branding.update'
   | 'whatsapp.send' | 'whatsapp.assign' | 'whatsapp.status' | 'whatsapp.note'
+  | 'finance.create' | 'finance.update' | 'finance.delete'
+  | 'booking.payment'
 
 interface AuditOpts {
   table?:    string

@@ -32,6 +32,9 @@ export type Permission =
   | 'conversas.reply'
   // Relatórios
   | 'relatorios.view'
+  // Finanças (controlo interno de caixa) — OWNER + MANAGER
+  | 'financas.view'
+  | 'financas.manage'
   // Configurações
   | 'configuracoes.view'    // ver a página de configurações
   | 'configuracoes.edit'    // alterar configurações operacionais
@@ -55,6 +58,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, ReadonlyArray<Permission>> = {
     'resources.view', 'resources.manage',
     'conversas.view', 'conversas.reply',
     'relatorios.view',
+    'financas.view', 'financas.manage',
     'configuracoes.view', 'configuracoes.edit',
     'billing.view', 'billing.edit',
     'team.view', 'team.manage',
@@ -69,6 +73,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, ReadonlyArray<Permission>> = {
     'resources.view', 'resources.manage',
     'conversas.view', 'conversas.reply',
     'relatorios.view',
+    'financas.view', 'financas.manage',
     'configuracoes.view', 'configuracoes.edit',
     'team.view',
     'audit.view',

@@ -5,6 +5,7 @@ import { createClient }  from '@/lib/supabase/client'
 import { registarAuditoria } from '@/services/audit'
 import type { BookingWithRelations, BookingStatus, BookingSource } from '@/types/domain/booking'
 import type { CriarBookingInput, AtualizarStatusInput, ReagendarBookingInput } from '@/lib/validators/booking'
+import type { AtualizarPagamentoInput } from '@/lib/validators/financas'
 
 // Normaliza a resposta do PostgREST (booking_resources aninhado) para BookingWithRelations
 // O PostgREST retorna { booking_resources: [{ resource_id, resource: {...} }] }
@@ -157,4 +158,24 @@ export async function atualizarStatusBooking(
     await registarAuditoria('booking.cancel', { table: 'bookings', recordId: bookingId })
   }
   return data
+}
+
+// Define o estado de PAGAMENTO de uma marcação (controlo de caixa).
+// Ao marcar 'paid', o trigger fn_booking_payment_to_income (0029) cria 1 receita
+// automaticamente (sem duplicar). O front-desk (owner/manager/recepção) pode marcar.
+export async function definirPagamentoBooking(bookingId: string, input: AtualizarPagamentoInput) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({
+      payment_status: input.payment_status,
+      amount_paid:    input.amount_paid ?? undefined,
+    })
+    .eq('id', bookingId)
+    .select('id')
+  if (error) throw new Error(`Erro ao actualizar pagamento: ${error.message}`)
+  if (!data?.length) throw new Error('Marcação não encontrada ou sem permissão.')
+  await registarAuditoria('booking.payment', {
+    table: 'bookings', recordId: bookingId, metadata: { payment_status: input.payment_status },
+  })
 }

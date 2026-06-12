@@ -10,6 +10,7 @@ module.exports = {
       [
         'auth', 'tenant', 'agenda', 'clientes', 'servicos', 'recursos',
         'whatsapp', 'onboarding', 'branding', 'equipa', 'admin',
+        'financas', 'relatorios',
         'api', 'web', 'db', 'docs', 'deps', 'ci',
       ],
     ],

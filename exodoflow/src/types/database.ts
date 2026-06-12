@@ -183,6 +183,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          amount_paid: number
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
@@ -192,6 +193,7 @@ export type Database = {
           end_at: string
           id: string
           notes: string | null
+          payment_status: string
           price_charged: number | null
           service_id: string
           source: string
@@ -201,6 +203,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_paid?: number
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -210,6 +213,7 @@ export type Database = {
           end_at: string
           id?: string
           notes?: string | null
+          payment_status?: string
           price_charged?: number | null
           service_id: string
           source?: string
@@ -219,6 +223,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_paid?: number
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -228,6 +233,7 @@ export type Database = {
           end_at?: string
           id?: string
           notes?: string | null
+          payment_status?: string
           price_charged?: number | null
           service_id?: string
           source?: string
@@ -267,6 +273,89 @@ export type Database = {
           },
           {
             foreignKeyName: "bookings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          category: string
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          payment_method: string
+          tenant_id: string
+          transaction_date: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          category: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          payment_method: string
+          tenant_id: string
+          transaction_date?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          category?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          payment_method?: string
+          tenant_id?: string
+          transaction_date?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

@@ -3466,6 +3466,78 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 22 — F2: Módulo Financeiro (controlo interno de caixa, sem faturação)
+// ═══════════════════════════════════════════════════════════════════════════
+section('FASE 22 — F2 Módulo Financeiro');
+
+{
+const migAll = getMigrations();
+const svcFin = readSafe(join(SRC, 'services', 'financas.ts'));
+const valFin = readSafe(join(SRC, 'lib', 'validators', 'financas.ts'));
+const resumo = readSafe(join(SRC, 'lib', 'financas', 'resumo.ts'));
+const pageFin = readSafe(join(SRC, 'app', 'dashboard', 'financas', 'page.tsx'));
+const perms  = readSafe(join(SRC, 'types', 'domain', 'permission.ts'));
+const svcBk  = readSafe(join(SRC, 'services', 'bookings.ts'));
+const pageAg = readSafe(join(SRC, 'app', 'dashboard', 'agenda', 'page.tsx'));
+
+check(
+  'F2: financial_transactions existe (income/expense, amount>0, soft-delete) na migração',
+  /CREATE TABLE IF NOT EXISTS financial_transactions/.test(migAll) &&
+  /type IN \('income', 'expense'\)/.test(migAll) &&
+  /amount[\s\S]*CHECK \(amount > 0\)/.test(migAll) && /deleted_at/.test(migAll),
+  'A migração deve criar financial_transactions com type, amount>0 e soft-delete.'
+);
+check(
+  'F2: RLS restringe finanças a owner/manager do tenant (staff/recepção sem acesso)',
+  /ALTER TABLE financial_transactions ENABLE ROW LEVEL SECURITY/.test(migAll) &&
+  /fin_tx_select[\s\S]*auth_user_role\(\) IN \('owner', 'manager'\)/.test(migAll) &&
+  /fin_tx_insert/.test(migAll) && /fin_tx_update/.test(migAll),
+  'financial_transactions deve ter RLS owner/manager (select/insert/update), sem DELETE.'
+);
+check(
+  'F2: permissões financas.view/manage só para OWNER e MANAGER',
+  /'financas\.view'/.test(perms) && /'financas\.manage'/.test(perms) &&
+  // staff e receptionist NÃO têm financas (verifica que não aparece nos seus blocos)
+  !/receptionist:[\s\S]*?financas\.view[\s\S]*?\],/.test(perms) &&
+  !/staff:[\s\S]*?financas\.view[\s\S]*?\],/.test(perms),
+  'financas.view/manage devem existir e pertencer só a owner/manager.'
+);
+check(
+  'F2: serviço com soft-delete + auditoria (finance.create/update/delete), valores positivos',
+  /deleted_at: new Date\(\)\.toISOString\(\)/.test(svcFin) &&
+  /finance\.create/.test(svcFin) && /finance\.update/.test(svcFin) && /finance\.delete/.test(svcFin) &&
+  /positive\(/.test(valFin),
+  'O serviço deve soft-delete + auditar; o validador deve exigir amount positivo.'
+);
+check(
+  'F2: página /dashboard/financas existe, mobile-first, gated (financas.view) + CSV',
+  exists(join(SRC, 'app', 'dashboard', 'financas', 'page.tsx')) &&
+  /can\('financas\.view'\)/.test(pageFin) && /AccessDenied/.test(pageFin) &&
+  /gerarCSVTransacoes/.test(pageFin) && /sm:hidden/.test(pageFin),
+  'A página de finanças deve existir, ser mobile-first, gated e exportar CSV.'
+);
+check(
+  'F2: estado de pagamento na marcação + entrada automática (trigger, sem duplicar)',
+  /ADD COLUMN IF NOT EXISTS payment_status/.test(migAll) &&
+  /fn_booking_payment_to_income/.test(migAll) &&
+  /type = 'income' AND deleted_at IS NULL/.test(migAll) &&   // dedup
+  /definirPagamentoBooking/.test(svcBk) && /PagamentoBadge/.test(pageAg),
+  'Marcações têm payment_status; marcar pago gera 1 receita (dedup por booking_id); agenda mostra o estado.'
+);
+check(
+  'F2: helpers de resumo (dia/mês) e CSV testados',
+  /calcularResumo/.test(resumo) && /gerarCSVTransacoes/.test(resumo) &&
+  exists(join(SRC, 'lib', 'financas', 'financas.test.ts')),
+  'Devem existir helpers puros de resumo/CSV com testes.'
+);
+check(
+  'F2: NÃO é faturação/contabilidade oficial (apenas controlo de caixa)',
+  /NÃO é contabilidade oficial/.test(svcFin + resumo) || /controlo interno de caixa/i.test(svcFin),
+  'O módulo deve declarar-se como controlo interno de caixa, não faturação certificada.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // FASE 18 — WHATSAPP CLOUD API 1A (webhook inbound real, sem envio, sem IA)
 // ═══════════════════════════════════════════════════════════════════════════
 section('FASE 18 — WhatsApp Cloud API 1A (inbound)');
