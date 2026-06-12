@@ -1,0 +1,47 @@
+name: CI
+
+# Corre a verificação de qualidade em cada push e pull request.
+# Trava a classe de bugs que o build/lint/auditor apanham antes de chegarem ao utilizador.
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    name: Lint · Test · Build · Auditor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: exodoflow/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: exodoflow
+        run: npm ci
+
+      - name: Lint
+        working-directory: exodoflow
+        run: npm run lint
+
+      - name: Testes (Vitest)
+        working-directory: exodoflow
+        run: npm test
+
+      - name: Build
+        working-directory: exodoflow
+        # Valores fictícios — o build não contacta o Supabase (páginas dinâmicas).
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+        run: npm run build
+
+      - name: Auditoria EEOS
+        run: node audit-exodoflow-full.mjs

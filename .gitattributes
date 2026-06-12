@@ -1,0 +1,12 @@
+# Normalização de fins de linha. Texto normalizado automaticamente;
+# scripts shell e git hooks FICAM em LF (CRLF quebra-os no sh).
+* text=auto
+
+*.sh           text eol=lf
+.githooks/**   text eol=lf
+
+# Binários comuns (não normalizar)
+*.png binary
+*.jpg binary
+*.svg text
+*.ico binary

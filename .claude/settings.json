@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p=require\\('./node_modules/@supabase/ssr/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(node -e \"const p=require\\('./node_modules/next/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(dir \"c:\\\\Users\\\\Êxodo Tech\\\\Documents\\\\projetos\\\\exodoflowIA\\\\exodoflow\\\\node_modules\\\\next\\\\dist\\\\\" /b 2>&1 | head -30)",
+      "Bash(dir \"c:\\\\Users\\\\Êxodo Tech\\\\Documents\\\\projetos\\\\exodoflowIA\\\\exodoflow\\\\node_modules\\\\@supabase\\\\ssr\\\\dist\\\\\" /b 2>&1)",
+      "Read(//c/Users/**)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Êxodo Tech\\\\Documents\\\\projetos\\\\exodoflowIA\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -First 20)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(JSON.stringify\\({scripts: p.scripts, devDeps: Object.keys\\(p.devDependencies || {}\\).filter\\(k => k.includes\\('test'\\) || k.includes\\('vitest'\\) || k.includes\\('jest'\\) || k.includes\\('playwright'\\)\\)}, null, 2\\)\\)\")",
+      "Bash(npx supabase *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(dir /s /b \"c:\\\\Users\\\\Êxodo Tech\\\\Documents\\\\projetos\\\\exodoflowIA\\\\supabase\\\\migrations\")",
+      "Bash(sed -n '10,35p' src/services/recursos.ts)",
+      "Bash(sed -n '8,20p' src/services/servicos.ts)",
+      "Bash(curl -s \"http://127.0.0.1:54324/api/v1/mailbox/owner@clinica-aurora.pt\")",
+      "Bash(curl -s \"http://127.0.0.1:54324/api/v1/mailbox/naoexiste@x.pt\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" -X POST \"http://localhost:3000/api/whatsapp/send-message\" -H \"Content-Type: application/json\" -d '{\"conversation_id\":\"x\",\"content\":\"hi\"}')",
+      "Bash(npm test *)",
+      "Bash(docker exec *)",
+      "Bash(perl -0pi -e 's/await registarLog\\\\\\(\\\\{/await registarLog\\(admin, {/g; s/const logId = await registarLog\\\\\\(\\\\{/const logId = await registarLog\\(admin, {/g; s/let sent: \\\\{ id: string; raw: Json \\\\}/let sent: { id: string }/g' src/services/whatsapp-templates.ts)",
+      "Bash(find .github -type f)",
+      "Bash(find exodoflow/.github -type f)",
+      "Bash(ls -la .husky)",
+      "Bash(grep -l \"commitlint\\\\|husky\" package.json exodoflow/package.json)",
+      "Bash(ls -d exodoflow/.git .git)",
+      "Bash(xxd)",
+      "Bash(printf '%s\\\\n' 'npx --no -- commitlint --edit \"$1\"')",
+      "Bash(xxd .husky/commit-msg)",
+      "Bash(grep -vE \" node_modules$| \\\\.git$| exodoflow$\")",
+      "Bash(grep -vE \"^total|^d.* \\\\.$|^d.* \\\\.\\\\.$\")",
+      "Bash(git check-ignore *)",
+      "Bash(git config *)",
+      "Bash(echo \"name: $\\(git config user.name || echo '<vazio>'\\)\")",
+      "Bash(echo \"email: $\\(git config user.email || echo '<vazio>'\\)\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Êxodo Tech\\.claude\\projects\\c--Users--xodo-Tech-Documents-projetos-exodoflowIA\\memory"
+    ]
+  }
+}

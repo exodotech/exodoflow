@@ -1,0 +1,48 @@
+# CI — o guarda das políticas do EEOS.
+# Documentos definem as regras; este workflow garante que são cumpridas.
+# Ajustar os comandos aos scripts reais do package.json do projeto.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # necessário para validar todos os commits do PR
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # CONVENTIONAL_COMMITS.md — valida todos os commits do PR
+      - name: Lint de commits
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run type-check
+
+      # DEFINITION_OF_DONE.md — testes com gate de cobertura
+      - name: Testes
+        run: npm run test -- --coverage
+
+      - name: Build
+        run: npm run build
+
+      # DEPENDENCY_UPDATE_POLICY.md — vulnerabilidades críticas/altas bloqueiam
+      - name: Auditoria de dependências
+        run: npm audit --audit-level=high

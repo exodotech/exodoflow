@@ -1,0 +1,10 @@
+#!/bin/sh
+# Conventional Commits via commitlint. O repositório é a pasta-mãe, mas o
+# commitlint e a sua config vivem em exodoflow/ — resolvemos o caminho da
+# mensagem e corremos a verificação lá dentro.
+root="$(git rev-parse --show-toplevel)"
+case "$1" in
+  /*) msg="$1" ;;
+  *)  msg="$root/$1" ;;
+esac
+cd "$root/exodoflow" && npx --no -- commitlint --edit "$msg"
