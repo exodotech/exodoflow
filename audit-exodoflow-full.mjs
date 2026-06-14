@@ -4579,6 +4579,131 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 25 — CRM de clientes, calendário e correções de auth/admin
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 25 — CRM de clientes, calendário e auth/admin');
+console.log('─'.repeat(72));
+
+// Fix crítico: deadlock no onAuthStateChange
+const authProvider = readSafe(join(SRC, 'providers', 'AuthProvider.tsx'));
+check(
+  'F25: AuthProvider difere queries do onAuthStateChange (setTimeout) — sem deadlock',
+  /onAuthStateChange/.test(authProvider) && /setTimeout\(/.test(authProvider) &&
+  /recarregarPerfilTenant/.test(authProvider),
+  'O callback de onAuthStateChange não deve fazer await de queries Supabase (deadlock de locks); diferir com setTimeout.'
+);
+check(
+  'F25: onAuthStateChange não faz await supabase.from diretamente no callback',
+  (() => {
+    // o bloco do callback não deve conter "await supabase" antes do setTimeout
+    const m = authProvider.match(/onAuthStateChange\(\(event, session\)[\s\S]*?\n {4}\}\)/);
+    return m ? !/await\s+supabase\.from/.test(m[0]) : true;
+  })(),
+  'Confirmar que nenhuma query é aguardada dentro do callback de auth.'
+);
+
+// Logout no painel admin + login guard
+check(
+  'F25: AdminUserMenu dá logout no painel admin',
+  exists(join(SRC, 'components', 'features', 'admin', 'AdminUserMenu.tsx')) &&
+  /forceLogout/.test(readSafe(join(SRC, 'components', 'features', 'admin', 'AdminUserMenu.tsx'))) &&
+  /AdminUserMenu/.test(readSafe(join(SRC, 'app', 'admin', 'layout.tsx'))),
+  'O painel /admin deve ter logout (AdminUserMenu no layout).'
+);
+check(
+  'F25: /login redireciona sessão ativa (guarda server-side)',
+  (() => {
+    const lp = readSafe(join(SRC, 'app', 'login', 'page.tsx'));
+    return /getUser\(\)/.test(lp) && /redirect\(/.test(lp) && /superadmin/.test(lp);
+  })(),
+  'A página de login deve redirecionar quem já está autenticado (superadmin→/admin, resto→/dashboard).'
+);
+
+// StatTile reutilizável
+check(
+  'F25: StatTile (cartão de estatística glass) existe e é reutilizado',
+  exists(join(SRC, 'components', 'design-system', 'StatTile', 'StatTile.tsx')) &&
+  /StatTile/.test(readSafe(join(SRC, 'app', 'dashboard', 'servicos', 'page.tsx'))) &&
+  /StatTile/.test(readSafe(join(SRC, 'app', 'dashboard', 'recursos', 'page.tsx'))) &&
+  /StatTile/.test(readSafe(join(SRC, 'app', 'dashboard', 'agenda', 'page.tsx'))),
+  'Deve existir StatTile e ser usado em serviços, recursos e agenda.'
+);
+
+// Insights de clientes (lib pura + testes)
+const insights = readSafe(join(SRC, 'lib', 'clientes', 'insights.ts'));
+check(
+  'F25: lib/clientes/insights.ts com aniversários, inativos, CSV, tags',
+  /fazAnosNoMes/.test(insights) && /clienteInativo/.test(insights) &&
+  /gerarCSVClientes/.test(insights) && /agregarStatsPorCliente/.test(insights) && /parseTags/.test(insights),
+  'A lib de insights deve ter aniversariantes, inativos, CSV e tags.'
+);
+check(
+  'F25: testes de insights de clientes existem',
+  exists(join(SRC, 'lib', 'clientes', 'insights.test.ts')),
+  'Criar src/lib/clientes/insights.test.ts'
+);
+
+// Página de clientes — novas capacidades
+const clientesPage = readSafe(join(SRC, 'app', 'dashboard', 'clientes', 'page.tsx'));
+check(
+  'F25: clientes com filtros aniversariantes/inativos, exportar CSV e etiquetas',
+  /aniversariantes/.test(clientesPage) && /inativos/.test(clientesPage) &&
+  /exportarCSV|gerarCSVClientes/.test(clientesPage) && /tagFiltro|tagsDisponiveis/.test(clientesPage),
+  'A página de clientes deve ter os filtros, exportação CSV e filtro por etiqueta.'
+);
+check(
+  'F25: validador de cliente aceita tags (array)',
+  /tags:\s*z\.array/.test(readSafe(join(SRC, 'lib', 'validators', 'client.ts'))),
+  'criarClienteSchema deve aceitar tags como array.'
+);
+
+// Calendário da agenda (lib + componente + integração)
+const calLib = readSafe(join(SRC, 'lib', 'agenda', 'calendario.ts'));
+check(
+  'F25: lib/agenda/calendario.ts (fuso-safe, chaves YYYY-MM-DD) + testes',
+  /diasDaSemana/.test(calLib) && /agruparPorDia/.test(calLib) && /chaveDataNoFuso/.test(calLib) &&
+  exists(join(SRC, 'lib', 'agenda', 'calendario.test.ts')),
+  'Deve existir a lib de calendário pura com testes.'
+);
+check(
+  'F25: AgendaCalendario (vista dia/semana) integrada na agenda',
+  exists(join(SRC, 'components', 'features', 'agenda', 'AgendaCalendario.tsx')) &&
+  /AgendaCalendario/.test(readSafe(join(SRC, 'app', 'dashboard', 'agenda', 'page.tsx'))) &&
+  /vista.*calendario|'calendario'/.test(readSafe(join(SRC, 'app', 'dashboard', 'agenda', 'page.tsx'))),
+  'A agenda deve ter o toggle Lista/Calendário com a vista de calendário.'
+);
+
+// Popularidade serviços + ocupação recursos + alertas dashboard
+check(
+  'F25: serviços mostra popularidade (marcações por serviço)',
+  /marcacoesPorServico/.test(readSafe(join(SRC, 'app', 'dashboard', 'servicos', 'page.tsx'))),
+  'A página de serviços deve calcular marcações por serviço.'
+);
+check(
+  'F25: recursos mostra ocupação de hoje',
+  /ocupacaoHoje/.test(readSafe(join(SRC, 'app', 'dashboard', 'recursos', 'page.tsx'))),
+  'A página de recursos deve calcular a ocupação de hoje.'
+);
+check(
+  'F25: dashboard tem alertas de aniversariantes e clientes a atenção',
+  (() => {
+    const d = readSafe(join(SRC, 'app', 'dashboard', 'page.tsx'));
+    return /aniversariantes/.test(d) && /clientesAtencao/.test(d);
+  })(),
+  'O dashboard deve mostrar aniversariantes e clientes inativos.'
+);
+
+// Browser harness (ferramenta de dev)
+check(
+  'F25: browser harness existe (revisão visual via Playwright)',
+  exists(join(ROOT, 'exodoflow', 'browser-harness.mjs')),
+  'Deve existir o browser-harness.mjs para revisão visual.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
