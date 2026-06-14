@@ -74,10 +74,32 @@ export function AuthProvider({
   useEffect(() => {
     const supabase = createClient()
 
-    // Actualizar estado quando a sessão muda (login/logout noutro separador, token expirado)
+    // Recarrega perfil + tenant. Executado FORA do callback de auth (ver abaixo).
+    async function recarregarPerfilTenant(userId: string) {
+      setIsLoading(true)
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles').select('*').eq('id', userId).single()
+        if (profileData) {
+          setProfile(profileData as Profile)
+          if (profileData.tenant_id) {
+            const { data: tenantData } = await supabase
+              .from('tenants').select('*').eq('id', profileData.tenant_id).single()
+            setTenant(tenantData as Tenant | null)
+          }
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    // Actualizar estado quando a sessão muda (login/logout noutro separador, token expirado).
+    // IMPORTANTE: o supabase-js segura um lock (navigator.locks) DURANTE este callback;
+    // chamar outra função Supabase aqui dentro causa DEADLOCK (queries ficam penduradas).
+    // Por isso as queries são diferidas com setTimeout(0) — liberta o lock primeiro.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session?.user) {
         setUser(null)
         setProfile(null)
@@ -86,30 +108,9 @@ export function AuthProvider({
       }
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsLoading(true)
         setUser(session.user)
-
-        // Recarregar perfil e tenant após login (ex: se usou OAuth)
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-
-        if (profileData) {
-          setProfile(profileData as Profile)
-
-          if (profileData.tenant_id) {
-            const { data: tenantData } = await supabase
-              .from('tenants')
-              .select('*')
-              .eq('id', profileData.tenant_id)
-              .single()
-            setTenant(tenantData as Tenant | null)
-          }
-        }
-
-        setIsLoading(false)
+        const userId = session.user.id
+        setTimeout(() => { void recarregarPerfilTenant(userId) }, 0)
       }
     })
 
