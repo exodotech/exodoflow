@@ -50,15 +50,18 @@ export default function AdminUtilizadoresPage() {
   }))
 
   return (
-    <div>
-      <h1 className="text-xl font-bold text-gray-900 mb-1">Owners ({owners.length})</h1>
-      <p className="text-sm text-gray-500 mb-6">Proprietários de cada empresa. Sem acesso a clientes finais.</p>
+    <div className="animate-fade-in">
+      <div className="mb-6">
+        <div className="w-8 h-1 rounded-full mb-3 bg-gradient-to-r from-indigo-500 to-indigo-700" aria-hidden />
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Owners ({owners.length})</h1>
+        <p className="text-sm text-slate-500 mt-1">Proprietários de cada empresa. Sem acesso a clientes finais.</p>
+      </div>
 
       {owners.length === 0 ? (
         <EmptyState icon={<Users className="w-12 h-12" />} title="Nenhum owner" description="As empresas com proprietário aparecerão aqui." />
       ) : (
         <>
-          <div className="sm:hidden bg-white rounded-lg border border-gray-200 p-4"><MobileCardList items={cardItems} /></div>
+          <div className="sm:hidden bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4"><MobileCardList items={cardItems} /></div>
           <div className="hidden sm:block"><DataTableWrapper columns={columns} rows={rows} /></div>
         </>
       )}
