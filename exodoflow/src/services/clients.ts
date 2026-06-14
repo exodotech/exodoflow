@@ -11,7 +11,7 @@ export async function listarClientes() {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('clients')
-    .select('id, full_name, phone, email, tags, gdpr_consent_at, marketing_consent, is_guest, created_at')
+    .select('id, full_name, phone, email, tags, birth_date, gdpr_consent_at, marketing_consent, is_guest, created_at')
     .is('deleted_at', null)
     .order('full_name', { ascending: true })
     .limit(1000)  // protecção contra payloads gigantes; paginação real quando houver busca server-side
@@ -50,6 +50,7 @@ export async function criarCliente(input: CriarClienteInput) {
       birth_date:        input.birth_date || null,
       nif:               input.nif || null,
       notes:             input.notes || null,
+      tags:              input.tags && input.tags.length > 0 ? input.tags : null,
       marketing_consent: input.marketing_consent,
       gdpr_consent_at:   input.marketing_consent ? new Date().toISOString() : null,
     })
@@ -128,12 +129,26 @@ export async function apagarCliente(id: string) {
   await registarAuditoria('client.delete', { table: 'clients', recordId: id })
 }
 
-// Actualiza dados de um cliente existente
+// Actualiza dados de um cliente existente.
+// Normaliza strings vazias para null (campos opcionais) e tags vazias para null,
+// para não gravar '' numa coluna date (birth_date) nem arrays vazios.
 export async function atualizarCliente(id: string, input: AtualizarClienteInput) {
   const supabase = createClient()
+
+  const nl = (v: unknown) => (v === '' || v === undefined ? undefined : v)
+  const patch: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(input)) {
+    if (k === 'tags') { patch.tags = Array.isArray(v) && v.length > 0 ? v : null; continue }
+    if (k === 'birth_date' || k === 'nif' || k === 'notes' || k === 'phone' || k === 'email') {
+      const n = nl(v); if (n !== undefined) patch[k] = n === '' ? null : n
+      continue
+    }
+    const n = nl(v); if (n !== undefined) patch[k] = n
+  }
+
   const { data, error } = await supabase
     .from('clients')
-    .update(input)
+    .update(patch)
     .eq('id', id)
     .select()
     .single()

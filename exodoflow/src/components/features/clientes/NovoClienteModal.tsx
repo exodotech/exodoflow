@@ -1,11 +1,12 @@
 'use client'
 // Modal de cliente — cria um novo OU edita um existente (modo dual).
 // Quando recebe `cliente`, entra em modo edição.
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { UserPlus, Save } from 'lucide-react'
 import { useFormWithZod }   from '@/hooks/useFormWithZod'
 import { useCriarCliente, useAtualizarCliente } from '@/hooks/useClientes'
 import { criarClienteSchema, type CriarClienteInput } from '@/lib/validators/client'
+import { parseTags } from '@/lib/clientes/insights'
 import { MARKETING_CONSENT_TEXT, OPERATIONAL_COMMS_NOTE } from '@/lib/consent'
 import { useAuth } from '@/providers/AuthProvider'
 import { getTaxIdPlaceholder } from '@/lib/i18n/tax-id'
@@ -20,6 +21,9 @@ export interface ClienteEditavel {
   phone?: string | null
   email?: string | null
   nif?: string | null
+  birth_date?: string | null
+  notes?: string | null
+  tags?: string[] | null
   marketing_consent?: boolean | null
 }
 
@@ -43,6 +47,11 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
   const fiscalPlaceholder = getTaxIdPlaceholder(isBR ? 'cpf' : 'nif')
   const phonePlaceholder  = isBR ? '+55 11 91234-5678' : '+351 912 345 678'
 
+  // Etiquetas como texto livre ("vip, frequente"). useState inicializado a partir
+  // do cliente — o componente é remontado pelo `key` no pai ao trocar de cliente,
+  // por isso o inicializador corre com o valor certo (sem setState em efeito).
+  const [tagsText, setTagsText] = useState(() => (cliente?.tags ?? []).join(', '))
+
   const {
     register, handleSubmit, reset,
     formState: { errors, isSubmitting },
@@ -58,6 +67,8 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
         phone:             cliente.phone ?? '',
         email:             cliente.email ?? '',
         nif:               cliente.nif ?? '',
+        birth_date:        cliente.birth_date ?? '',
+        notes:             cliente.notes ?? '',
         marketing_consent: cliente.marketing_consent ?? false,
       })
     } else {
@@ -66,10 +77,11 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
   }, [isOpen, cliente, reset])
 
   async function onSubmit(data: CriarClienteInput) {
+    const comTags: CriarClienteInput = { ...data, tags: parseTags(tagsText) }
     if (modoEdicao && cliente) {
-      await atualizar.mutateAsync({ id: cliente.id, input: data })
+      await atualizar.mutateAsync({ id: cliente.id, input: comTags })
     } else {
-      await criar.mutateAsync(data)
+      await criar.mutateAsync(comTags)
     }
     reset()
     onSuccess?.()
@@ -103,9 +115,38 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
     >
       <form id="form-cliente" onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input label="Nome completo" required placeholder="Maria Oliveira" error={errors.full_name?.message} {...register('full_name')} />
-        <Input label="Telefone" type="tel" placeholder={phonePlaceholder} error={errors.phone?.message} {...register('phone')} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input label="Telefone" type="tel" placeholder={phonePlaceholder} error={errors.phone?.message} {...register('phone')} />
+          <Input label="Data de nascimento" type="date" error={errors.birth_date?.message} {...register('birth_date')} />
+        </div>
         <Input label="E-mail" type="email" placeholder="cliente@email.com" error={errors.email?.message} {...register('email')} />
         <Input label={fiscalLabel} placeholder={fiscalPlaceholder} error={errors.nif?.message} {...register('nif')} />
+
+        {/* Etiquetas — segmentação simples em linguagem do dia-a-dia */}
+        <div>
+          <label htmlFor="cliente-tags" className="block text-sm font-medium text-slate-700 mb-1">Etiquetas</label>
+          <input
+            id="cliente-tags"
+            value={tagsText}
+            onChange={(e) => setTagsText(e.target.value)}
+            placeholder="vip, frequente, indicação"
+            className="w-full h-11 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)] focus:border-transparent"
+          />
+          <p className="mt-1 text-xs text-slate-400">Separe por vírgulas. Servem para organizar e filtrar (ex: VIP, frequente).</p>
+        </div>
+
+        {/* Notas internas */}
+        <div>
+          <label htmlFor="cliente-notes" className="block text-sm font-medium text-slate-700 mb-1">Notas internas</label>
+          <textarea
+            id="cliente-notes"
+            rows={2}
+            placeholder="Preferências, alergias, observações... (só a sua equipa vê)"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)] focus:border-transparent"
+            {...register('notes')}
+          />
+          {errors.notes && <p className="mt-1 text-xs text-red-600">{errors.notes.message}</p>}
+        </div>
 
         {/* Consentimento de MARKETING (RGPD/LGPD) — opcional, nunca bloqueia.
             Alterar aqui grava um novo registo imutável em legal_consents (trigger). */}

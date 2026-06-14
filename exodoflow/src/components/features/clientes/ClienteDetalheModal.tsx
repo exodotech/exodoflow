@@ -51,7 +51,11 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
   })
 
   const editavel: ClienteEditavel | null = cliente
-    ? { id: cliente.id, full_name: cliente.full_name, phone: cliente.phone, email: cliente.email, nif: cliente.nif, marketing_consent: cliente.marketing_consent }
+    ? {
+        id: cliente.id, full_name: cliente.full_name, phone: cliente.phone, email: cliente.email,
+        nif: cliente.nif, birth_date: cliente.birth_date, notes: cliente.notes, tags: cliente.tags,
+        marketing_consent: cliente.marketing_consent,
+      }
     : null
 
   const isGuest = cliente?.is_guest === true
@@ -118,6 +122,10 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
             <Campo label="Telefone" valor={cliente.phone ?? '—'} />
             <Campo label="E-mail" valor={cliente.email ?? '—'} />
             <Campo label={fiscalLabel} valor={cliente.nif ?? '—'} />
+            <Campo
+              label="Aniversário"
+              valor={cliente.birth_date ? new Date(cliente.birth_date + 'T00:00:00').toLocaleDateString('pt-PT', { day: '2-digit', month: 'long' }) : '—'}
+            />
             <div>
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Marketing</p>
               <Badge variant={cliente.marketing_consent ? 'success' : 'default'}>
@@ -125,6 +133,26 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
               </Badge>
             </div>
           </div>
+
+          {/* Etiquetas */}
+          {Array.isArray(cliente.tags) && cliente.tags.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Etiquetas</p>
+              <div className="flex flex-wrap gap-1.5">
+                {cliente.tags.map((t: string) => (
+                  <span key={t} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">{t}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notas internas */}
+          {cliente.notes && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Notas internas</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 rounded-lg p-3">{cliente.notes}</p>
+            </div>
+          )}
 
           {converter.isError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">

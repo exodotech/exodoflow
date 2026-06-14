@@ -68,7 +68,12 @@ try {
 for (const rota of rotas) {
   try {
     await page.goto(`${BASE}${rota}`, { waitUntil: 'networkidle', timeout: 20000 })
-    await page.waitForTimeout(700) // deixar animações/queries assentar
+    // Esperar que estados de carregamento (TanStack Query) desapareçam
+    await page.waitForFunction(
+      () => !/A carregar|A carregar\.\.\.|Carregando/.test(document.body.innerText),
+      { timeout: 8000 },
+    ).catch(() => {})
+    await page.waitForTimeout(600) // deixar animações assentar
     const ficheiro = join(OUT, `${sanitizar(rota)}.png`)
     await page.screenshot({ path: ficheiro, fullPage: true })
     const final = new URL(page.url()).pathname

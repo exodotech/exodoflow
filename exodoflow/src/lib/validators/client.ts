@@ -20,7 +20,9 @@ export const criarClienteSchema = z.object({
     .or(z.literal('')),
   birth_date:        z.string().date('Data de nascimento inválida').optional().or(z.literal('')),
   nif:               z.string().max(20, 'NIF/CPF inválido').optional().or(z.literal('')),
-  notes:             z.string().max(1000, 'Máximo 1000 caracteres').optional(),
+  notes:             z.string().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),
+  // Etiquetas livres (ex: vip, frequente) — segmentação simples. Máx. 10.
+  tags:              z.array(z.string().trim().min(1).max(30)).max(10, 'Máximo 10 etiquetas').optional(),
   // Consentimentos RGPD/LGPD — obrigatório registar a escolha do cliente
   marketing_consent: z.boolean().default(false),
 })
