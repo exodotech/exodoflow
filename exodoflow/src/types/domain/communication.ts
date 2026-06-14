@@ -15,6 +15,9 @@ export type CommunicationEventType =
   | 'booking_reschedule'
   | 'booking_completed'
   | 'booking_no_show'
+  // Relatórios financeiros (F3) — sem booking/cliente associado
+  | 'relatorio_diario'
+  | 'relatorio_mensal'
 
 // Propósitos de template operacional da Fase 1C (WhatsApp Cloud API / Meta).
 // São a superfície pública usada pela API/agenda; mapeiam para event_type na BD.

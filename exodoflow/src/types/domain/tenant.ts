@@ -1,5 +1,6 @@
 import type { Database } from '@/types/database'
 import type { SupportedLocale } from '@/types/domain/communication'
+import type { RelatorioSettings } from '@/types/domain/relatorios'
 
 // Nicho de negócio — alinhado com o CHECK constraint da BD (0002_tables.sql)
 export type TenantNiche =
@@ -36,6 +37,7 @@ export interface TenantSettings {
   booking_advance_days?:  number
   cancellation_hours?:    number
   branding?:              BrandingSettings
+  relatorio?:             RelatorioSettings
 }
 
 // Cor primária por defeito (azul profissional)

@@ -4219,6 +4219,241 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 23 — F3 Relatórios Financeiros
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 23 — F3 Relatórios Financeiros');
+console.log('─'.repeat(72));
+
+// Migração
+const mig30 = readSafe(join(MIGRATIONS, '0030_report_module.sql'));
+check(
+  'F3: migração 0030 existe (módulo de relatórios)',
+  mig30.length > 0,
+  'Criar supabase/migrations/0030_report_module.sql'
+);
+check(
+  'F3: migração 0030 cria índice para eventos de relatório',
+  /idx_comm_logs_report/.test(mig30),
+  'Falta índice idx_comm_logs_report na migração 0030.'
+);
+
+// Tipos
+const relatoriosDomain = readSafe(join(SRC, 'types', 'domain', 'relatorios.ts'));
+check(
+  'F3: src/types/domain/relatorios.ts existe',
+  relatoriosDomain.length > 0,
+  'Criar src/types/domain/relatorios.ts'
+);
+check(
+  'F3: RelatorioTipo inclui relatorio_diario e relatorio_mensal',
+  /relatorio_diario/.test(relatoriosDomain) && /relatorio_mensal/.test(relatoriosDomain),
+  'RelatorioTipo deve incluir os dois tipos.'
+);
+check(
+  'F3: RelatorioSettings inclui email_destino e hora_envio',
+  /email_destino/.test(relatoriosDomain) && /hora_envio/.test(relatoriosDomain),
+  'RelatorioSettings deve ter email_destino e hora_envio.'
+);
+
+// Extensão de CommunicationEventType
+const commTypes = readSafe(join(SRC, 'types', 'domain', 'communication.ts'));
+check(
+  'F3: CommunicationEventType inclui relatorio_diario e relatorio_mensal',
+  /relatorio_diario/.test(commTypes) && /relatorio_mensal/.test(commTypes),
+  'Adicionar relatorio_diario e relatorio_mensal a CommunicationEventType.'
+);
+
+// TenantSettings.relatorio
+const tenantTypes = readSafe(join(SRC, 'types', 'domain', 'tenant.ts'));
+check(
+  'F3: TenantSettings inclui campo relatorio (RelatorioSettings)',
+  /relatorio\??\s*:\s*RelatorioSettings/.test(tenantTypes),
+  'TenantSettings deve ter campo relatorio?: RelatorioSettings'
+);
+
+// Validador
+const relatorioValidator = readSafe(join(SRC, 'lib', 'validators', 'relatorio.ts'));
+check(
+  'F3: validators/relatorio.ts existe (relatorioSettingsSchema)',
+  /relatorioSettingsSchema/.test(relatorioValidator),
+  'Criar src/lib/validators/relatorio.ts com relatorioSettingsSchema.'
+);
+check(
+  'F3: validador valida email_destino como e-mail',
+  /z\.string\(\)\.email/.test(relatorioValidator),
+  'email_destino deve ser validado como e-mail pelo Zod.'
+);
+
+// Lib pura (gerador)
+const geradorLib = readSafe(join(SRC, 'lib', 'relatorios', 'gerador.ts'));
+check(
+  'F3: src/lib/relatorios/gerador.ts existe',
+  geradorLib.length > 0,
+  'Criar src/lib/relatorios/gerador.ts'
+);
+check(
+  'F3: gerarRelatorioDiario() implementado',
+  /gerarRelatorioDiario/.test(geradorLib),
+  'gerarRelatorioDiario() não encontrado em gerador.ts.'
+);
+check(
+  'F3: gerarRelatorioMensal() implementado',
+  /gerarRelatorioMensal/.test(geradorLib),
+  'gerarRelatorioMensal() não encontrado em gerador.ts.'
+);
+check(
+  'F3: gerador usa calcularResumo (reutiliza lógica financeira existente)',
+  /calcularResumo/.test(geradorLib),
+  'gerador.ts deve reutilizar calcularResumo de lib/financas/resumo.ts.'
+);
+
+// Testes do gerador
+const geradorTest = readSafe(join(SRC, 'lib', 'relatorios', 'gerador.test.ts'));
+check(
+  'F3: testes de gerador existem (gerador.test.ts)',
+  geradorTest.length > 0,
+  'Criar src/lib/relatorios/gerador.test.ts'
+);
+
+// Service server-side
+const relatoriosSvc = readSafe(join(SRC, 'services', 'relatorios.ts'));
+check(
+  'F3: src/services/relatorios.ts existe (server-side)',
+  relatoriosSvc.length > 0,
+  'Criar src/services/relatorios.ts'
+);
+check(
+  'F3: gerarEEnviarRelatorio() usa admin client (server-side)',
+  /createAdminClient/.test(relatoriosSvc),
+  'gerarEEnviarRelatorio() deve usar createAdminClient (ignora RLS no servidor).'
+);
+check(
+  'F3: relatório tem modo mock (RELATORIO_MOCK)',
+  /RELATORIO_MOCK/.test(relatoriosSvc),
+  'Deve existir variável RELATORIO_MOCK para modo simulação.'
+);
+check(
+  'F3: listarLogsRelatorio() usa event_type IN (relatorio_diario, relatorio_mensal)',
+  /relatorio_diario.*relatorio_mensal|relatorio_mensal.*relatorio_diario/.test(relatoriosSvc),
+  'listarLogsRelatorio deve filtrar por event_type relatorio_diario/mensal.'
+);
+
+// Service de configurações client-side
+const relatoriosConfig = readSafe(join(SRC, 'services', 'relatorios-config.ts'));
+check(
+  'F3: src/services/relatorios-config.ts existe (guardar settings)',
+  /guardarRelatorioSettings/.test(relatoriosConfig),
+  'Criar src/services/relatorios-config.ts com guardarRelatorioSettings().'
+);
+check(
+  'F3: guardarRelatorioSettings faz merge seguro de settings (spread)',
+  /settingsAtuais/.test(relatoriosConfig) && /spread|\.\.\./.test(relatoriosConfig),
+  'guardarRelatorioSettings deve fazer merge, nunca sobrescrever settings.'
+);
+
+// Route Handler
+const relatoriosRoute = readSafe(join(SRC, 'app', 'api', 'relatorios', 'gerar', 'route.ts'));
+check(
+  'F3: /api/relatorios/gerar existe (route handler)',
+  relatoriosRoute.length > 0,
+  'Criar src/app/api/relatorios/gerar/route.ts'
+);
+check(
+  'F3: /api/relatorios/gerar exige sessão autenticada (getUser)',
+  /getUser/.test(relatoriosRoute),
+  'Route deve verificar autenticação com supabase.auth.getUser().'
+);
+check(
+  'F3: /api/relatorios/gerar verifica permissão financas.manage',
+  /financas\.manage/.test(relatoriosRoute),
+  'Gerar relatório requer permissão financas.manage (owner + manager).'
+);
+check(
+  'F3: /api/relatorios/gerar tem rate-limit',
+  /checkRateLimit/.test(relatoriosRoute),
+  'Route deve ter rate-limit para evitar spam.'
+);
+check(
+  'F3: /api/relatorios/gerar gera audit log (finance.gerar_relatorio)',
+  /finance\.gerar_relatorio/.test(relatoriosRoute),
+  'Trigger manual deve gerar audit log.'
+);
+
+// Hook
+const useRelatorios = readSafe(join(SRC, 'hooks', 'useRelatorios.ts'));
+check(
+  'F3: src/hooks/useRelatorios.ts existe',
+  useRelatorios.length > 0,
+  'Criar src/hooks/useRelatorios.ts'
+);
+check(
+  'F3: useGerarRelatorio() mutation existe',
+  /useGerarRelatorio/.test(useRelatorios),
+  'Hook deve exportar useGerarRelatorio() para trigger manual.'
+);
+
+// PainelRelatorios
+const painelRelatorios = readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelRelatorios.tsx'));
+check(
+  'F3: PainelRelatorios.tsx existe',
+  painelRelatorios.length > 0,
+  'Criar src/components/features/configuracoes/PainelRelatorios.tsx'
+);
+check(
+  'F3: PainelRelatorios usa relatorioSettingsSchema',
+  /relatorioSettingsSchema/.test(painelRelatorios),
+  'PainelRelatorios deve validar com relatorioSettingsSchema.'
+);
+check(
+  'F3: PainelRelatorios tem aviso de simulação',
+  /simulad/.test(painelRelatorios),
+  'PainelRelatorios deve informar que o envio é simulado.'
+);
+check(
+  'F3: PainelRelatorios gated por financas.manage',
+  /financas\.manage/.test(painelRelatorios),
+  'PainelRelatorios só deve permitir edição a financas.manage.'
+);
+
+// Página de relatórios
+const relPage = readSafe(join(SRC, 'app', 'dashboard', 'relatorios', 'page.tsx'));
+check(
+  'F3: /dashboard/relatorios existe',
+  relPage.length > 0,
+  'Criar src/app/dashboard/relatorios/page.tsx'
+);
+check(
+  'F3: página relatorios gateada por relatorios.view',
+  /relatorios\.view/.test(relPage),
+  'Página de relatórios deve verificar permissão relatorios.view.'
+);
+
+// Aba em Configurações
+const configPage = readSafe(join(SRC, 'app', 'dashboard', 'configuracoes', 'page.tsx'));
+check(
+  'F3: configuracoes/page.tsx tem aba Relatórios',
+  /relatorios/.test(configPage) && /PainelRelatorios/.test(configPage),
+  'Adicionar aba "Relatórios" a configuracoes/page.tsx.'
+);
+
+// Navegação (sidebars)
+const sidebarDesktop = readSafe(join(SRC, 'components', 'layout', 'SidebarDesktop', 'SidebarDesktop.tsx'));
+check(
+  'F3: SidebarDesktop tem link para /dashboard/relatorios',
+  /dashboard\/relatorios/.test(sidebarDesktop) && /relatorios\.view/.test(sidebarDesktop),
+  'Adicionar Relatórios ao SidebarDesktop com permissão relatorios.view.'
+);
+const sidebarTablet = readSafe(join(SRC, 'components', 'layout', 'SidebarTablet', 'SidebarTablet.tsx'));
+check(
+  'F3: SidebarTablet tem link para /dashboard/relatorios',
+  /dashboard\/relatorios/.test(sidebarTablet) && /relatorios\.view/.test(sidebarTablet),
+  'Adicionar Relatórios ao SidebarTablet com permissão relatorios.view.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

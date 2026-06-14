@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import {
   Building2, CreditCard, Plug, Layers,
-  Globe, MessageSquare, FileText, Palette, MessageCircle,
+  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2,
 } from 'lucide-react'
 import PageHeader  from '@/components/design-system/PageHeader/PageHeader'
 import AccessDenied from '@/components/design-system/AccessDenied/AccessDenied'
@@ -15,13 +15,14 @@ import { PainelPlano }             from '@/components/features/configuracoes/Pai
 import { PainelIntegracoes }       from '@/components/features/configuracoes/PainelIntegracoes'
 import { PainelTemplates }         from '@/components/features/configuracoes/PainelTemplates'
 import { PainelWhatsApp }          from '@/components/features/configuracoes/PainelWhatsApp'
+import { PainelRelatorios }        from '@/components/features/configuracoes/PainelRelatorios'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth }        from '@/providers/AuthProvider'
 import type { SupportedLocale } from '@/types/domain'
 
 type Tab =
   | 'empresa' | 'branding' | 'localizacao' | 'comunicacao' | 'whatsapp'
-  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates'
+  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios'
 
 const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'empresa',            label: 'Empresa',     icon: <Building2     className="w-4 h-4" /> },
@@ -33,6 +34,7 @@ const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'plano',              label: 'Plano',       icon: <CreditCard    className="w-4 h-4" /> },
   { value: 'integracoes',        label: 'Integrações', icon: <Plug          className="w-4 h-4" /> },
   { value: 'templates',          label: 'Templates',   icon: <Layers        className="w-4 h-4" /> },
+  { value: 'relatorios',         label: 'Relatórios',  icon: <BarChart2     className="w-4 h-4" /> },
 ]
 
 export default function ConfiguracoesPage() {
@@ -95,6 +97,7 @@ export default function ConfiguracoesPage() {
       {activeTab === 'plano'              && <PainelPlano locale={locale} />}
       {activeTab === 'integracoes'        && <PainelIntegracoes />}
       {activeTab === 'templates'          && <PainelTemplates locale={locale} niche={tenant?.business_type} />}
+      {activeTab === 'relatorios'         && isManagerOrAbove && <PainelRelatorios />}
     </div>
   )
 }
