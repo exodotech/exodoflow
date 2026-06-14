@@ -4454,6 +4454,131 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 24 — Painel Admin: autonomia do superadmin + grants
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 24 — Painel Admin: autonomia do superadmin');
+console.log('─'.repeat(72));
+
+// Migração 0031 — grants explícitos (bug auto_expose_new_tables)
+const mig31 = readSafe(join(MIGRATIONS, '0031_grant_table_privileges.sql'));
+check(
+  'F24: migração 0031 dá GRANT SELECT/INSERT/UPDATE/DELETE a authenticated',
+  /GRANT SELECT, INSERT, UPDATE, DELETE/.test(mig31) && /TO authenticated/.test(mig31),
+  'Criar 0031 com grants explícitos (Supabase auto_expose_new_tables=false desde 2026-05-30).'
+);
+check(
+  'F24: migração 0031 tem ALTER DEFAULT PRIVILEGES (tabelas futuras)',
+  /ALTER DEFAULT PRIVILEGES/.test(mig31),
+  '0031 deve garantir privilégios em tabelas futuras.'
+);
+
+// Migração 0032 — painel admin
+const mig32 = readSafe(join(MIGRATIONS, '0032_admin_panel_management.sql'));
+check(
+  'F24: migração 0032 existe (gestão do painel admin)',
+  mig32.length > 0,
+  'Criar supabase/migrations/0032_admin_panel_management.sql'
+);
+check(
+  'F24: 0032 dá políticas RLS superadmin a plans (insert/update/delete)',
+  /plans_insert_superadmin/.test(mig32) && /plans_update_superadmin/.test(mig32) && /plans_delete_superadmin/.test(mig32),
+  'plans precisa de políticas CRUD para superadmin.'
+);
+check(
+  'F24: 0032 dá políticas RLS superadmin a feature_flags',
+  /feature_flags_insert_superadmin/.test(mig32) && /feature_flags_update_superadmin/.test(mig32),
+  'feature_flags precisa de políticas superadmin para gestão por empresa.'
+);
+check(
+  'F24: 0032 adiciona coluna tenants.admin_notes (mini-CRM)',
+  /ADD COLUMN IF NOT EXISTS admin_notes/.test(mig32),
+  'tenants.admin_notes deve existir para notas internas do superadmin.'
+);
+
+// Serviços admin
+const adminSvc = readSafe(join(SRC, 'services', 'admin.ts'));
+check(
+  'F24: services/admin.ts tem editarEmpresa com merge seguro de settings',
+  /export async function editarEmpresa/.test(adminSvc) && /\.\.\.settingsAtuais/.test(adminSvc),
+  'editarEmpresa deve fazer merge do JSONB settings, não sobrescrever.'
+);
+check(
+  'F24: services/admin.ts tem feature flags (listar + definir + catálogo)',
+  /listarFeatureFlags/.test(adminSvc) && /definirFeatureFlag/.test(adminSvc) && /FEATURE_FLAGS_CATALOGO/.test(adminSvc),
+  'Deve existir gestão de feature flags com catálogo conhecido.'
+);
+check(
+  'F24: services/admin.ts tem CRUD de planos (listar/criar/editar)',
+  /listarPlanosAdmin/.test(adminSvc) && /export async function criarPlano/.test(adminSvc) && /export async function editarPlano/.test(adminSvc),
+  'Deve existir CRUD de planos no serviço admin.'
+);
+check(
+  'F24: redefinirPasswordOwner passa pelo route handler (não usa service_role no cliente)',
+  /redefinirPasswordOwner/.test(adminSvc) && /\/api\/admin\/gerir-owner/.test(adminSvc) && !/SERVICE_ROLE/.test(adminSvc),
+  'O reset de password deve chamar o route handler; service_role nunca no cliente.'
+);
+
+// Route handler gerir-owner (segurança em camadas)
+const gerirOwner = readSafe(join(SRC, 'app', 'api', 'admin', 'gerir-owner', 'route.ts'));
+check(
+  'F24: /api/admin/gerir-owner exige sessão + role superadmin (BD)',
+  /getUser\(\)/.test(gerirOwner) && /role !== 'superadmin'/.test(gerirOwner) && /status: 403/.test(gerirOwner),
+  'O handler deve validar sessão e confirmar role=superadmin na BD.'
+);
+check(
+  'F24: gerir-owner valida que o owner pertence ao tenant (sem reset cruzado)',
+  /alvo\.tenant_id !== tenant_id/.test(gerirOwner) && /alvo\.role !== 'owner'/.test(gerirOwner),
+  'Deve confirmar que owner_id é owner do tenant indicado antes do reset.'
+);
+check(
+  'F24: gerir-owner tem rate-limit',
+  /checkRateLimit/.test(gerirOwner),
+  'O handler de reset deve ter rate-limit.'
+);
+
+// Validadores
+const adminValid = readSafe(join(SRC, 'lib', 'validators', 'admin.ts'));
+check(
+  'F24: validators/admin.ts tem editarEmpresaSchema + planoSchema + gerirOwnerSchema',
+  /editarEmpresaSchema/.test(adminValid) && /planoSchema/.test(adminValid) && /gerirOwnerSchema/.test(adminValid),
+  'Os schemas de edição de empresa, plano e gestão de owner devem existir.'
+);
+
+// Páginas e componentes
+check(
+  'F24: página de detalhe /admin/empresas/[id] existe',
+  exists(join(SRC, 'app', 'admin', 'empresas', '[id]', 'page.tsx')),
+  'Criar src/app/admin/empresas/[id]/page.tsx'
+);
+const empresaDetalhe = readSafe(join(SRC, 'components', 'features', 'admin', 'EmpresaDetalhe.tsx'));
+check(
+  'F24: EmpresaDetalhe gere dados, plano, flags, owner, país e notas',
+  /editarEmpresa/.test(empresaDetalhe) && /definirFeatureFlag/.test(empresaDetalhe) &&
+  /redefinirPasswordOwner/.test(empresaDetalhe) && /AlterarPaisModal/.test(empresaDetalhe),
+  'EmpresaDetalhe deve cobrir edição, flags, owner e país.'
+);
+check(
+  'F24: página de planos /admin/planos existe',
+  exists(join(SRC, 'app', 'admin', 'planos', 'page.tsx')) &&
+  /criarPlano|editarPlano/.test(readSafe(join(SRC, 'app', 'admin', 'planos', 'page.tsx'))),
+  'Criar src/app/admin/planos/page.tsx com CRUD de planos.'
+);
+check(
+  'F24: AdminNav tem link para Planos',
+  /\/admin\/planos/.test(readSafe(join(SRC, 'components', 'features', 'admin', 'AdminNav.tsx'))),
+  'A navegação admin deve incluir Planos.'
+);
+check(
+  'F24: detalhe/planos não referem service_role (cliente)',
+  !/SERVICE_ROLE/.test(empresaDetalhe) && !/createAdminClient/.test(empresaDetalhe) &&
+  !/SERVICE_ROLE/.test(readSafe(join(SRC, 'app', 'admin', 'planos', 'page.tsx'))),
+  'Componentes cliente do admin nunca podem referir service_role.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
