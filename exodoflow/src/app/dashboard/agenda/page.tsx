@@ -14,6 +14,7 @@ import ErrorState       from '@/components/design-system/ErrorState/ErrorState'
 import { NovaBookingModal }    from '@/components/features/agenda/NovaBookingModal'
 import { CancelarBookingModal } from '@/components/features/agenda/CancelarBookingModal'
 import { ReagendarBookingModal } from '@/components/features/agenda/ReagendarBookingModal'
+import { AgendaCalendario }     from '@/components/features/agenda/AgendaCalendario'
 import { EnviarTemplateWhatsApp } from '@/components/features/agenda/EnviarTemplateWhatsApp'
 import { PagamentoBadge } from '@/components/features/agenda/PagamentoBadge'
 import { PAYMENT_STATUS_LABELS, type BookingPaymentStatus } from '@/types/domain/financas'
@@ -158,6 +159,7 @@ export default function AgendaPage() {
   const { tenant } = useAuth()
   const timezone   = (tenant?.settings as { timezone?: string } | null)?.timezone ?? 'Europe/Lisbon'
 
+  const [vista,             setVista]             = useState<'lista' | 'calendario'>('lista')
   const [activeFilter,      setActiveFilter]      = useState<BookingStatus | 'todos'>('todos')
   const [novaBookingAberta, setNovaBookingAberta]  = useState(false)
   const [bookingCancelar,   setBookingCancelar]    = useState<BookingWithRelations | null>(null)
@@ -286,6 +288,46 @@ export default function AgendaPage() {
         <StatTile label="Concluídas hoje" value={concluidasHoje} hint="Já realizadas" valueClassName="text-emerald-600" />
       </div>
 
+      {/* Alternar Lista / Calendário */}
+      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+        <div className="flex gap-1 p-1 rounded-lg bg-slate-100">
+          {([
+            { v: 'lista',      l: 'Lista' },
+            { v: 'calendario', l: 'Calendário' },
+          ] as const).map((o) => (
+            <button
+              key={o.v}
+              onClick={() => setVista(o.v)}
+              className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                vista === o.v ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {o.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {vista === 'calendario' ? (
+        <AgendaCalendario
+          bookings={lista}
+          timezone={timezone}
+          statusLabels={STATUS_LABELS}
+          statusVariant={STATUS_BADGE_VARIANT}
+          acoes={(b) => (
+            <AcoesMarcacao
+              booking={b}
+              atualizarStatus={atualizarStatus}
+              onCancelar={setBookingCancelar}
+              onReagendar={setBookingReagendar}
+              channelAtivo={channelAtivo}
+              podeEnviarTemplate={podeEnviarTemplate}
+              podePagamento={podePagamento}
+            />
+          )}
+        />
+      ) : (
+      <>
       {/* Filtros por estado */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
         {FILTER_OPTIONS.map((opt) => (
@@ -304,7 +346,7 @@ export default function AgendaPage() {
       </div>
 
       {/* Lista mobile */}
-      <div className="sm:hidden bg-white rounded-lg border border-gray-200 p-4">
+      <div className="sm:hidden bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4">
         <SectionHeader title={`${filtered.length} marcação(ões)`} />
         {filtered.length > 0 ? (
           <MobileCardList items={bookingItems} />
@@ -339,6 +381,8 @@ export default function AgendaPage() {
           />
         )}
       </div>
+      </>
+      )}
       </>
       )}
 
