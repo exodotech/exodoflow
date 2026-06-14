@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import { BarChart3, Users, Calendar, TrendingUp, AlertCircle } from 'lucide-react'
+import { BarChart3, Users, Calendar, TrendingUp, AlertCircle, Cake, Clock } from 'lucide-react'
 import PageHeader    from '@/components/design-system/PageHeader/PageHeader'
 import StatCard      from '@/components/design-system/StatCard/StatCard'
 import SectionHeader from '@/components/design-system/SectionHeader/SectionHeader'
@@ -15,6 +15,9 @@ import { useClientes }  from '@/hooks/useClientes'
 import { useAuth }      from '@/providers/AuthProvider'
 import { formatCurrencyByCode }        from '@/lib/i18n/currency'
 import { DEFAULT_LOCALE }              from '@/lib/i18n/locale'
+import {
+  fazAnosNoMes, agregarStatsPorCliente, clienteInativo, type ClienteBase,
+} from '@/lib/clientes/insights'
 import type { SupportedLocale }        from '@/types/domain/communication'
 import type { TenantSettings }         from '@/types/domain/tenant'
 import type { BookingStatus }          from '@/types/domain'
@@ -92,6 +95,17 @@ export default function DashboardPage() {
       ? '—'
       : formatCurrencyByCode(receita30Dias, currency, locale)
 
+  // Insights de clientes (aniversariantes do mês + a precisar de atenção)
+  const clientesBase = listaClientes as unknown as ClienteBase[]
+  const agoraISO = new Date().toISOString()
+  const mesAtual = new Date().getMonth() + 1
+  const statsClientes = agregarStatsPorCliente(
+    lista.map((b) => ({ client_id: b.client_id, start_at: b.start_at, status: b.status })),
+    agoraISO,
+  )
+  const aniversariantes = clientesBase.filter((c) => fazAnosNoMes(c.birth_date, mesAtual)).length
+  const clientesAtencao = clientesBase.filter((c) => clienteInativo(statsClientes.get(c.id), agoraISO, 3)).length
+
   const bookingItems = upcomingBookings.map((booking) => ({
     id:          booking.id,
     title:       booking.service?.name ?? '—',
@@ -141,6 +155,30 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Insights de clientes — só aparecem quando há algo a fazer */}
+      {(aniversariantes > 0 || clientesAtencao > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          {aniversariantes > 0 && (
+            <Link href="/dashboard/clientes" className="flex items-center gap-3 bg-pink-50 border border-pink-200 rounded-xl p-4 hover:bg-pink-100/60 transition-colors">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-pink-100 text-pink-600 flex-shrink-0"><Cake className="w-5 h-5" /></span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-pink-900">{aniversariantes} aniversariante(s) este mês 🎂</p>
+                <p className="text-xs text-pink-700">Boa altura para uma mensagem ou mimo.</p>
+              </div>
+            </Link>
+          )}
+          {clientesAtencao > 0 && (
+            <Link href="/dashboard/clientes" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 hover:bg-amber-100/60 transition-colors">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex-shrink-0"><Clock className="w-5 h-5" /></span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-900">{clientesAtencao} cliente(s) a precisar de atenção</p>
+                <p className="text-xs text-amber-700">Sem vir há 3+ meses — talvez um convite para voltar.</p>
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Stats — todos com dados reais; valores sem dados mostram "—" */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
@@ -169,7 +207,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Próximas Marcações — dados reais */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4 sm:p-6">
           <SectionHeader
             title="Próximas Marcações"
             action={
@@ -188,7 +226,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Conversas WhatsApp — integração ainda não ativada */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4 sm:p-6">
           <SectionHeader
             title="Conversas WhatsApp"
             action={
