@@ -17,6 +17,7 @@ export type AuditAction =
   | 'booking.create' | 'booking.cancel' | 'booking.reschedule'
   | 'service.create' | 'service.delete'
   | 'resource.create' | 'resource.delete'
+  | 'resource.availability_update' | 'resource.block_create' | 'resource.block_delete'
   | 'team.role_change' | 'team.suspend' | 'team.reactivate' | 'team.create'
   | 'company.update' | 'branding.update'
   | 'whatsapp.send' | 'whatsapp.assign' | 'whatsapp.status' | 'whatsapp.note'

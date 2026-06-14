@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useMemo } from 'react'
-import { Plus, User, DoorOpen, Wrench, CalendarClock } from 'lucide-react'
+import { Plus, User, DoorOpen, Wrench, CalendarClock, Clock } from 'lucide-react'
 import PageHeader       from '@/components/design-system/PageHeader/PageHeader'
 import { Button }       from '@/components/design-system/Button/Button'
 import SectionHeader    from '@/components/design-system/SectionHeader/SectionHeader'
@@ -14,6 +14,7 @@ import ErrorState       from '@/components/design-system/ErrorState/ErrorState'
 import AccessDenied     from '@/components/design-system/AccessDenied/AccessDenied'
 import ConfirmDialog    from '@/components/design-system/ConfirmDialog/ConfirmDialog'
 import { RecursoModal } from '@/components/features/recursos/RecursoModal'
+import { RecursoHorarioModal } from '@/components/features/recursos/RecursoHorarioModal'
 import { useRecursos, useApagarRecurso } from '@/hooks/useRecursos'
 import { useBookings } from '@/hooks/useBookings'
 import { usePermissions } from '@/hooks/usePermissions'
@@ -36,6 +37,7 @@ export default function RecursosPage() {
   const [modalAberto, setModalAberto] = useState(false)
   const [recursoEditar, setRecursoEditar] = useState<Resource | null>(null)
   const [recursoApagar, setRecursoApagar] = useState<Resource | null>(null)
+  const [recursoHorario, setRecursoHorario] = useState<Resource | null>(null)
   const { data: recursos, isLoading, error, refetch } = useRecursos()
   const { data: bookings } = useBookings()
   const apagar = useApagarRecurso()
@@ -101,6 +103,7 @@ export default function RecursosPage() {
       title:       resource.name,
       subtitle:    TYPE_LABELS[type] ?? resource.type,
       description: specialization ?? undefined,
+      onClick:     type !== 'equipment' && can('resources.manage') ? () => setRecursoHorario(resource) : undefined,
       icon: (
         <span style={{ color: resource.color }}>
           {TYPE_ICONS[type] ?? <User className="w-4 h-4" />}
@@ -119,10 +122,10 @@ export default function RecursosPage() {
     { key: 'cor',             label: '',               width: '4%' },
     { key: 'nome',            label: 'Nome',           width: '26%' },
     { key: 'tipo',            label: 'Tipo',           width: '16%' },
-    { key: 'especializacao',  label: 'Especialização', width: '24%' },
-    { key: 'hoje',            label: 'Hoje',           width: '12%', align: 'center' as const },
+    { key: 'especializacao',  label: 'Especialização', width: '18%' },
+    { key: 'hoje',            label: 'Hoje',           width: '10%', align: 'center' as const },
     { key: 'estado',          label: 'Estado',         width: '12%', align: 'center' as const },
-    { key: 'acoes',           label: '',               width: '6%' },
+    { key: 'acoes',           label: '',               width: '18%' },
   ]
 
   const tableRows = lista.map((resource) => {
@@ -150,6 +153,15 @@ export default function RecursosPage() {
       ),
       acoes: can('resources.manage') ? (
         <div className="flex items-center justify-end gap-1">
+          {type !== 'equipment' && (
+            <button
+              onClick={() => setRecursoHorario(resource)}
+              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-[color:var(--tenant-primary)] px-2 py-1 rounded hover:bg-gray-100"
+              title="Horário de trabalho e folgas"
+            >
+              <Clock className="w-3.5 h-3.5" /> Horário
+            </button>
+          )}
           <button
             onClick={() => abrirEditar(resource)}
             className="text-xs text-gray-600 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
@@ -234,6 +246,15 @@ export default function RecursosPage() {
         onClose={() => setModalAberto(false)}
         recurso={recursoEditar}
       />
+
+      {recursoHorario && (
+        <RecursoHorarioModal
+          isOpen={!!recursoHorario}
+          onClose={() => setRecursoHorario(null)}
+          resourceId={recursoHorario.id}
+          resourceNome={recursoHorario.name}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={!!recursoApagar}
