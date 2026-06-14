@@ -17,7 +17,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <SidebarDesktop />
 
       {/* Main Content */}
-      <main className="md:ml-32 lg:ml-0 xl:ml-64 pb-20 sm:pb-0 md:pb-0 lg:pb-0 xl:pb-0">
+      <main className="md:ml-[72px] lg:ml-0 xl:ml-64 pb-20 sm:pb-0 md:pb-0 lg:pb-0 xl:pb-0">
         <div className="p-4 sm:p-6">
           {children}
         </div>
