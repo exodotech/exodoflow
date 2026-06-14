@@ -4,6 +4,8 @@
 // de clientes (telefone/e-mail/notas) — só nome/e-mail do OWNER e contagens.
 import { createClient } from '@/lib/supabase/client'
 import { deriveMarketSettings, toMarketCountry, type MarketCountry } from '@/lib/i18n/market'
+import type { EditarEmpresaInput, PlanoInput } from '@/lib/validators/admin'
+import type { Tenant } from '@/types/domain/tenant'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 export interface EmpresaAdmin {
@@ -208,4 +210,162 @@ export async function definirPlanoTenant(tenantId: string, planId: string | null
     description: `Alterou o plano de${nome ? ` "${nome}"` : ''}`,
     metadata: { plan_id: planId },
   })
+}
+
+// ── Detalhe + edição de empresa ──────────────────────────────────────────────
+
+// Carrega a linha completa do tenant (superadmin lê via tenants_select_superadmin).
+export async function obterEmpresaDetalhe(tenantId: string): Promise<Tenant> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('tenants').select('*').eq('id', tenantId).single()
+  if (error) throw new Error(`Erro ao carregar empresa: ${error.message}`)
+  return data as unknown as Tenant
+}
+
+// Edita dados da empresa (nome, contactos, nicho, redes sociais, notas admin).
+// Faz merge seguro do JSONB settings — preserva campos não editados aqui.
+export async function editarEmpresa(tenantId: string, dados: EditarEmpresaInput): Promise<void> {
+  const supabase = createClient()
+
+  const { data: atual, error: loadErr } = await supabase
+    .from('tenants').select('settings, name').eq('id', tenantId).single()
+  if (loadErr) throw new Error(`Erro ao carregar empresa: ${loadErr.message}`)
+  const settingsAtuais = (atual?.settings ?? {}) as Record<string, unknown>
+
+  const norm = (v?: string) => { const t = (v ?? '').trim(); return t === '' ? undefined : t }
+
+  const { data, error } = await supabase
+    .from('tenants')
+    .update({
+      name:          dados.name.trim(),
+      slug:          dados.slug.trim(),
+      phone:         norm(dados.phone) ?? null,
+      email:         norm(dados.email) ?? null,
+      business_type: dados.business_type,
+      admin_notes:   norm(dados.admin_notes) ?? null,
+      settings: {
+        ...settingsAtuais,
+        website:         norm(dados.website),
+        instagram:       norm(dados.instagram),
+        facebook:        norm(dados.facebook),
+        google_maps_url: norm(dados.google_maps_url),
+      },
+    })
+    .eq('id', tenantId)
+    .select('id')
+  if (error) throw new Error(error.message)
+  if (!data?.length) throw new Error('Nenhuma linha afectada — verifique as permissões.')
+
+  await registarSystemAudit('tenant.update', {
+    entityType: 'tenant', entityId: tenantId, targetTenantId: tenantId,
+    description: `Editou os dados da empresa "${dados.name}"`,
+    metadata: { business_type: dados.business_type },
+  })
+}
+
+// ── Feature flags por empresa ────────────────────────────────────────────────
+
+export interface FeatureFlagRow {
+  flag_name:  string
+  is_enabled: boolean
+}
+
+// Catálogo de flags geríveis pelo superadmin (nome técnico → rótulo + descrição).
+export const FEATURE_FLAGS_CATALOGO: { flag: string; label: string; desc: string }[] = [
+  { flag: 'booking_portal',     label: 'Portal de Reservas',  desc: 'Página pública para o cliente marcar sozinho' },
+  { flag: 'whatsapp_simulator', label: 'Simulador WhatsApp',  desc: 'Conversas simuladas (sem ligação à Meta)' },
+  { flag: 'whatsapp_real',      label: 'WhatsApp Real (Meta)', desc: 'Envio/recepção real via WhatsApp Cloud API' },
+  { flag: 'ai_enabled',         label: 'IA de Conversa',      desc: 'Assistente de IA na camada de conversa' },
+]
+
+export async function listarFeatureFlags(tenantId: string): Promise<FeatureFlagRow[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('feature_flags')
+    .select('flag_name, is_enabled')
+    .eq('tenant_id', tenantId)
+  if (error) throw new Error(`Erro ao carregar funcionalidades: ${error.message}`)
+  return (data ?? []) as FeatureFlagRow[]
+}
+
+// Liga/desliga uma flag (upsert por (tenant_id, flag_name)).
+export async function definirFeatureFlag(tenantId: string, flag: string, enabled: boolean, nome?: string): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('feature_flags')
+    .upsert({ tenant_id: tenantId, flag_name: flag, is_enabled: enabled }, { onConflict: 'tenant_id,flag_name' })
+  if (error) throw new Error(error.message)
+
+  await registarSystemAudit('tenant.feature_flag', {
+    entityType: 'feature_flag', targetTenantId: tenantId,
+    description: `${enabled ? 'Activou' : 'Desactivou'} "${flag}"${nome ? ` em "${nome}"` : ''}`,
+    metadata: { flag, enabled },
+  })
+}
+
+// ── Gestão de planos ─────────────────────────────────────────────────────────
+
+export interface PlanoAdmin {
+  id:            string
+  name:          string
+  slug:          string
+  price_monthly: number | null
+  price_yearly:  number | null
+  max_resources: number | null
+  max_clients:   number | null
+  max_users:     number | null
+  is_active:     boolean
+  sort_order:    number
+}
+
+export async function listarPlanosAdmin(): Promise<PlanoAdmin[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('plans')
+    .select('id, name, slug, price_monthly, price_yearly, max_resources, max_clients, max_users, is_active, sort_order')
+    .order('sort_order', { ascending: true })
+  if (error) throw new Error(`Erro ao listar planos: ${error.message}`)
+  return (data ?? []) as PlanoAdmin[]
+}
+
+export async function criarPlano(dados: PlanoInput): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase.from('plans').insert({
+    name: dados.name, slug: dados.slug,
+    price_monthly: dados.price_monthly, price_yearly: dados.price_yearly,
+    max_resources: dados.max_resources, max_clients: dados.max_clients, max_users: dados.max_users,
+    is_active: dados.is_active, sort_order: dados.sort_order,
+  })
+  if (error) throw new Error(error.message)
+  await registarSystemAudit('plan.create', { entityType: 'plan', description: `Criou o plano "${dados.name}"`, metadata: { slug: dados.slug } })
+}
+
+export async function editarPlano(planId: string, dados: PlanoInput): Promise<void> {
+  const supabase = createClient()
+  const { data, error } = await supabase.from('plans').update({
+    name: dados.name, slug: dados.slug,
+    price_monthly: dados.price_monthly, price_yearly: dados.price_yearly,
+    max_resources: dados.max_resources, max_clients: dados.max_clients, max_users: dados.max_users,
+    is_active: dados.is_active, sort_order: dados.sort_order,
+  }).eq('id', planId).select('id')
+  if (error) throw new Error(error.message)
+  if (!data?.length) throw new Error('Nenhuma linha afectada — verifique as permissões.')
+  await registarSystemAudit('plan.update', { entityType: 'plan', entityId: planId, description: `Editou o plano "${dados.name}"` })
+}
+
+// ── Gestão do owner (via route handler service_role) ─────────────────────────
+
+// Redefine a palavra-passe do owner de uma empresa. Passa pelo route handler
+// /api/admin/gerir-owner (a service_role nunca chega ao browser).
+export async function redefinirPasswordOwner(tenantId: string, ownerId: string, password: string): Promise<void> {
+  const res = await fetch('/api/admin/gerir-owner', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ tenant_id: tenantId, owner_id: ownerId, action: 'reset_password', password }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error ?? 'Não foi possível redefinir a palavra-passe.')
+  }
 }

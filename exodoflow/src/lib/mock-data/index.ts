@@ -22,6 +22,7 @@ export const MOCK_TENANT: Tenant = {
   email: 'contacto@clinica-aurora.pt',
   logo_url: null,
   address: null,
+  admin_notes: null,
   settings: {
     timezone: 'Europe/Lisbon',
     currency: 'EUR',
