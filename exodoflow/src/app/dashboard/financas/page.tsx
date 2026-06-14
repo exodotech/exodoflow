@@ -162,7 +162,12 @@ export default function FinancasPage() {
         </select>
         <select className={SELECT_CLS} value={filtros.category ?? ''} onChange={(e) => setFiltro('category', e.target.value)}>
           <option value="">Todas as categorias</option>
-          {[...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          <optgroup label="Entradas">
+            {INCOME_CATEGORIES.map((c) => <option key={`i-${c.value}`} value={c.value}>{c.label}</option>)}
+          </optgroup>
+          <optgroup label="Saídas">
+            {EXPENSE_CATEGORIES.map((c) => <option key={`e-${c.value}`} value={c.value}>{c.label}</option>)}
+          </optgroup>
         </select>
         <select className={SELECT_CLS} value={filtros.payment_method ?? ''} onChange={(e) => setFiltro('payment_method', e.target.value)}>
           <option value="">Todos os métodos</option>

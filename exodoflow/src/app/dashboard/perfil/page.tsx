@@ -1,12 +1,14 @@
 'use client'
 import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { LogOut }     from 'lucide-react'
 import PageHeader     from '@/components/design-system/PageHeader/PageHeader'
 import SectionHeader  from '@/components/design-system/SectionHeader/SectionHeader'
 import { Button }     from '@/components/design-system/Button/Button'
 import { Input }      from '@/components/design-system/Input/Input'
 import { useFormWithZod } from '@/hooks/useFormWithZod'
 import { useAuth }        from '@/providers/AuthProvider'
+import { forceLogout }    from '@/lib/auth/logout'
 import { atualizarPerfilProprio, alterarPassword } from '@/services/perfil'
 import {
   atualizarPerfilSchema, alterarPasswordSchema,
@@ -40,7 +42,15 @@ export default function PerfilPage() {
 
   return (
     <div>
-      <PageHeader title="A minha conta" description="Os seus dados pessoais e segurança" />
+      <PageHeader
+        title="A minha conta"
+        description="Os seus dados pessoais e segurança"
+        action={
+          <Button variant="outline" size="sm" onClick={() => void forceLogout()} className="gap-2 text-red-600 border-red-200 hover:bg-red-50">
+            <LogOut className="w-4 h-4" /> Terminar sessão
+          </Button>
+        }
+      />
 
       <div className="max-w-2xl space-y-6">
         {/* Identificação (leitura) */}
