@@ -75,7 +75,7 @@ function Resumo({ label, valor, cor = 'text-slate-900', icon }: { label: string;
     <div className="relative overflow-hidden bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 p-4 shadow-sm">
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs text-slate-500 font-medium">{label}</p>
-        {icon && <span className="text-slate-300">{icon}</span>}
+        {icon && <span className="text-slate-300 inline-flex items-center [&>svg]:block">{icon}</span>}
       </div>
       <p className={`text-2xl font-bold ${cor}`}>{valor}</p>
     </div>

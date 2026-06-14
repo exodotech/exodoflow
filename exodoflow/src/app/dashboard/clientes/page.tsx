@@ -310,7 +310,7 @@ function ResumoCard({ label, valor, dica, cor = 'text-gray-900', icon, onClick }
     >
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs text-gray-500 font-medium">{label}</p>
-        <span className="text-gray-300">{icon}</span>
+        <span className="text-gray-300 inline-flex items-center [&>svg]:block">{icon}</span>
       </div>
       <p className={`text-2xl font-bold ${cor}`}>{valor}</p>
       <p className="text-xs text-gray-400 mt-0.5">{dica}</p>

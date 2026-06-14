@@ -39,12 +39,10 @@ export function StatCard({ label, value, icon, trend, className, description }: 
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
         {icon && (
           <div
-            className="flex items-center justify-center w-8 h-8 rounded-lg"
-            style={{ background: 'color-mix(in srgb, var(--tenant-primary) 12%, transparent)' }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:block"
+            style={{ background: 'color-mix(in srgb, var(--tenant-primary) 12%, transparent)', color: 'var(--tenant-primary)' }}
           >
-            <span style={{ color: 'var(--tenant-primary)' }} className="[&>svg]:w-4 [&>svg]:h-4">
-              {icon}
-            </span>
+            {icon}
           </div>
         )}
       </div>

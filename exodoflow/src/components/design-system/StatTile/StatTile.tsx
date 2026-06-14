@@ -25,7 +25,7 @@ export function StatTile({ label, value, hint, icon, valueClassName, onClick }: 
     >
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs text-slate-500 font-medium">{label}</p>
-        {icon && <span className="text-slate-300">{icon}</span>}
+        {icon && <span className="text-slate-300 inline-flex items-center [&>svg]:block">{icon}</span>}
       </div>
       <p className={cn('text-2xl font-bold text-slate-900', valueClassName)}>{value}</p>
       {hint && <p className="text-xs text-slate-400 mt-0.5">{hint}</p>}
