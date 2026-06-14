@@ -6,7 +6,7 @@ import SidebarTablet from '@/components/layout/SidebarTablet/SidebarTablet'
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen app-bg">
       {/* Header Mobile (até md: 640px) — dá acesso à conta própria */}
       <MobileHeader />
 

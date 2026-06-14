@@ -46,35 +46,48 @@ export function SidebarTablet() {
     { href: '/dashboard/equipa',        label: 'Equipa',       icon: UserCog,         permission: 'team.view' },
     { href: '/dashboard/auditoria',     label: 'Auditoria',    icon: ShieldCheck,     permission: 'audit.view' },
     { href: '/dashboard/sistema',       label: 'Sistema',      icon: Activity,        permission: 'system.view' },
-    { href: '/dashboard/configuracoes', label: 'Configurações', icon: Settings,       permission: 'configuracoes.view' },
+    { href: '/dashboard/configuracoes', label: 'Config.',      icon: Settings,        permission: 'configuracoes.view' },
   ]
 
-  const navItems = allNavItems.filter(
-    (item) => !item.permission || can(item.permission)
-  )
+  const navItems = allNavItems.filter((item) => !item.permission || can(item.permission))
 
   return (
-    <aside className="hidden md:block lg:hidden fixed left-0 top-0 bottom-0 w-32 bg-gray-900 text-white border-r border-gray-800 overflow-y-auto">
+    <aside className={cn(
+      'hidden md:flex lg:hidden flex-col fixed left-0 top-0 bottom-0 w-[72px] overflow-y-auto z-40',
+      'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950',
+      'border-r border-white/[0.06]',
+    )}>
+      {/* Brilho decorativo topo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 right-0 h-32 opacity-20"
+        style={{ background: 'radial-gradient(ellipse 100% 60% at 50% 0%, var(--tenant-primary), transparent)' }}
+      />
+
       {/* Logo */}
-      <div className="flex items-center justify-center p-3 border-b border-gray-800">
+      <div className="relative flex items-center justify-center py-4 border-b border-white/[0.07]">
         {logoUrl ? (
-          // <img> resiliente (conteúdo de utilizador) — nunca derruba o layout
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logoUrl}
             alt={`Logo de ${tenant?.name ?? 'empresa'}`}
-            className="h-8 w-auto object-contain"
+            className="h-7 w-auto object-contain"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
           />
         ) : (
-          <h1 className="text-sm font-bold">EF</h1>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+            style={{ background: 'var(--tenant-primary)' }}
+          >
+            E
+          </div>
         )}
       </div>
 
-      {/* Menu */}
-      <nav className="flex-1 px-2 py-4 space-y-2">
+      {/* Navegação — apenas ícones com tooltip */}
+      <nav className="relative flex-1 px-2 py-3 space-y-0.5">
         {navItems.map((item) => {
-          const Icon = item.icon
+          const Icon     = item.icon
           const isActive =
             pathname === item.href ||
             (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
@@ -84,35 +97,32 @@ export function SidebarTablet() {
               key={item.href}
               href={item.href}
               title={item.label}
-              style={isActive ? { backgroundColor: 'var(--tenant-primary)' } : undefined}
-            className={cn(
-                'flex flex-col items-center gap-1.5 px-3 py-3 rounded-lg',
-                'transition-colors text-xs font-medium',
+              className={cn(
+                'flex items-center justify-center w-full h-10 rounded-xl',
+                'transition-all duration-150',
                 isActive
-                  ? 'text-white'
-                  : 'text-gray-300 hover:bg-gray-800 active:bg-gray-700'
+                  ? 'text-white shadow-[0_2px_12px_rgba(0,0,0,0.3)]'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] active:bg-white/[0.14]'
               )}
+              style={isActive ? {
+                background: 'linear-gradient(135deg, var(--tenant-primary), color-mix(in srgb, var(--tenant-primary) 80%, #818cf8))',
+              } : undefined}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-xs text-center break-words line-clamp-2">
-                {item.label}
-              </span>
+              <Icon className="w-[18px] h-[18px]" />
             </Link>
           )
         })}
       </nav>
 
-      {/* Rodapé: sair */}
-      <div className="p-2 border-t border-gray-800 space-y-2">
+      {/* Logout */}
+      <div className="relative px-2 py-3 border-t border-white/[0.07]">
         <button
           onClick={handleLogout}
           title="Sair"
-          className="flex flex-col items-center gap-1 w-full px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          className="flex items-center justify-center w-full h-10 rounded-xl text-slate-500 hover:text-slate-300 hover:bg-white/[0.08] transition-all duration-150"
         >
-          <LogOut className="w-5 h-5" />
-          <span>Sair</span>
+          <LogOut className="w-[18px] h-[18px]" />
         </button>
-        <p className="text-xs text-gray-600 text-center">v1.0</p>
       </div>
     </aside>
   )

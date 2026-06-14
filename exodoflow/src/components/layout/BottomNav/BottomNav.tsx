@@ -19,16 +19,20 @@ export function BottomNav() {
     { href: '/dashboard/servicos',  label: 'Mais',     icon: Grid2x2,       permission: 'services.view' },
   ]
 
-  // Filtrar items visíveis para este role
-  const navItems = allNavItems.filter(
-    (item) => !item.permission || can(item.permission)
-  )
+  const navItems = allNavItems.filter((item) => !item.permission || can(item.permission))
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden">
-      <div className="flex h-16 pb-safe gap-1 px-1">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-white/30"
+      style={{
+        background: 'rgba(255,255,255,0.82)',
+        backdropFilter: 'blur(20px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(20px) saturate(1.8)',
+      }}
+    >
+      <div className="flex h-16 pb-safe gap-1 px-2">
         {navItems.map((item) => {
-          const Icon = item.icon
+          const Icon     = item.icon
           const isActive =
             pathname === item.href ||
             (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
@@ -37,17 +41,18 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              style={isActive ? { color: 'var(--tenant-primary)', backgroundColor: 'color-mix(in srgb, var(--tenant-primary) 10%, transparent)' } : undefined}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center gap-1 rounded-lg',
-                'h-14 transition-colors text-xs font-medium',
-                isActive
-                  ? ''
-                  : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
+                'flex-1 flex flex-col items-center justify-center gap-1 rounded-xl',
+                'h-[52px] transition-all duration-150 text-xs font-semibold',
+                isActive ? 'text-white' : 'text-slate-500 hover:text-slate-700 active:scale-95',
               )}
+              style={isActive ? {
+                background: 'linear-gradient(135deg, var(--tenant-primary), color-mix(in srgb, var(--tenant-primary) 80%, #818cf8))',
+                boxShadow: '0 2px 12px color-mix(in srgb, var(--tenant-primary) 35%, transparent)',
+              } : undefined}
             >
-              <Icon className="w-5 h-5" />
-              <span className="truncate">{item.label}</span>
+              <Icon className="w-[18px] h-[18px]" />
+              <span className="truncate text-[10px] leading-none">{item.label}</span>
             </Link>
           )
         })}

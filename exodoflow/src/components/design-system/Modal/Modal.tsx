@@ -1,16 +1,17 @@
+'use client'
 import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 export interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title?: string
-  children: React.ReactNode
-  footer?: React.ReactNode
+  isOpen:       boolean
+  onClose:      () => void
+  title?:       string
+  children:     React.ReactNode
+  footer?:      React.ReactNode
   closeButton?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
+  size?:        'sm' | 'md' | 'lg'
+  className?:   string
 }
 
 const sizeClasses = {
@@ -19,59 +20,82 @@ const sizeClasses = {
   lg: 'w-11/12 max-w-lg',
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  footer,
-  closeButton = true,
-  size = 'md',
-  className,
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, footer, closeButton = true, size = 'md', className }: ModalProps) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'auto'
-    }
-    return () => {
-      document.body.style.overflow = 'auto'
-    }
+    if (!isOpen) return
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = 'auto' }
   }, [isOpen])
+
+  // Fechar com Escape
+  useEffect(() => {
+    if (!isOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    // Overlay com backdrop-blur — suavidade visual e foco no conteúdo
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      style={{ background: 'rgba(15, 23, 42, 0.45)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      {/* Blur no fundo */}
+      <div
+        className="absolute inset-0 -z-10"
+        style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+        aria-hidden
+      />
+
+      {/* Card Glass */}
       <div
         className={cn(
-          'bg-white rounded-lg shadow-lg max-h-screen overflow-y-auto',
+          'relative flex flex-col max-h-[90dvh] overflow-hidden',
+          'rounded-2xl animate-slide-up',
+          // Glass overlay
+          'bg-white/95',
+          'border border-white/70',
+          'shadow-[0_24px_64px_rgba(15,23,42,0.18),0_8px_24px_rgba(15,23,42,0.10)]',
           sizeClasses[size],
           className
         )}
+        style={{ backdropFilter: 'blur(20px) saturate(1.6)', WebkitBackdropFilter: 'blur(20px) saturate(1.6)' }}
+        role="dialog"
+        aria-modal="true"
       >
+        {/* Brilho decorativo no topo */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-0 right-0 h-px"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)' }}
+        />
+
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
+            <h2 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>
             {closeButton && (
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 p-1"
+                className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-150"
+                aria-label="Fechar"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
         )}
 
         {/* Content */}
-        <div className="p-4 sm:p-6">{children}</div>
+        <div className="px-5 py-5 overflow-y-auto flex-1">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="p-4 sm:p-6 border-t border-gray-200 flex gap-2">
+          <div className="px-5 py-4 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/60">
             {footer}
           </div>
         )}
