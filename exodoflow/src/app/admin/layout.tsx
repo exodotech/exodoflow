@@ -1,9 +1,9 @@
 // Layout do painel de administração — Server Component
 // SOMENTE SUPERADMIN. Qualquer outro role é redirecionado para o dashboard.
 import { redirect }     from 'next/navigation'
-import { ShieldCheck }  from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { AdminNav }     from '@/components/features/admin/AdminNav'
+import { AdminUserMenu } from '@/components/features/admin/AdminUserMenu'
 
 export default async function AdminLayout({
   children,
@@ -44,10 +44,7 @@ export default async function AdminLayout({
               <p className="text-xs text-slate-400">Administração do Sistema</p>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-400/25">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            SUPERADMIN
-          </span>
+          <AdminUserMenu email={user.email ?? null} />
         </div>
       </header>
 

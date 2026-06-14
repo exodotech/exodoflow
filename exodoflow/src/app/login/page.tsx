@@ -1,13 +1,31 @@
 import React    from 'react'
 import Link      from 'next/link'
+import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
 import { LoginForm } from '@/components/features/auth/LoginForm'
 
 export const metadata: Metadata = {
   title: 'Entrar — ExodoFlow AI',
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  // Defesa em profundidade: se já houver sessão, não mostrar o login.
+  // O superadmin é encaminhado para /admin; os restantes para /dashboard
+  // (o dashboard/layout reencaminha conforme onboarding/role). Evita o ecrã
+  // de login "preso" para quem já está autenticado.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', user.id).single()
+    redirect(profile?.role === 'superadmin' ? '/admin' : '/dashboard')
+  }
+
+  return <LoginView />
+}
+
+function LoginView() {
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       {/* Cabeçalho da marca */}
