@@ -1,12 +1,13 @@
 'use client'
-import React, { useState } from 'react'
-import { Plus, User, DoorOpen, Wrench } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { Plus, User, DoorOpen, Wrench, CalendarClock } from 'lucide-react'
 import PageHeader       from '@/components/design-system/PageHeader/PageHeader'
 import { Button }       from '@/components/design-system/Button/Button'
 import SectionHeader    from '@/components/design-system/SectionHeader/SectionHeader'
 import MobileCardList   from '@/components/design-system/MobileCardList/MobileCardList'
 import DataTableWrapper from '@/components/design-system/DataTableWrapper/DataTableWrapper'
 import Badge            from '@/components/design-system/Badge/Badge'
+import StatTile         from '@/components/design-system/StatTile/StatTile'
 import LoadingState     from '@/components/design-system/LoadingState/LoadingState'
 import EmptyState       from '@/components/design-system/EmptyState/EmptyState'
 import ErrorState       from '@/components/design-system/ErrorState/ErrorState'
@@ -14,6 +15,7 @@ import AccessDenied     from '@/components/design-system/AccessDenied/AccessDeni
 import ConfirmDialog    from '@/components/design-system/ConfirmDialog/ConfirmDialog'
 import { RecursoModal } from '@/components/features/recursos/RecursoModal'
 import { useRecursos, useApagarRecurso } from '@/hooks/useRecursos'
+import { useBookings } from '@/hooks/useBookings'
 import { usePermissions } from '@/hooks/usePermissions'
 import type { ResourceType, Resource } from '@/types/domain'
 
@@ -35,8 +37,31 @@ export default function RecursosPage() {
   const [recursoEditar, setRecursoEditar] = useState<Resource | null>(null)
   const [recursoApagar, setRecursoApagar] = useState<Resource | null>(null)
   const { data: recursos, isLoading, error, refetch } = useRecursos()
+  const { data: bookings } = useBookings()
   const apagar = useApagarRecurso()
   const { can } = usePermissions()
+
+  // Ocupação de HOJE: nº de marcações (não-canceladas) por recurso, só hoje.
+  const ocupacaoHoje = useMemo(() => {
+    const inicio = new Date(); inicio.setHours(0, 0, 0, 0)
+    const fim = new Date(inicio); fim.setDate(fim.getDate() + 1)
+    const m = new Map<string, number>()
+    for (const b of bookings ?? []) {
+      if (b.status === 'cancelled') continue
+      const t = new Date(b.start_at)
+      if (t < inicio || t >= fim) continue
+      for (const r of b.resources ?? []) m.set(r.id, (m.get(r.id) ?? 0) + 1)
+    }
+    return m
+  }, [bookings])
+  const totalHoje = useMemo(() => {
+    const inicio = new Date(); inicio.setHours(0, 0, 0, 0)
+    const fim = new Date(inicio); fim.setDate(fim.getDate() + 1)
+    return (bookings ?? []).filter((b) => {
+      if (b.status === 'cancelled') return false
+      const t = new Date(b.start_at); return t >= inicio && t < fim
+    }).length
+  }, [bookings])
 
   function abrirCriar()  { setRecursoEditar(null); setModalAberto(true) }
   function abrirEditar(r: Resource) { setRecursoEditar(r); setModalAberto(true) }
@@ -92,16 +117,18 @@ export default function RecursosPage() {
   // Tabela desktop
   const tableColumns = [
     { key: 'cor',             label: '',               width: '4%' },
-    { key: 'nome',            label: 'Nome',           width: '28%' },
-    { key: 'tipo',            label: 'Tipo',           width: '18%' },
-    { key: 'especializacao',  label: 'Especialização', width: '30%' },
+    { key: 'nome',            label: 'Nome',           width: '26%' },
+    { key: 'tipo',            label: 'Tipo',           width: '16%' },
+    { key: 'especializacao',  label: 'Especialização', width: '24%' },
+    { key: 'hoje',            label: 'Hoje',           width: '12%', align: 'center' as const },
     { key: 'estado',          label: 'Estado',         width: '12%', align: 'center' as const },
-    { key: 'acoes',           label: '',               width: '8%' },
+    { key: 'acoes',           label: '',               width: '6%' },
   ]
 
   const tableRows = lista.map((resource) => {
     const specialization = (resource.metadata as Record<string, string> | null)?.specialization ?? '—'
     const type = resource.type as ResourceType
+    const hoje = ocupacaoHoje.get(resource.id) ?? 0
 
     return {
       cor: (
@@ -113,6 +140,9 @@ export default function RecursosPage() {
       nome:           resource.name,
       tipo:           TYPE_LABELS[type] ?? resource.type,
       especializacao: specialization,
+      hoje: hoje > 0
+        ? <span className="text-sm font-medium text-[color:var(--tenant-primary)]">{hoje}</span>
+        : <span className="text-sm text-slate-300">—</span>,
       estado: (
         <Badge variant={resource.is_active ? 'success' : 'default'}>
           {resource.is_active ? 'Activo' : 'Inactivo'}
@@ -152,27 +182,16 @@ export default function RecursosPage() {
         }
       />
 
-      {/* Stats por tipo */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-          <User className="w-5 h-5 text-blue-500 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-gray-900">{porTipo.staff}</p>
-          <p className="text-xs text-gray-600 mt-1">Colaboradores</p>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-          <DoorOpen className="w-5 h-5 text-teal-500 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-gray-900">{porTipo.room}</p>
-          <p className="text-xs text-gray-600 mt-1">Salas/Cabines</p>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-          <Wrench className="w-5 h-5 text-orange-500 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-gray-900">{porTipo.equipment}</p>
-          <p className="text-xs text-gray-600 mt-1">Equipamentos</p>
-        </div>
+      {/* Stats por tipo + ocupação de hoje */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <StatTile label="Colaboradores" value={porTipo.staff} hint="Profissionais" icon={<User className="w-4 h-4" />} />
+        <StatTile label="Salas/Cabines" value={porTipo.room} hint="Espaços" icon={<DoorOpen className="w-4 h-4" />} />
+        <StatTile label="Equipamentos" value={porTipo.equipment} hint="Material" icon={<Wrench className="w-4 h-4" />} />
+        <StatTile label="Marcações hoje" value={totalHoje} hint="Em todos os recursos" valueClassName="text-[color:var(--tenant-primary)]" icon={<CalendarClock className="w-4 h-4" />} />
       </div>
 
       {/* Lista mobile */}
-      <div className="sm:hidden bg-white rounded-lg border border-gray-200 p-4">
+      <div className="sm:hidden bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4">
         <SectionHeader title="Lista de Recursos" />
         {lista.length > 0 ? (
           <MobileCardList items={resourceItems} />

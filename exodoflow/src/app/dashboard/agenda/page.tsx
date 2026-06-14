@@ -7,6 +7,7 @@ import SectionHeader    from '@/components/design-system/SectionHeader/SectionHe
 import MobileCardList   from '@/components/design-system/MobileCardList/MobileCardList'
 import DataTableWrapper from '@/components/design-system/DataTableWrapper/DataTableWrapper'
 import Badge            from '@/components/design-system/Badge/Badge'
+import StatTile         from '@/components/design-system/StatTile/StatTile'
 import LoadingState     from '@/components/design-system/LoadingState/LoadingState'
 import EmptyState       from '@/components/design-system/EmptyState/EmptyState'
 import ErrorState       from '@/components/design-system/ErrorState/ErrorState'
@@ -185,6 +186,16 @@ export default function AgendaPage() {
     return bookingDate === today && b.status !== 'cancelled'
   })
 
+  // Resumo rápido (cartões): hoje, próximos 7 dias, pendentes
+  const agora = new Date()
+  const seteDias = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const proximos7 = lista.filter((b) => {
+    const t = new Date(b.start_at)
+    return t >= agora && t <= seteDias && b.status !== 'cancelled'
+  }).length
+  const pendentes = lista.filter((b) => b.status === 'pending').length
+  const concluidasHoje = todayBookings.filter((b) => b.status === 'completed').length
+
   const filtered = activeFilter === 'todos'
     ? lista
     : lista.filter((b) => b.status === activeFilter)
@@ -267,14 +278,13 @@ export default function AgendaPage() {
         <LoadingState message="A carregar marcações..." />
       ) : (
       <>
-      {/* Alerta de hoje */}
-      {todayBookings.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-sm font-medium text-blue-900">
-            {todayBookings.length} marcação(ões) para hoje
-          </p>
-        </div>
-      )}
+      {/* Resumo rápido em vidro */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <StatTile label="Hoje" value={todayBookings.length} hint="Marcações de hoje" icon={<Calendar className="w-4 h-4" />} valueClassName="text-[color:var(--tenant-primary)]" />
+        <StatTile label="Próximos 7 dias" value={proximos7} hint="Agenda da semana" icon={<Clock className="w-4 h-4" />} />
+        <StatTile label="Pendentes" value={pendentes} hint="A aguardar confirmação" valueClassName={pendentes > 0 ? 'text-amber-600' : undefined} />
+        <StatTile label="Concluídas hoje" value={concluidasHoje} hint="Já realizadas" valueClassName="text-emerald-600" />
+      </div>
 
       {/* Filtros por estado */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
