@@ -5473,6 +5473,19 @@ check(
   'Checkout deve ser owner-only e o webhook deve validar a assinatura.',
 );
 check(
+  'F40: email transacional server-only com seam mock/real',
+  /import 'server-only'/.test(readSafe(join(SRC, 'lib', 'email', 'send.ts'))) &&
+  /function emailMock/.test(readSafe(join(SRC, 'lib', 'email', 'send.ts'))) &&
+  /enviarEmail/.test(readSafe(join(SRC, 'app', 'api', 'equipa', 'criar-membro', 'route.ts'))),
+  'O seam de email deve ser server-only, mock-ready e usado no convite de equipa.',
+);
+check(
+  'F40: UI de pedidos de titulares (DSR) ligada às Configurações',
+  /listarPedidosDsr/.test(readSafe(join(SRC, 'services', 'dsr.ts'))) &&
+  /PainelPrivacidade/.test(readSafe(join(SRC, 'app', 'dashboard', 'configuracoes', 'page.tsx'))),
+  'Deve existir o serviço DSR e o painel de privacidade nas Configurações.',
+);
+check(
   'F40: documentação de privacidade criada',
   ['privacy-architecture', 'data-inventory', 'data-retention-policy',
    'data-subject-rights', 'legal-documents-needed', 'go-no-go-real-data']

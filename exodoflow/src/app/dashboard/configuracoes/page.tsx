@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import {
   Building2, CreditCard, Plug, Layers,
-  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot,
+  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot, ShieldCheck,
 } from 'lucide-react'
 import PageHeader  from '@/components/design-system/PageHeader/PageHeader'
 import AccessDenied from '@/components/design-system/AccessDenied/AccessDenied'
@@ -18,13 +18,14 @@ import { PainelWhatsApp }          from '@/components/features/configuracoes/Pai
 import { PainelRelatorios }        from '@/components/features/configuracoes/PainelRelatorios'
 import { PainelAgenda }            from '@/components/features/configuracoes/PainelAgenda'
 import { PainelAssistente }        from '@/components/features/configuracoes/PainelAssistente'
+import { PainelPrivacidade }       from '@/components/features/configuracoes/PainelPrivacidade'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth }        from '@/providers/AuthProvider'
 import type { SupportedLocale } from '@/types/domain'
 
 type Tab =
   | 'empresa' | 'branding' | 'localizacao' | 'agenda' | 'assistente' | 'comunicacao' | 'whatsapp'
-  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios'
+  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios' | 'privacidade'
 
 const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'empresa',            label: 'Empresa',     icon: <Building2     className="w-4 h-4" /> },
@@ -39,6 +40,7 @@ const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'integracoes',        label: 'Integrações', icon: <Plug          className="w-4 h-4" /> },
   { value: 'templates',          label: 'Templates',   icon: <Layers        className="w-4 h-4" /> },
   { value: 'relatorios',         label: 'Relatórios',  icon: <BarChart2     className="w-4 h-4" /> },
+  { value: 'privacidade',        label: 'Privacidade', icon: <ShieldCheck   className="w-4 h-4" /> },
 ]
 
 export default function ConfiguracoesPage() {
@@ -101,6 +103,7 @@ export default function ConfiguracoesPage() {
       {activeTab === 'whatsapp'           && <PainelWhatsApp />}
       {activeTab === 'templates_mensagem' && <PainelTemplatesMensagem />}
       {activeTab === 'plano'              && <PainelPlano locale={locale} />}
+      {activeTab === 'privacidade'        && <PainelPrivacidade />}
       {activeTab === 'integracoes'        && <PainelIntegracoes />}
       {activeTab === 'templates'          && <PainelTemplates locale={locale} niche={tenant?.business_type} />}
       {activeTab === 'relatorios'         && isManagerOrAbove && <PainelRelatorios />}
