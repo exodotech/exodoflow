@@ -59,6 +59,9 @@ export async function GET(request: Request) {
     }
   }
 
+  // Manutenção: limpa contadores de rate limit antigos (mantém a tabela pequena).
+  await admin.rpc('rl_cleanup', { p_older_than_seconds: 3600 })
+
   logger.info('Cron lembretes concluído', { tenants: processados, enviados, falhas: falhas.length })
   return NextResponse.json({ ok: true, tenants: processados, enviados, falhas: falhas.length }, { status: 200 })
 }

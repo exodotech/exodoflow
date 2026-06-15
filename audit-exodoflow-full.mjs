@@ -5486,6 +5486,14 @@ check(
   'Deve existir o serviço DSR e o painel de privacidade nas Configurações.',
 );
 check(
+  'F40: rate-limit distribuído (atómico) nas rotas públicas',
+  /FUNCTION rl_hit/.test(readSafe(join(MIGRATIONS, '0043_rate_limits.sql'))) &&
+  /ON CONFLICT \(key\) DO UPDATE/.test(readSafe(join(MIGRATIONS, '0043_rate_limits.sql'))) &&
+  /import 'server-only'/.test(readSafe(join(SRC, 'lib', 'rate-limit-db.ts'))) &&
+  /checkRateLimitDb/.test(readSafe(join(SRC, 'app', 'api', 'public', '[slug]', 'book', 'route.ts'))),
+  'Deve existir rl_hit atómico + checkRateLimitDb usado na rota pública de marcação.',
+);
+check(
   'F40: rate-limit usa IP fiável (x-real-ip), não o x-forwarded-for forjável',
   /x-real-ip/.test(readSafe(join(SRC, 'lib', 'rate-limit.ts'))) &&
   /parts\[parts\.length - 1\]/.test(readSafe(join(SRC, 'lib', 'rate-limit.ts'))) &&

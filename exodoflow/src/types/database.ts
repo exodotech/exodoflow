@@ -1029,6 +1029,24 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          count: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          count: number
+          key: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       receipt_counters: {
         Row: {
           last_number: number
@@ -2189,6 +2207,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      rl_cleanup: { Args: { p_older_than_seconds?: number }; Returns: number }
+      rl_hit: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number }
+        Returns: {
+          allowed: boolean
+          remaining: number
+          reset_at: string
+        }[]
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

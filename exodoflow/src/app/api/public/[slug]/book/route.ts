@@ -3,14 +3,16 @@
 import { NextResponse } from 'next/server'
 import { getPortalTenant, criarMarcacaoPublica } from '@/services/public-booking'
 import { marcacaoPublicaSchema } from '@/lib/validators/public-booking'
-import { checkRateLimit, clientKeyFromRequest } from '@/lib/rate-limit'
+import { clientKeyFromRequest } from '@/lib/rate-limit'
+import { checkRateLimitDb } from '@/lib/rate-limit-db'
 import { logger } from '@/lib/logger'
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
 
-  // Anti-spam: limite por IP (portal é público)
-  const rl = checkRateLimit(`public-book:${clientKeyFromRequest(req)}`, { limit: 8, windowMs: 60_000 })
+  // Anti-spam: limite por IP (portal é público). Store distribuído (partilhado
+  // entre instâncias serverless), com fallback in-memory se a BD falhar.
+  const rl = await checkRateLimitDb(`public-book:${clientKeyFromRequest(req)}`, { limit: 8, windowMs: 60_000 })
   if (!rl.allowed) {
     return NextResponse.json({ error: 'Demasiados pedidos. Tente novamente daqui a pouco.' }, { status: 429, headers: rl.headers })
   }

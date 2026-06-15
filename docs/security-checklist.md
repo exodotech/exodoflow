@@ -89,7 +89,9 @@ Aplicados a todas as rotas em `next.config.ts`:
 
 - [ ] **Rodar a password do superadmin** (`admin12345` é default/conhecida) e mover segredos para variáveis de ambiente por ambiente. **Bloqueador de release.**
 - [ ] CSP em modo enforce (hoje Report-Only) após validação.
-- [ ] Rate limit distribuído (Redis/Upstash) + captcha no login.
+- [x] Rate limit **distribuído** na rota pública de marcação (tabela `rate_limits`
+      + RPC atómica `rl_hit`, migração 0043) com fallback in-memory. Pendente:
+      estender às restantes rotas e captcha no login.
 - [ ] MFA/2FA, pelo menos para superadmin e owners.
 - [ ] Sentry com DSN de produção (captura de erros + contexto tenant/user).
 - [ ] Health checks monitorizados externamente.
