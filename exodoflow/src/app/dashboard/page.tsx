@@ -1,7 +1,8 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import { BarChart3, Users, Calendar, TrendingUp, AlertCircle, Cake, Clock } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Users, Calendar, TrendingUp, AlertCircle, Cake, Clock, Star } from 'lucide-react'
 import StatCard      from '@/components/design-system/StatCard/StatCard'
 import SectionHeader from '@/components/design-system/SectionHeader/SectionHeader'
 import { Button }    from '@/components/design-system/Button/Button'
@@ -11,6 +12,7 @@ import LoadingState   from '@/components/design-system/LoadingState/LoadingState
 import ErrorState    from '@/components/design-system/ErrorState/ErrorState'
 import { useBookings }  from '@/hooks/useBookings'
 import { useClientes }  from '@/hooks/useClientes'
+import { resumoReviews } from '@/services/reviews'
 import { useAuth }      from '@/providers/AuthProvider'
 import { formatCurrencyByCode }        from '@/lib/i18n/currency'
 import { DEFAULT_LOCALE }              from '@/lib/i18n/locale'
@@ -45,6 +47,8 @@ export default function DashboardPage() {
   const { tenant } = useAuth()
   const { data: bookings, isLoading: loadingBookings, error: erroBookings, refetch: refetchBookings } = useBookings()
   const { data: clientes, isLoading: loadingClientes, error: erroClientes } = useClientes()
+  // Satisfação média (avaliações) — falha em silêncio se o utilizador não tiver acesso.
+  const { data: satisfacao } = useQuery({ queryKey: ['reviews-resumo'], queryFn: resumoReviews, retry: false })
 
   // A página NÃO é refém das queries: o cabeçalho aparece sempre; o corpo mostra
   // loading/erro/dados. A sidebar (com Sair) está sempre disponível no layout.
@@ -218,12 +222,16 @@ export default function DashboardPage() {
           value={listaClientes.length}
           icon={<Users className="w-5 h-5" />}
         />
-        {/* Taxa de ocupação requer histórico de slots disponíveis — mostrará "—" até existir esse cálculo */}
+        {/* Satisfação média das avaliações pós-atendimento (1–5) */}
         <StatCard
-          label="Taxa de ocupação"
-          value="—"
-          icon={<BarChart3 className="w-5 h-5" />}
-          description="Disponível quando houver histórico suficiente."
+          label="Satisfação"
+          value={satisfacao && satisfacao.total > 0 ? `${satisfacao.media.toFixed(1)} ★` : '—'}
+          icon={<Star className="w-5 h-5" />}
+          description={
+            satisfacao && satisfacao.total > 0
+              ? `Média de ${satisfacao.total} avaliação(ões).`
+              : 'Sem avaliações ainda.'
+          }
         />
       </div>
 
