@@ -22,6 +22,7 @@ export type AuditAction =
   | 'company.update' | 'branding.update'
   | 'whatsapp.send' | 'whatsapp.assign' | 'whatsapp.status' | 'whatsapp.note'
   | 'finance.create' | 'finance.update' | 'finance.delete'
+  | 'receipt.issue'
   | 'booking.payment'
   | 'package.create' | 'package.consume' | 'package.cancel'
   | 'treatment.create' | 'treatment.delete'

@@ -949,6 +949,114 @@ export type Database = {
           },
         ]
       }
+      receipt_counters: {
+        Row: {
+          last_number: number
+          tenant_id: string
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          tenant_id: string
+          year: number
+        }
+        Update: {
+          last_number?: number
+          tenant_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_counters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipts: {
+        Row: {
+          amount: number
+          client_name: string | null
+          client_tax_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          id: string
+          issued_at: string
+          issuer_address: string | null
+          issuer_name: string
+          issuer_tax_id: string | null
+          number: number
+          payment_method: string
+          tenant_id: string
+          transaction_id: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          client_name?: string | null
+          client_tax_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          description?: string | null
+          id?: string
+          issued_at?: string
+          issuer_address?: string | null
+          issuer_name: string
+          issuer_tax_id?: string | null
+          number: number
+          payment_method: string
+          tenant_id: string
+          transaction_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          client_name?: string | null
+          client_tax_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          id?: string
+          issued_at?: string
+          issuer_address?: string | null
+          issuer_name?: string
+          issuer_tax_id?: string | null
+          number?: number
+          payment_method?: string
+          tenant_id?: string
+          transaction_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: true
+            referencedRelation: "financial_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resource_availability: {
         Row: {
           created_at: string
@@ -1704,6 +1812,34 @@ export type Database = {
         }
       }
       current_marketing_consent_version: { Args: never; Returns: string }
+      emitir_recibo: {
+        Args: { p_transaction_id: string }
+        Returns: {
+          amount: number
+          client_name: string | null
+          client_tax_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          id: string
+          issued_at: string
+          issuer_address: string | null
+          issuer_name: string
+          issuer_tax_id: string | null
+          number: number
+          payment_method: string
+          tenant_id: string
+          transaction_id: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "receipts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ensure_tenant_for_current_user: { Args: never; Returns: string }
       get_available_slots: {
         Args: {

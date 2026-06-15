@@ -2,7 +2,7 @@
 // /dashboard/financas — controlo interno de caixa (OWNER + MANAGER).
 // NÃO é contabilidade oficial nem faturação certificada. Mobile-first.
 import React, { useMemo, useState } from 'react'
-import { Plus, Minus, Download, Pencil, Trash2, Wallet, Clock } from 'lucide-react'
+import { Plus, Minus, Download, Pencil, Trash2, Wallet, Clock, ReceiptText } from 'lucide-react'
 import PageHeader       from '@/components/design-system/PageHeader/PageHeader'
 import { Button }       from '@/components/design-system/Button/Button'
 import { StatCard }     from '@/components/design-system/StatCard/StatCard'
@@ -16,6 +16,7 @@ import ErrorState       from '@/components/design-system/ErrorState/ErrorState'
 import ConfirmDialog    from '@/components/design-system/ConfirmDialog/ConfirmDialog'
 import AccessDenied     from '@/components/design-system/AccessDenied/AccessDenied'
 import { TransacaoModal } from '@/components/features/financas/TransacaoModal'
+import { ReciboModal }    from '@/components/features/financas/ReciboModal'
 import { useTransacoes, useApagarTransacao } from '@/hooks/useFinancas'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth } from '@/providers/AuthProvider'
@@ -48,6 +49,7 @@ export default function FinancasPage() {
   const [novoTipo, setNovoTipo] = useState<FinancialType | null>(null)
   const [editar, setEditar]     = useState<FinancialTransaction | null>(null)
   const [apagar, setApagar]     = useState<FinancialTransaction | null>(null)
+  const [recibo, setRecibo]     = useState<FinancialTransaction | null>(null)
 
   // Resumo: sempre o MÊS corrente (independente dos filtros da lista)
   const { data: doMes = [] } = useTransacoes({ from: inicioMes })
@@ -90,6 +92,9 @@ export default function FinancasPage() {
       metodo: paymentMethodLabel(t.payment_method),
       acoes: (
         <div className="flex items-center gap-1">
+          {entrada && (
+            <button onClick={() => setRecibo(t)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500" title="Recibo"><ReceiptText className="w-4 h-4" /></button>
+          )}
           <button onClick={() => setEditar(t)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500" title="Editar"><Pencil className="w-4 h-4" /></button>
           <button onClick={() => setApagar(t)} className="p-1.5 rounded hover:bg-red-50 text-red-500" title="Apagar"><Trash2 className="w-4 h-4" /></button>
         </div>
@@ -103,9 +108,10 @@ export default function FinancasPage() {
       id:          t.id,
       title:       categoryLabel(t.category),
       subtitle:    `${t.transaction_date} • ${paymentMethodLabel(t.payment_method)}`,
-      description: t.description ?? undefined,
+      description: entrada ? (t.description ?? 'Toque para emitir/ver recibo') : (t.description ?? undefined),
       icon:        entrada ? <Plus className="w-4 h-4 text-emerald-500" /> : <Minus className="w-4 h-4 text-red-500" />,
       action:      <span className={entrada ? 'text-emerald-700 font-semibold text-sm' : 'text-red-700 font-semibold text-sm'}>{entrada ? '+' : '−'} {fmt(t.amount)}</span>,
+      onClick:     entrada ? () => setRecibo(t) : undefined,
     }
   })
 
@@ -203,6 +209,9 @@ export default function FinancasPage() {
       )}
       {editar && (
         <TransacaoModal isOpen={!!editar} onClose={() => setEditar(null)} tipo={editar.type} currency={currency} defaultDate={hoje} transacao={editar} />
+      )}
+      {recibo && (
+        <ReciboModal isOpen={!!recibo} onClose={() => setRecibo(null)} transacao={recibo} locale={locale} />
       )}
       <ConfirmDialog
         isOpen={!!apagar}

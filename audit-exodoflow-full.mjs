@@ -5282,6 +5282,49 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 36 — Recibos (comprovativo de pagamento numerado)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 36 — Recibos');
+console.log('─'.repeat(72));
+
+const mig37 = readSafe(join(MIGRATIONS, '0037_receipts.sql'));
+check(
+  'F36: numeração sequencial atómica por tenant+ano',
+  /CREATE TABLE IF NOT EXISTS receipt_counters/.test(mig37) &&
+  /ON CONFLICT \(tenant_id, year\)\s*\n?\s*DO UPDATE SET last_number = receipt_counters\.last_number \+ 1/.test(mig37),
+  'Deve haver contador atómico (ON CONFLICT DO UPDATE) por tenant+ano.'
+);
+check(
+  'F36: emissão só via RPC SECURITY DEFINER, valida role e idempotente',
+  /FUNCTION emitir_recibo/.test(mig37) && /SECURITY DEFINER/.test(mig37) &&
+  /v_role NOT IN \('owner', 'manager'\)/.test(mig37) &&
+  /SELECT \* INTO v_result FROM receipts WHERE transaction_id = p_transaction_id;\s*\n\s*IF FOUND THEN/.test(mig37),
+  'A RPC deve validar owner/manager e ser idempotente por transaction_id.'
+);
+check(
+  'F36: só receita (income) gera recibo + snapshot do emissor',
+  /v_tx\.type <> 'income'/.test(mig37) && /issuer_name/.test(mig37) && /issuer_tax_id/.test(mig37),
+  'Recibo só para income, com snapshot imutável do emissor.'
+);
+check(
+  'F36: RLS só owner/manager lê; sem INSERT direto (só RPC)',
+  /receipts_select_owner_manager/.test(mig37) &&
+  /auth_user_role\(\) IN \('owner', 'manager'\)/.test(mig37) &&
+  !/CREATE POLICY "receipts_insert/.test(mig37),
+  'receipts deve ter SELECT owner/manager e nenhuma policy de INSERT direta.'
+);
+check(
+  'F36: serviço e UI de recibos presentes',
+  /emitir_recibo/.test(readSafe(join(SRC, 'services', 'recibos.ts'))) &&
+  /Imprimir/.test(readSafe(join(SRC, 'components', 'features', 'financas', 'ReciboModal.tsx'))) &&
+  /ReciboModal/.test(readSafe(join(SRC, 'app', 'dashboard', 'financas', 'page.tsx'))),
+  'Devem existir services/recibos.ts, ReciboModal e integração na página de finanças.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

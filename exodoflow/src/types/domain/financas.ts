@@ -37,6 +37,32 @@ export interface FinancialTransaction {
   deleted_at:       string | null
 }
 
+// Recibo (espelha receipts) — comprovativo de pagamento numerado.
+export interface Receipt {
+  id:             string
+  tenant_id:      string
+  transaction_id: string
+  year:           number
+  number:         number
+  amount:         number
+  currency:       string
+  description:    string | null
+  payment_method: string
+  issued_at:      string
+  issuer_name:    string
+  issuer_tax_id:  string | null
+  issuer_address: string | null
+  client_name:    string | null
+  client_tax_id:  string | null
+  created_by:     string | null
+  created_at:     string
+}
+
+// Número formatado do recibo (ex: 2026/0001).
+export function reciboNumero(r: Pick<Receipt, 'year' | 'number'>): string {
+  return `${r.year}/${String(r.number).padStart(4, '0')}`
+}
+
 // ── Rótulos PT para a UI ──────────────────────────────────────────────────────
 export const INCOME_CATEGORIES: { value: IncomeCategory; label: string }[] = [
   { value: 'servico',       label: 'Serviço' },
