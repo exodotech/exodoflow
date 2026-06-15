@@ -29,7 +29,7 @@ export type AuditAction =
   | 'waitlist.create' | 'waitlist.update' | 'waitlist.delete'
   | 'review.create' | 'review.delete'
   | 'billing.checkout'
-  | 'dsr.create' | 'dsr.update'
+  | 'dsr.create' | 'dsr.update' | 'dsr.export'
 
 interface AuditOpts {
   table?:    string

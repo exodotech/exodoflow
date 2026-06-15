@@ -5480,6 +5480,14 @@ check(
   'O seam de email deve ser server-only, mock-ready e usado no convite de equipa.',
 );
 check(
+  'F40: exportação de dados por titular (acesso/portabilidade RGPD)',
+  /exportarDadosTitular/.test(readSafe(join(SRC, 'services', 'dsr-export.ts'))) &&
+  /financial_transactions/.test(readSafe(join(SRC, 'services', 'dsr-export.ts'))) &&
+  /Exportar \(RGPD\)/.test(readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteDetalheModal.tsx'))) &&
+  /exporta os dados de um cliente/.test(readSafe(join(APP, 'e2e', 'privacy.spec.ts'))),
+  'Deve existir exportação por titular (serviço + botão manager+ + teste e2e).',
+);
+check(
   'F40: UI de pedidos de titulares (DSR) ligada às Configurações',
   /listarPedidosDsr/.test(readSafe(join(SRC, 'services', 'dsr.ts'))) &&
   /PainelPrivacidade/.test(readSafe(join(SRC, 'app', 'dashboard', 'configuracoes', 'page.tsx'))),

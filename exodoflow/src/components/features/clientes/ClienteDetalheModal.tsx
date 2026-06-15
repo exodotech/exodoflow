@@ -2,15 +2,17 @@
 // Detalhe operacional do cliente: dados, consentimentos (trilho imutável) e
 // marcações. Acções de editar / apagar são delegadas ao componente pai para
 // evitar modais aninhados.
-import React from 'react'
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Pencil, Trash2, Calendar, UserCheck, MessageSquare } from 'lucide-react'
+import { Pencil, Trash2, Calendar, UserCheck, MessageSquare, Download } from 'lucide-react'
 import { Modal }  from '@/components/design-system/Modal/Modal'
 import { Button } from '@/components/design-system/Button/Button'
 import { Badge }  from '@/components/design-system/Badge/Badge'
 import { buscarClientePorId, listarConsentimentosCliente } from '@/services/clients'
 import { listarBookingsPorCliente } from '@/services/bookings'
+import { exportarDadosTitular, descarregarExportacao } from '@/services/dsr-export'
 import { useConverterVisitante } from '@/hooks/useClientes'
+import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth } from '@/providers/AuthProvider'
 import type { ClienteEditavel } from './NovoClienteModal'
 import { PacotesCliente } from './PacotesCliente'
@@ -33,9 +35,22 @@ interface Props {
 export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApagar }: Props) {
   const ativo = isOpen && !!clientId
   const converter = useConverterVisitante()
+  const { isManagerOrAbove } = usePermissions()
+  const [aExportar, setAExportar] = useState(false)
   // Label fiscal conforme o país do tenant (PT → NIF; BR → CPF/CNPJ)
   const { tenant } = useAuth()
   const fiscalLabel = tenant?.country === 'BR' ? 'CPF / CNPJ' : 'NIF'
+
+  async function handleExportar(nome: string) {
+    if (!clientId) return
+    setAExportar(true)
+    try {
+      const exp = await exportarDadosTitular(clientId)
+      descarregarExportacao(exp, nome)
+    } finally {
+      setAExportar(false)
+    }
+  }
 
   const { data: cliente, isLoading } = useQuery({
     queryKey: ['cliente', clientId],
@@ -171,6 +186,24 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
 
           {/* Avaliações pós-atendimento */}
           <AvaliacoesCliente clientId={cliente.id} />
+
+          {/* Exportação de dados do titular (RGPD/LGPD) — só manager+ */}
+          {isManagerOrAbove && (
+            <div className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <p className="text-xs text-gray-500">
+                Exportar todos os dados deste titular (acesso/portabilidade).
+              </p>
+              <Button
+                variant="outline" size="sm"
+                onClick={() => handleExportar(cliente.full_name)}
+                isLoading={aExportar}
+                disabled={aExportar}
+                className="flex items-center gap-1 flex-shrink-0"
+              >
+                <Download className="w-4 h-4" /> Exportar (RGPD)
+              </Button>
+            </div>
+          )}
 
           {/* Trilho de consentimento (imutável, RGPD) */}
           <div>
