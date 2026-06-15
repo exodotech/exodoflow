@@ -2,6 +2,7 @@
 // Protege a rota: autentica, bloqueia STAFF e redireciona se já concluído
 import { redirect }     from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { PoweredBy }    from '@/components/brand/PoweredBy'
 
 export default async function OnboardingLayout({
   children,
@@ -38,8 +39,10 @@ export default async function OnboardingLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {children}
+    <div className="min-h-screen app-bg flex flex-col">
+      <div className="flex-1">{children}</div>
+      {/* Rodapé discreto da marca — Êxodo Tech clicável */}
+      <PoweredBy className="text-center py-6" />
     </div>
   )
 }

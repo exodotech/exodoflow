@@ -139,6 +139,13 @@ body {
 }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
+/* ─── Gradiente da MARCA (CTA das telas de autenticação) ──────────────────────── */
+/* Token reutilizável — aplicado via --btn-gradient no Button (ver Button.tsx).
+   cyan→teal→emerald: segue o fluxo do logo mas mantém texto branco acessível. */
+:root {
+  --brand-cta-gradient: linear-gradient(135deg, #0891b2 0%, #0d9488 50%, #059669 100%);
+}
+
 /* ─── Gradiente de texto com cor do tenant ───────────────────────────────────── */
 .text-gradient-primary {
   background: linear-gradient(135deg, var(--tenant-primary), color-mix(in srgb, var(--tenant-primary) 60%, #818cf8));

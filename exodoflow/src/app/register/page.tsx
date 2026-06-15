@@ -2,6 +2,7 @@ import React        from 'react'
 import Link          from 'next/link'
 import { Metadata }  from 'next'
 import { Logo }      from '@/components/brand/Logo'
+import { PoweredBy } from '@/components/brand/PoweredBy'
 
 export const metadata: Metadata = {
   title: 'Acesso por convite — ExodoFlow Pro',
@@ -37,15 +38,13 @@ export default function RegisterPage() {
           <Link
             href="/login"
             className="inline-flex items-center justify-center h-11 px-6 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
-            style={{ background: 'var(--tenant-primary)' }}
+            style={{ backgroundImage: 'var(--brand-cta-gradient)' }}
           >
             Já tenho conta — iniciar sessão
           </Link>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Powered by <span className="font-medium text-slate-500">Êxodo Tech</span>
-        </p>
+        <PoweredBy className="mt-6 text-center" />
       </div>
     </main>
   )

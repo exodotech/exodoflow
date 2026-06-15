@@ -5,6 +5,7 @@ import { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { LoginForm } from '@/components/features/auth/LoginForm'
 import { Logo }      from '@/components/brand/Logo'
+import { PoweredBy } from '@/components/brand/PoweredBy'
 
 export const metadata: Metadata = {
   title: 'Entrar — ExodoFlow Pro',
@@ -33,7 +34,7 @@ function LoginView() {
     // links e foco dos inputs herdam --tenant-primary aqui sobrescrito.
     <main
       className="min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8"
-      style={{ ['--tenant-primary' as string]: 'var(--brand)' }}
+      style={{ ['--tenant-primary' as string]: 'var(--brand)', ['--btn-gradient' as string]: 'var(--brand-cta-gradient)' }}
     >
       {/* Cabeçalho da marca */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
@@ -61,10 +62,8 @@ function LoginView() {
           </p>
         </div>
 
-        {/* Rodapé discreto da marca */}
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Powered by <span className="font-medium text-slate-500">Êxodo Tech</span>
-        </p>
+        {/* Rodapé discreto da marca — Êxodo Tech clicável */}
+        <PoweredBy className="mt-6 text-center" />
       </div>
     </main>
   )

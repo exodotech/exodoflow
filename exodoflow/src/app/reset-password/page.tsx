@@ -2,6 +2,7 @@ import React from 'react'
 import { Metadata } from 'next'
 import { ResetPasswordForm } from '@/components/features/auth/ResetPasswordForm'
 import { Logo } from '@/components/brand/Logo'
+import { PoweredBy } from '@/components/brand/PoweredBy'
 
 export const metadata: Metadata = {
   title: 'Definir nova palavra-passe — ExodoFlow Pro',
@@ -11,7 +12,7 @@ export default function ResetPasswordPage() {
   return (
     <main
       className="min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8"
-      style={{ ['--tenant-primary' as string]: 'var(--brand)' }}
+      style={{ ['--tenant-primary' as string]: 'var(--brand)', ['--btn-gradient' as string]: 'var(--brand-cta-gradient)' }}
     >
       <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
         <Logo variant="full" className="w-full" />
@@ -23,9 +24,7 @@ export default function ResetPasswordPage() {
           <ResetPasswordForm />
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Powered by <span className="font-medium text-slate-500">Êxodo Tech</span>
-        </p>
+        <PoweredBy className="mt-6 text-center" />
       </div>
     </main>
   )

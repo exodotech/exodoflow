@@ -4839,8 +4839,8 @@ check(
 // Login: produto fixo, sem azul genérico, com rodapé
 check(
   'F27: Login mostra ExodoFlow Pro + tagline + Powered by Êxodo Tech',
-  /<Logo\s+variant="full"/.test(loginPg) && /Powered by/.test(loginPg) && /Êxodo Tech/.test(loginPg),
-  'O login deve ter o logo do produto, tagline e rodapé Powered by Êxodo Tech.'
+  /<Logo\s+variant="full"/.test(loginPg) && /<PoweredBy/.test(loginPg),
+  'O login deve ter o logo do produto, tagline e rodapé Powered by Êxodo Tech (componente PoweredBy).'
 );
 check(
   'F27: Login NÃO usa azul genérico hardcoded (bg-blue-600)',
@@ -4877,6 +4877,63 @@ check(
   'F27: LogoUpload é descrito como "Logo da empresa"',
   /Logo da empresa/.test(logoUpload),
   'O LogoUpload deve chamar-se "Logo da empresa", não logo do sistema.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 28 — Link Êxodo Tech + gradiente da marca no CTA
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 28 — Link Êxodo Tech + gradiente do CTA');
+console.log('─'.repeat(72));
+
+const poweredBy = readSafe(join(SRC, 'components', 'brand', 'PoweredBy.tsx'));
+check(
+  'F28: componente PoweredBy/ExodoTechLink com link seguro para exodotech.com',
+  /exodotech\.com/.test(poweredBy) && /target="_blank"/.test(poweredBy) &&
+  /rel="noopener noreferrer"/.test(poweredBy),
+  'O link deve abrir exodotech.com em nova aba com rel="noopener noreferrer".'
+);
+check(
+  'F28: login/registo/forgot/reset usam o componente PoweredBy (Êxodo Tech clicável)',
+  ['login', 'register', 'forgot-password', 'reset-password'].every((pg) =>
+    /PoweredBy/.test(readSafe(join(SRC, 'app', pg, 'page.tsx')))),
+  'Todas as telas de auth devem usar o componente PoweredBy.'
+);
+check(
+  'F28: sidebar e onboarding usam o link da Êxodo Tech',
+  /ExodoTechLink/.test(readSafe(join(SRC, 'components', 'layout', 'SidebarDesktop', 'SidebarDesktop.tsx'))) &&
+  /PoweredBy/.test(readSafe(join(SRC, 'app', 'onboarding', 'layout.tsx'))),
+  'A sidebar e o onboarding devem incluir o link da Êxodo Tech.'
+);
+check(
+  'F28: nenhum rodapé "Êxodo Tech" continua como <span> estático (todos são link)',
+  (() => {
+    for (const pg of ['login', 'register', 'forgot-password', 'reset-password']) {
+      if (/<span[^>]*>Êxodo Tech<\/span>/.test(readSafe(join(SRC, 'app', pg, 'page.tsx')))) return false;
+    }
+    return true;
+  })(),
+  'As ocorrências de Êxodo Tech nos rodapés devem ser links, não spans.'
+);
+
+// Gradiente da marca no CTA
+check(
+  'F28: token --brand-cta-gradient definido em globals.css',
+  /--brand-cta-gradient:/.test(readSafe(join(SRC, 'app', 'globals.css'))),
+  'globals.css deve definir o token do gradiente do CTA.'
+);
+check(
+  'F28: Button primary aceita --btn-gradient (gradiente da marca por cima da cor base)',
+  /background-image:var\(--btn-gradient,none\)/.test(readSafe(join(SRC, 'components', 'design-system', 'Button', 'Button.tsx'))),
+  'O Button deve suportar --btn-gradient para o CTA da marca.'
+);
+check(
+  'F28: telas de auth ativam o gradiente (--btn-gradient) no botão',
+  ['login', 'forgot-password', 'reset-password'].every((pg) =>
+    /--btn-gradient/.test(readSafe(join(SRC, 'app', pg, 'page.tsx')))),
+  'Login/forgot/reset devem ativar --btn-gradient.'
 );
 }
 

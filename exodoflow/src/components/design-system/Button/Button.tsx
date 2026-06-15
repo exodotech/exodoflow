@@ -17,7 +17,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          '[background-color:var(--tenant-primary)] text-white',
+          // Cor base = --tenant-primary; se --btn-gradient estiver definido (telas
+          // de auth), o gradiente da marca pinta por cima. Default 'none'.
+          '[background-color:var(--tenant-primary)] [background-image:var(--btn-gradient,none)] text-white',
           'shadow-[0_2px_8px_color-mix(in_srgb,var(--tenant-primary)_30%,transparent)]',
           'hover:opacity-90 hover:shadow-[0_4px_16px_color-mix(in_srgb,var(--tenant-primary)_35%,transparent)]',
           'active:opacity-80',

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 import { ForgotPasswordForm } from '@/components/features/auth/ForgotPasswordForm'
 import { Logo } from '@/components/brand/Logo'
+import { PoweredBy } from '@/components/brand/PoweredBy'
 
 export const metadata: Metadata = {
   title: 'Recuperar palavra-passe — ExodoFlow Pro',
@@ -12,7 +13,7 @@ export default function ForgotPasswordPage() {
   return (
     <main
       className="min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8"
-      style={{ ['--tenant-primary' as string]: 'var(--brand)' }}
+      style={{ ['--tenant-primary' as string]: 'var(--brand)', ['--btn-gradient' as string]: 'var(--brand-cta-gradient)' }}
     >
       <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
         <Logo variant="full" className="w-full" />
@@ -28,9 +29,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Powered by <span className="font-medium text-slate-500">Êxodo Tech</span>
-        </p>
+        <PoweredBy className="mt-6 text-center" />
       </div>
     </main>
   )

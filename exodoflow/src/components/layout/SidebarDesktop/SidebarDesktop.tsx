@@ -22,6 +22,7 @@ import { forceLogout }    from '@/lib/auth/logout'
 import { useAuth }        from '@/providers/AuthProvider'
 import { usePermissions } from '@/hooks/usePermissions'
 import { Logo }           from '@/components/brand/Logo'
+import { ExodoTechLink }  from '@/components/brand/PoweredBy'
 import type { NavItem }   from '@/types/ui/nav'
 import type { TenantSettings } from '@/types/domain/tenant'
 
@@ -172,9 +173,9 @@ export function SidebarDesktop() {
           <LogOut className="w-4 h-4" />
           Sair
         </button>
-        {/* Marca da plataforma (discreta) */}
+        {/* Marca da plataforma (discreta) — Êxodo Tech clicável */}
         <p className="px-3 pt-1 text-[10px] text-slate-600">
-          ExodoFlow Pro · <span className="text-slate-500">Êxodo Tech</span>
+          ExodoFlow Pro · <ExodoTechLink className="text-slate-500 hover:text-slate-300" />
         </p>
       </div>
     </aside>
