@@ -79,7 +79,7 @@ O seed de dev não vai para produção. Crie o superadmin uma vez:
 |---|---|---|---|
 | **WhatsApp** (Meta) | App na Meta for Developers → WhatsApp Cloud API; webhook em `/api/whatsapp/webhook` | `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | `WHATSAPP_OUTBOUND_MOCK`, `WHATSAPP_TEMPLATE_MOCK` |
 | **Assistente IA** | Chave Claude (console.anthropic.com) | `ANTHROPIC_API_KEY` | `ASSISTANT_MOCK` |
-| **Lembretes automáticos** | Cron a chamar `POST /api/lembretes/processar` (ex: Vercel Cron) | — | (usa `WHATSAPP_OUTBOUND_MOCK`) |
+| **Lembretes automáticos** | Já configurado: `vercel.json` agenda `GET /api/cron/lembretes` de hora a hora. Só falta definir `CRON_SECRET` no Vercel. | `CRON_SECRET` | (usa `WHATSAPP_OUTBOUND_MOCK`) |
 | **Relatórios por e-mail** | Provedor de e-mail (Resend/SMTP) | (a integrar) | `RELATORIO_MOCK` |
 | **Pagamentos** | Stripe (a integrar quando cobrar subscrições) | — | — |
 

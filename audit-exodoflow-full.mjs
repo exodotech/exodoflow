@@ -5446,6 +5446,13 @@ check(
   'Deve existir supabase/tests/rls-isolation.test.sql.',
 );
 check(
+  'F40: cron de lembretes protegido por CRON_SECRET + agendado',
+  /Bearer \$\{secret\}/.test(readSafe(join(SRC, 'app', 'api', 'cron', 'lembretes', 'route.ts'))) &&
+  /CRON_SECRET/.test(readSafe(join(SRC, 'app', 'api', 'cron', 'lembretes', 'route.ts'))) &&
+  /api\/cron\/lembretes/.test(readSafe(join(APP, 'vercel.json'))),
+  'A rota de cron deve validar CRON_SECRET e estar agendada no vercel.json.',
+);
+check(
   'F40: documentação de privacidade criada',
   ['privacy-architecture', 'data-inventory', 'data-retention-policy',
    'data-subject-rights', 'legal-documents-needed', 'go-no-go-real-data']
