@@ -5486,6 +5486,13 @@ check(
   'Deve existir o serviço DSR e o painel de privacidade nas Configurações.',
 );
 check(
+  'F40: rate-limit usa IP fiável (x-real-ip), não o x-forwarded-for forjável',
+  /x-real-ip/.test(readSafe(join(SRC, 'lib', 'rate-limit.ts'))) &&
+  /parts\[parts\.length - 1\]/.test(readSafe(join(SRC, 'lib', 'rate-limit.ts'))) &&
+  !/return fwd\.split\(','\)\[0\]/.test(readSafe(join(SRC, 'lib', 'rate-limit.ts'))),
+  'clientKeyFromRequest deve preferir x-real-ip e nunca o primeiro x-forwarded-for.',
+);
+check(
   'F40: documentação de privacidade criada',
   ['privacy-architecture', 'data-inventory', 'data-retention-policy',
    'data-subject-rights', 'legal-documents-needed', 'go-no-go-real-data']

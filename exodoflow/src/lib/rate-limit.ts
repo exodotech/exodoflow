@@ -63,9 +63,20 @@ export function checkRateLimit(key: string, opts: RateLimitOptions): RateLimitRe
 }
 
 // Extrai um identificador de cliente do pedido (IP) para usar como chave.
-// Atrás de proxy (Vercel/Cloudflare), o IP real vem em x-forwarded-for.
+//
+// SEGURANÇA: NÃO usar o PRIMEIRO valor de x-forwarded-for — esse é o extremo
+// esquerdo da cadeia e é controlado pelo cliente (pode ser forjado para rodar a
+// chave e contornar o rate-limit / envenenar logs). Em Vercel/Cloudflare o IP
+// real do cliente vem em 'x-real-ip' (definido pelo proxy). Preferimos esse; em
+// último recurso usamos o ÚLTIMO salto de x-forwarded-for (o mais próximo e de
+// maior confiança), nunca o primeiro.
 export function clientKeyFromRequest(request: Request): string {
+  const real = request.headers.get('x-real-ip')
+  if (real) return real.trim()
   const fwd = request.headers.get('x-forwarded-for')
-  if (fwd) return fwd.split(',')[0]!.trim()
-  return request.headers.get('x-real-ip') ?? 'unknown'
+  if (fwd) {
+    const parts = fwd.split(',').map((p) => p.trim()).filter(Boolean)
+    if (parts.length) return parts[parts.length - 1]!   // último salto = mais fiável
+  }
+  return 'unknown'
 }
