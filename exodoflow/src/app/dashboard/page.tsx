@@ -18,6 +18,8 @@ import { DEFAULT_LOCALE }              from '@/lib/i18n/locale'
 import {
   fazAnosNoMes, agregarStatsPorCliente, clienteInativo, type ClienteBase,
 } from '@/lib/clientes/insights'
+import { receitaPorDia, marcacoesPorServico } from '@/lib/analytics/series'
+import { ColunasVerticais, BarrasHorizontais } from '@/components/design-system/Charts/Charts'
 import type { SupportedLocale }        from '@/types/domain/communication'
 import type { TenantSettings }         from '@/types/domain/tenant'
 import type { BookingStatus }          from '@/types/domain'
@@ -105,6 +107,12 @@ export default function DashboardPage() {
   )
   const aniversariantes = clientesBase.filter((c) => fazAnosNoMes(c.birth_date, mesAtual)).length
   const clientesAtencao = clientesBase.filter((c) => clienteInativo(statsClientes.get(c.id), agoraISO, 3)).length
+
+  // Séries para os gráficos
+  const serieReceita = receitaPorDia(lista, 14)
+  const topServicos  = marcacoesPorServico(lista, 5)
+  const temAnalise   = serieReceita.some((p) => p.valor > 0) || topServicos.length > 0
+  const fmtMoeda = (v: number) => v === 0 ? '0' : formatCurrencyByCode(v, currency, locale)
 
   const bookingItems = upcomingBookings.map((booking) => ({
     id:          booking.id,
@@ -204,6 +212,24 @@ export default function DashboardPage() {
           description="Disponível quando houver histórico suficiente."
         />
       </div>
+
+      {/* Análise visual — só aparece quando há dados */}
+      {temAnalise && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4 sm:p-6">
+            <SectionHeader title="Receita (14 dias)" />
+            <div className="mt-4">
+              <ColunasVerticais dados={serieReceita} formatar={fmtMoeda} />
+            </div>
+          </div>
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4 sm:p-6">
+            <SectionHeader title="Serviços mais procurados" />
+            <div className="mt-4">
+              <BarrasHorizontais dados={topServicos} formatar={(v) => `${v} marcação(ões)`} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Próximas Marcações — dados reais */}
