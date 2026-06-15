@@ -21,7 +21,7 @@ A tabela `data_subject_requests` (migração 0041) regista e acompanha:
 | `correcao` | Correção | Editar cliente/perfil pelos fluxos existentes (com auditoria). |
 | `exclusao` | Eliminação | Soft-delete de cliente (RPC 0017); avaliar exceções legais (recibos/fichas). |
 | `anonimizacao` | Anonimização | Substituir identificadores preservando histórico estatístico (processo manual). |
-| `exportacao` | Portabilidade | Exportar dados do titular (CSV de finanças já existe; exportação por cliente = roadmap). |
+| `exportacao` | Portabilidade | ✅ **Exportar dados do titular em JSON** (botão "Exportar (RGPD)" no detalhe do cliente, manager+). |
 | `restricao` | Restrição de tratamento | Suspender comunicações/uso (processo manual + nota no registo). |
 | `oposicao` | Oposição | Cessar tratamento aplicável (ex.: marketing), quando cabível. |
 
@@ -33,11 +33,12 @@ Campos de prazo: `received_at`, `resolved_at`, `handled_by`, `notes`.
 - ✅ **Estrutura de dados** pronta (`data_subject_requests`, RLS só owner/manager).
 - ✅ **Soft-delete** de cliente e trilho de **consentimento** (`legal_consents`).
 - ✅ **Auditoria** das ações (criação/edição/remoção) para prova de tratamento.
-- 🔜 **Roadmap (UI/automação):**
-  1. Tela em Configurações para registar/gerir pedidos.
-  2. Exportação por titular (cliente/perfil) em formato legível (JSON/CSV/PDF).
-  3. Fluxo de anonimização assistido (substituir nome/contactos, manter agregados).
-  4. Modelos de resposta ao titular (a redigir com revisão jurídica).
+- ✅ **Tela em Configurações** para registar/gerir pedidos (PainelPrivacidade).
+- ✅ **Exportação por titular** (cliente) em JSON — direito de acesso/portabilidade.
+- 🔜 **Roadmap:**
+  1. Fluxo de anonimização assistido (substituir nome/contactos, manter agregados).
+  2. Exportação também por perfil de equipa (hoje cobre clientes).
+  3. Modelos de resposta ao titular (a redigir com revisão jurídica).
 
 ## 4. Procedimento manual recomendado (até existir UI)
 
