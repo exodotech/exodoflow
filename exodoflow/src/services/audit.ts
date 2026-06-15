@@ -23,6 +23,7 @@ export type AuditAction =
   | 'whatsapp.send' | 'whatsapp.assign' | 'whatsapp.status' | 'whatsapp.note'
   | 'finance.create' | 'finance.update' | 'finance.delete'
   | 'booking.payment'
+  | 'package.create' | 'package.consume' | 'package.cancel'
 
 interface AuditOpts {
   table?:    string

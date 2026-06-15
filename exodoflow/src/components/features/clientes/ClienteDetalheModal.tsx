@@ -13,6 +13,7 @@ import { listarBookingsPorCliente } from '@/services/bookings'
 import { useConverterVisitante } from '@/hooks/useClientes'
 import { useAuth } from '@/providers/AuthProvider'
 import type { ClienteEditavel } from './NovoClienteModal'
+import { PacotesCliente } from './PacotesCliente'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendente', confirmed: 'Confirmada', in_progress: 'Em curso',
@@ -159,6 +160,9 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
               <p className="text-sm text-red-700">{(converter.error as Error).message}</p>
             </div>
           )}
+
+          {/* Pacotes de sessões */}
+          <PacotesCliente clientId={cliente.id} />
 
           {/* Trilho de consentimento (imutável, RGPD) */}
           <div>

@@ -280,6 +280,86 @@ export type Database = {
           },
         ]
       }
+      client_packages: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          name: string
+          price: number | null
+          purchased_at: string
+          service_id: string | null
+          status: string
+          tenant_id: string
+          total_sessions: number
+          updated_at: string
+          used_sessions: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          name: string
+          price?: number | null
+          purchased_at?: string
+          service_id?: string | null
+          status?: string
+          tenant_id: string
+          total_sessions: number
+          updated_at?: string
+          used_sessions?: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          name?: string
+          price?: number | null
+          purchased_at?: string
+          service_id?: string | null
+          status?: string
+          tenant_id?: string
+          total_sessions?: number
+          updated_at?: string
+          used_sessions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_packages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_packages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_packages_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_packages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           birth_date: string | null
@@ -1484,6 +1564,31 @@ export type Database = {
       }
       auth_tenant_id: { Args: never; Returns: string }
       auth_user_role: { Args: never; Returns: string }
+      consumir_sessao_pacote: {
+        Args: { p_package_id: string }
+        Returns: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          name: string
+          price: number | null
+          purchased_at: string
+          service_id: string | null
+          status: string
+          tenant_id: string
+          total_sessions: number
+          updated_at: string
+          used_sessions: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_packages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_booking: {
         Args: {
           p_client_id: string

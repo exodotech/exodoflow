@@ -5035,6 +5035,61 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 30 — Pacotes de sessões (client_packages)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 30 — Pacotes de sessões');
+console.log('─'.repeat(72));
+
+const mig34 = readSafe(join(MIGRATIONS, '0034_client_packages.sql'));
+check(
+  'F30: migração 0034 cria client_packages com RLS por tenant',
+  /CREATE TABLE IF NOT EXISTS client_packages/.test(mig34) &&
+  /ENABLE ROW LEVEL SECURITY/.test(mig34) && /client_packages_select_tenant/.test(mig34),
+  'Criar 0034 com a tabela client_packages e RLS tenant-scoped.'
+);
+check(
+  'F30: consumo atómico via RPC (lock + impede esgotado)',
+  /FUNCTION consumir_sessao_pacote/.test(mig34) && /FOR UPDATE/.test(mig34) &&
+  /Pacote esgotado/.test(mig34),
+  'Deve existir consumir_sessao_pacote com FOR UPDATE e guarda de esgotado.'
+);
+check(
+  'F30: CHECK impede usar mais do que o total',
+  /used_sessions <= total_sessions/.test(mig34),
+  'A tabela deve garantir used_sessions <= total_sessions.'
+);
+
+const pacotesLib = readSafe(join(SRC, 'lib', 'pacotes', 'pacotes.ts'));
+check(
+  'F30: lib pura de pacotes (restantes/estado/podeConsumir) + testes',
+  /sessoesRestantes/.test(pacotesLib) && /estadoPacote/.test(pacotesLib) && /podeConsumir/.test(pacotesLib) &&
+  exists(join(SRC, 'lib', 'pacotes', 'pacotes.test.ts')),
+  'Deve existir a lib de pacotes com testes.'
+);
+
+const pacotesSvc = readSafe(join(SRC, 'services', 'pacotes.ts'));
+check(
+  'F30: serviço com listar/criar/consumir/cancelar (consumo via RPC)',
+  /listarPacotesCliente/.test(pacotesSvc) && /criarPacote/.test(pacotesSvc) &&
+  /consumir_sessao_pacote/.test(pacotesSvc) && /cancelarPacote/.test(pacotesSvc),
+  'O serviço de pacotes deve ter as 4 operações; consumo via RPC.'
+);
+check(
+  'F30: secção de Pacotes na ficha do cliente',
+  exists(join(SRC, 'components', 'features', 'clientes', 'PacotesCliente.tsx')) &&
+  /PacotesCliente/.test(readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteDetalheModal.tsx'))),
+  'A ficha do cliente deve mostrar a secção de pacotes.'
+);
+check(
+  'F30: auditoria de pacotes (package.create/consume/cancel)',
+  (() => { const a = readSafe(join(SRC, 'services', 'audit.ts')); return /package\.create/.test(a) && /package\.consume/.test(a) && /package\.cancel/.test(a); })(),
+  'AuditAction deve incluir as ações de pacotes.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
