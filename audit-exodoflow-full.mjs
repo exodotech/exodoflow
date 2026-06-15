@@ -5253,6 +5253,35 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 35 — Integração de pacotes (finanças + agenda)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 35 — Integração de pacotes');
+console.log('─'.repeat(72));
+
+const mig36 = readSafe(join(MIGRATIONS, '0036_package_integration.sql'));
+check(
+  'F35: venda de pacote (com preço) gera receita automática',
+  /FUNCTION fn_package_sale_to_income/.test(mig36) && /'income', 'venda_produto'/.test(mig36) &&
+  /AFTER INSERT ON client_packages/.test(mig36),
+  'Deve existir o trigger que lança receita na venda de pacote.'
+);
+check(
+  'F35: marcação concluída desconta 1 sessão do pacote (FIFO, serviço preferido)',
+  /FUNCTION fn_consume_package_on_complete/.test(mig36) &&
+  /used_sessions = used_sessions \+ 1/.test(mig36) && /FOR UPDATE/.test(mig36) &&
+  /service_id = NEW\.service_id OR service_id IS NULL/.test(mig36),
+  'Deve existir o trigger que desconta sessão ao concluir a marcação.'
+);
+check(
+  'F35: UI explica o desconto automático',
+  /descontam automaticamente/.test(readSafe(join(SRC, 'components', 'features', 'clientes', 'PacotesCliente.tsx'))),
+  'A secção de pacotes deve explicar o desconto automático.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

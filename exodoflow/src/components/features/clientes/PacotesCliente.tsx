@@ -58,6 +58,11 @@ export function PacotesCliente({ clientId }: { clientId: string }) {
           {criar ? 'Fechar' : '+ Novo pacote'}
         </button>
       </div>
+      {pacotes.length > 0 && (
+        <p className="text-[11px] text-slate-400 mb-2">
+          As sessões descontam automaticamente ao concluir uma marcação. Use &quot;Usar sessão&quot; só para usos fora de uma marcação.
+        </p>
+      )}
 
       {/* Form novo pacote */}
       {criar && (
