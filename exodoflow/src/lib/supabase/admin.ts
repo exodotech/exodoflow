@@ -2,6 +2,10 @@
 // ⚠️  APENAS server-side (Route Handlers). NUNCA importar em Client Components
 //     nem em código que chegue ao browser. A chave vive em SUPABASE_SERVICE_ROLE_KEY
 //     (sem prefixo NEXT_PUBLIC_), por isso não é exposta ao cliente.
+//
+// Guarda rígida: 'server-only' faz o BUILD FALHAR se este módulo (ou qualquer um
+// que o importe) for incluído num bundle de cliente — impede vazamento da chave.
+import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
