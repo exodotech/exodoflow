@@ -5362,6 +5362,36 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 38 — Lista de espera
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 38 — Lista de espera');
+console.log('─'.repeat(72));
+
+const mig39 = readSafe(join(MIGRATIONS, '0039_waitlist.sql'));
+check(
+  'F38: tabela waitlist com estados e RLS por tenant',
+  /CREATE TABLE IF NOT EXISTS waitlist/.test(mig39) &&
+  /status IN \('waiting', 'contacted', 'scheduled', 'cancelled'\)/.test(mig39) &&
+  /waitlist_select_tenant/.test(mig39) && /tenant_id = auth_tenant_id\(\)/.test(mig39),
+  'waitlist deve ter estados validados e RLS tenant-scoped.'
+);
+check(
+  'F38: exige quem contactar (cliente OU nome de contacto)',
+  /CONSTRAINT chk_waitlist_quem CHECK \(client_id IS NOT NULL OR contact_name IS NOT NULL\)/.test(mig39),
+  'Deve existir o CHECK que garante cliente ou nome de contacto.'
+);
+check(
+  'F38: serviço + validador + UI presentes',
+  /listarWaitlist/.test(readSafe(join(SRC, 'services', 'waitlist.ts'))) &&
+  /criarWaitlistSchema/.test(readSafe(join(SRC, 'lib', 'validators', 'waitlist.ts'))) &&
+  /ListaEsperaModal/.test(readSafe(join(SRC, 'app', 'dashboard', 'agenda', 'page.tsx'))),
+  'Devem existir services/waitlist.ts, validador e integração na agenda.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

@@ -12,6 +12,7 @@ import LoadingState     from '@/components/design-system/LoadingState/LoadingSta
 import EmptyState       from '@/components/design-system/EmptyState/EmptyState'
 import ErrorState       from '@/components/design-system/ErrorState/ErrorState'
 import { NovaBookingModal }    from '@/components/features/agenda/NovaBookingModal'
+import { ListaEsperaModal }     from '@/components/features/agenda/ListaEsperaModal'
 import { CancelarBookingModal } from '@/components/features/agenda/CancelarBookingModal'
 import { ReagendarBookingModal } from '@/components/features/agenda/ReagendarBookingModal'
 import { AgendaCalendario }     from '@/components/features/agenda/AgendaCalendario'
@@ -163,6 +164,7 @@ export default function AgendaPage() {
   const [vista,             setVista]             = useState<'lista' | 'calendario'>('lista')
   const [activeFilter,      setActiveFilter]      = useState<BookingStatus | 'todos'>('todos')
   const [novaBookingAberta, setNovaBookingAberta]  = useState(false)
+  const [listaEsperaAberta, setListaEsperaAberta]  = useState(false)
   const [bookingCancelar,   setBookingCancelar]    = useState<BookingWithRelations | null>(null)
   const [bookingReagendar,  setBookingReagendar]   = useState<BookingWithRelations | null>(null)
 
@@ -270,14 +272,25 @@ export default function AgendaPage() {
         title="Agenda"
         description="Gerencie as suas marcações"
         action={
-          <Button
-            size="md"
-            className="gap-2"
-            onClick={() => setNovaBookingAberta(true)}
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nova Marcação</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="md"
+              variant="outline"
+              className="gap-2"
+              onClick={() => setListaEsperaAberta(true)}
+            >
+              <Clock className="w-4 h-4" />
+              <span className="hidden sm:inline">Lista de espera</span>
+            </Button>
+            <Button
+              size="md"
+              className="gap-2"
+              onClick={() => setNovaBookingAberta(true)}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nova Marcação</span>
+            </Button>
+          </div>
         }
       />
 
@@ -401,6 +414,11 @@ export default function AgendaPage() {
       <NovaBookingModal
         isOpen={novaBookingAberta}
         onClose={() => setNovaBookingAberta(false)}
+      />
+
+      <ListaEsperaModal
+        isOpen={listaEsperaAberta}
+        onClose={() => setListaEsperaAberta(false)}
       />
 
       {bookingCancelar && (

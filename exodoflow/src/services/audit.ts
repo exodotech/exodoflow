@@ -26,6 +26,7 @@ export type AuditAction =
   | 'booking.payment'
   | 'package.create' | 'package.consume' | 'package.cancel'
   | 'treatment.create' | 'treatment.delete'
+  | 'waitlist.create' | 'waitlist.update' | 'waitlist.delete'
 
 interface AuditOpts {
   table?:    string
