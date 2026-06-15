@@ -5422,6 +5422,39 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 40 — Privacidade & Proteção de Dados (LGPD/RGPD)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 40 — Privacidade & Proteção de Dados');
+console.log('─'.repeat(72));
+
+check(
+  'F40: service_role com guarda rígida server-only',
+  /^import 'server-only'/m.test(readSafe(join(SRC, 'lib', 'supabase', 'admin.ts'))),
+  "admin.ts deve ter import 'server-only' para falhar o build se chegar ao cliente.",
+);
+check(
+  'F40: tabela de pedidos de titulares com RLS owner/manager',
+  /CREATE TABLE IF NOT EXISTS data_subject_requests/.test(readSafe(join(MIGRATIONS, '0041_data_subject_requests.sql'))) &&
+  /dsr_select_owner_manager/.test(readSafe(join(MIGRATIONS, '0041_data_subject_requests.sql'))),
+  'Deve existir data_subject_requests com RLS restrita a owner/manager.',
+);
+check(
+  'F40: teste de isolamento multi-tenant presente',
+  /ISOLAMENTO OK/.test(readSafe(join(ROOT, 'supabase', 'tests', 'rls-isolation.test.sql'))),
+  'Deve existir supabase/tests/rls-isolation.test.sql.',
+);
+check(
+  'F40: documentação de privacidade criada',
+  ['privacy-architecture', 'data-inventory', 'data-retention-policy',
+   'data-subject-rights', 'legal-documents-needed', 'go-no-go-real-data']
+    .every((d) => readSafe(join(ROOT, 'docs', `${d}.md`)).length > 200),
+  'Devem existir os 6 docs de privacidade em docs/.',
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
