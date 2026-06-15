@@ -5,8 +5,14 @@
   --background:  #f8fafc;
   --foreground:  #0f172a;
 
-  /* Branding do tenant — sobrescrito pelo BrandingProvider */
+  /* Branding do tenant — sobrescrito pelo BrandingProvider (SÓ dentro do dashboard) */
   --tenant-primary: #2563eb;
+
+  /* Marca do PRODUTO (ExodoFlow Pro) — fixa, nunca muda com o tenant.
+     Usada no logótipo, telas públicas (login) e acentos da plataforma. */
+  --brand-from: #22c9ef;   /* cyan  — lado esquerdo do logo */
+  --brand-to:   #a3e635;   /* lima  — lado direito do logo */
+  --brand:      #0d9488;   /* teal  — cor sólida acessível p/ botões/links/foco */
 
   /* Glass system */
   --glass-bg:        rgba(255, 255, 255, 0.72);

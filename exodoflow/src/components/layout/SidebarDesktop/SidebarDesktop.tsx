@@ -21,7 +21,7 @@ import { cn }             from '@/lib/utils/cn'
 import { forceLogout }    from '@/lib/auth/logout'
 import { useAuth }        from '@/providers/AuthProvider'
 import { usePermissions } from '@/hooks/usePermissions'
-import { LogoMark }       from '@/components/brand/Logo'
+import { Logo }           from '@/components/brand/Logo'
 import type { NavItem }   from '@/types/ui/nav'
 import type { TenantSettings } from '@/types/domain/tenant'
 
@@ -75,25 +75,35 @@ export function SidebarDesktop() {
         }}
       />
 
-      {/* Logo + nome do tenant */}
-      <div className="relative px-5 py-6 border-b border-white/[0.07]">
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt={`Logo de ${tenant?.name ?? 'empresa'}`}
-            className="h-9 w-auto object-contain mb-2"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-          />
-        ) : (
-          <div className="flex items-center gap-2 mb-1">
-            <LogoMark className="h-6 w-auto" />
-            <span className="text-white font-semibold text-sm tracking-tight">ExodoFlow <span className="text-slate-400 font-normal">Pro</span></span>
-          </div>
-        )}
-        <p className="text-xs text-slate-400 truncate leading-tight">
-          {tenant?.name ?? 'A carregar...'}
-        </p>
+      {/* MARCA DO PRODUTO — sempre visível, nunca substituída pelo logo do cliente */}
+      <div className="relative px-5 py-5 border-b border-white/[0.07]">
+        <Logo variant="horizontal" onDark />
+      </div>
+
+      {/* EMPRESA ATUAL — marca do tenant em área própria (logo opcional + nome) */}
+      <div className="relative px-4 py-3 border-b border-white/[0.07]">
+        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500 mb-1.5">Empresa atual</p>
+        <div className="flex items-center gap-2 min-w-0">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={`Logo de ${tenant?.name ?? 'empresa'}`}
+              className="h-7 w-7 rounded-lg object-contain bg-white/90 p-0.5 flex-shrink-0"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+            />
+          ) : (
+            <span
+              className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              style={{ background: 'color-mix(in srgb, var(--tenant-primary) 80%, #334155)' }}
+            >
+              {(tenant?.name ?? 'E').charAt(0).toUpperCase()}
+            </span>
+          )}
+          <span className="text-sm font-medium text-slate-200 truncate">
+            {tenant?.name ?? 'A carregar...'}
+          </span>
+        </div>
       </div>
 
       {/* Navegação */}

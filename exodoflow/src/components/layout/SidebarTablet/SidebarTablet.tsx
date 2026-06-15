@@ -65,18 +65,28 @@ export function SidebarTablet() {
         style={{ background: 'radial-gradient(ellipse 100% 60% at 50% 0%, var(--tenant-primary), transparent)' }}
       />
 
-      {/* Logo */}
-      <div className="relative flex items-center justify-center py-4 border-b border-white/[0.07]">
+      {/* MARCA DO PRODUTO — sempre visível */}
+      <div className="relative flex items-center justify-center py-4 border-b border-white/[0.07]" title="ExodoFlow Pro">
+        <LogoMark className="h-7 w-auto" />
+      </div>
+
+      {/* EMPRESA ATUAL — avatar do tenant (logo opcional ou inicial) */}
+      <div className="relative flex items-center justify-center py-2.5 border-b border-white/[0.07]" title={tenant?.name ?? 'Empresa'}>
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logoUrl}
             alt={`Logo de ${tenant?.name ?? 'empresa'}`}
-            className="h-7 w-auto object-contain"
+            className="h-7 w-7 rounded-lg object-contain bg-white/90 p-0.5"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
           />
         ) : (
-          <LogoMark className="h-7 w-auto" />
+          <span
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+            style={{ background: 'color-mix(in srgb, var(--tenant-primary) 80%, #334155)' }}
+          >
+            {(tenant?.name ?? 'E').charAt(0).toUpperCase()}
+          </span>
         )}
       </div>
 

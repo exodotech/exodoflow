@@ -2,7 +2,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { BarChart3, Users, Calendar, TrendingUp, AlertCircle, Cake, Clock } from 'lucide-react'
-import PageHeader    from '@/components/design-system/PageHeader/PageHeader'
 import StatCard      from '@/components/design-system/StatCard/StatCard'
 import SectionHeader from '@/components/design-system/SectionHeader/SectionHeader'
 import { Button }    from '@/components/design-system/Button/Button'
@@ -128,10 +127,25 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title={`Bem-vindo${tenant ? `, ${tenant.name}` : ''}!`}
-        description="Visão geral do seu negócio"
-      />
+      {/* Cabeçalho do dashboard — ÁREA DA EMPRESA: logo do tenant (se existir) ao lado do nome */}
+      <div className="mb-8 flex items-center gap-3">
+        {tenantSettings?.branding?.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={tenantSettings.branding.logo_url}
+            alt={`Logo de ${tenant?.name ?? 'empresa'}`}
+            className="h-12 w-12 rounded-xl object-contain bg-white border border-slate-200 p-1 flex-shrink-0 shadow-sm"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+          />
+        )}
+        <div>
+          <div className="w-8 h-1 rounded-full mb-2" style={{ background: 'var(--tenant-primary)' }} aria-hidden />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+            Bem-vindo{tenant ? `, ${tenant.name}` : ''}!
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">Visão geral do seu negócio</p>
+        </div>
+      </div>
 
       {erro ? (
         <ErrorState

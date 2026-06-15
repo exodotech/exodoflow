@@ -49,10 +49,20 @@ export function PainelBranding() {
       {isOwner && (
         <form onSubmit={brandingForm.handleSubmit(onSubmitBranding)} className="space-y-6">
           <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
-            <SectionHeader title="Identidade Visual" />
-            <p className="text-sm text-gray-500 mt-1 mb-6">
-              Personalize as cores e o logótipo da sua empresa. As alterações aplicam-se a toda a interface.
+            <SectionHeader title="Identidade da empresa" />
+            <p className="text-sm text-gray-500 mt-1 mb-4">
+              Defina o logótipo e a cor principal da sua empresa.
             </p>
+
+            {/* Aviso: marca da empresa ≠ marca do produto */}
+            <div className="flex items-start gap-2 p-3 mb-6 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-base leading-none mt-0.5">ℹ️</span>
+              <p className="text-xs text-slate-600">
+                Este logótipo representa a <strong>sua empresa</strong> dentro do ExodoFlow Pro
+                (aparece no topo do painel e nos seus relatórios). <strong>Não substitui</strong> a
+                marca do produto ExodoFlow Pro.
+              </p>
+            </div>
 
             <div className="space-y-6">
               <LogoUpload

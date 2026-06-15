@@ -4,6 +4,7 @@ import Link            from 'next/link'
 import { UserCircle, LogOut, User } from 'lucide-react'
 import { useAuth }        from '@/providers/AuthProvider'
 import { forceLogout }    from '@/lib/auth/logout'
+import { Logo }           from '@/components/brand/Logo'
 import type { TenantSettings } from '@/types/domain/tenant'
 
 export function MobileHeader() {
@@ -29,23 +30,16 @@ export function MobileHeader() {
   return (
     <header className="md:hidden sticky top-0 z-40 bg-white border-b border-gray-200">
       <div className="h-14 px-4 flex items-center justify-between">
-        {/* Logo + nome do tenant */}
+        {/* MARCA DO PRODUTO — sempre visível (não substituída pelo logo do cliente) */}
         <div className="flex items-center gap-2 min-w-0">
-          {logoUrl ? (
+          <Logo variant="horizontal" />
+          {/* Empresa atual: logo do tenant (se existir) como avatar secundário */}
+          {logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt={tenant?.name ?? 'Logo'} className="w-7 h-7 rounded-md object-contain"
+            <img src={logoUrl} alt={tenant?.name ?? 'Logo da empresa'} title={tenant?.name ?? ''}
+              className="w-6 h-6 rounded-md object-contain border-l border-gray-200 pl-1 ml-1 flex-shrink-0"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
-          ) : (
-            <span
-              className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-              style={{ backgroundColor: 'var(--tenant-primary)' }}
-            >
-              {(tenant?.name ?? 'E').charAt(0).toUpperCase()}
-            </span>
           )}
-          <span className="text-sm font-semibold text-gray-900 truncate">
-            {tenant?.name ?? 'ExodoFlow'}
-          </span>
         </div>
 
         {/* Menu do utilizador */}

@@ -55,7 +55,7 @@ export function LogoUpload({ currentLogoUrl, onUpload, onRemove }: LogoUploadPro
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">
-        Logótipo
+        Logo da empresa
         <span className="ml-1 text-xs text-gray-400">(opcional — PNG, JPEG ou WebP, máx 2MB)</span>
       </label>
 
@@ -87,7 +87,7 @@ export function LogoUpload({ currentLogoUrl, onUpload, onRemove }: LogoUploadPro
             onClick={() => inputRef.current?.click()}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            {isLoading ? 'A carregar…' : currentLogoUrl ? 'Substituir' : 'Carregar logo'}
+            {isLoading ? 'A carregar…' : currentLogoUrl ? 'Substituir' : 'Carregar logo da empresa'}
           </button>
           {currentLogoUrl && (
             <button

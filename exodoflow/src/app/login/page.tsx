@@ -28,7 +28,13 @@ export default async function LoginPage() {
 
 function LoginView() {
   return (
-    <main className="min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    // Paleta da MARCA (não tenant): o login não tem tenant, por isso usa a cor
+    // da marca ExodoFlow Pro (teal do logo) em vez do azul genérico. Botão,
+    // links e foco dos inputs herdam --tenant-primary aqui sobrescrito.
+    <main
+      className="min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8"
+      style={{ ['--tenant-primary' as string]: 'var(--brand)' }}
+    >
       {/* Cabeçalho da marca */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
         <Logo variant="full" showTagline className="w-full" />

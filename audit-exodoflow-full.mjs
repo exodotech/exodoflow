@@ -1753,7 +1753,7 @@ check(
   (() => {
     const f = readSafe(join(SRC, 'components', 'features', 'onboarding', 'steps', 'Step7Resumo.tsx'));
     // O botão de finalizar não deve depender de branding
-    return f.includes('onFinalizar') && f.includes('Entrar no ExodoFlow AI');
+    return f.includes('onFinalizar') && f.includes('Entrar no ExodoFlow Pro');
   })(),
   'O botão de finalização não deve ser bloqueado pela secção de branding.'
 );
@@ -3019,9 +3019,10 @@ check(
   'Dashboard não é refém das queries (cabeçalho sempre, loading/erro inline)',
   (() => {
     const f = readSafe(join(SRC, 'app', 'dashboard', 'page.tsx'));
-    // Não pode haver early-return de LoadingState antes do PageHeader
+    // Não pode haver early-return de LoadingState antes do cabeçalho;
+    // o cabeçalho (saudação com o nome da empresa) é sempre renderizado.
     return !/if\s*\(\s*loadingBookings\s*\|\|\s*loadingClientes\s*\)\s*return\s*<LoadingState/.test(f) &&
-           f.includes('carregando ?') && f.includes('<PageHeader');
+           f.includes('carregando ?') && f.includes('Bem-vindo');
   })(),
   'O dashboard deve renderizar o cabeçalho sempre e mostrar loading/erro no corpo.'
 );
@@ -4778,6 +4779,104 @@ check(
     return true;
   })(),
   'Os painéis de configurações não devem usar o estilo cinza antigo.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 27 — Separação Product Brand (ExodoFlow Pro) vs Tenant Brand
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 27 — Product Brand vs Tenant Brand');
+console.log('─'.repeat(72));
+
+const sidebarD = readSafe(join(SRC, 'components', 'layout', 'SidebarDesktop', 'SidebarDesktop.tsx'));
+const sidebarT = readSafe(join(SRC, 'components', 'layout', 'SidebarTablet', 'SidebarTablet.tsx'));
+const mobileH  = readSafe(join(SRC, 'components', 'layout', 'MobileHeader', 'MobileHeader.tsx'));
+const loginPg  = readSafe(join(SRC, 'app', 'login', 'page.tsx'));
+const brandPanel = readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelBranding.tsx'));
+const logoUpload = readSafe(join(SRC, 'components', 'features', 'branding', 'LogoUpload.tsx'));
+const iconSvg  = readSafe(join(SRC, 'app', 'icon.svg'));
+const globals  = readSafe(join(SRC, 'app', 'globals.css'));
+
+// Componente de marca do produto existe
+check(
+  'F27: componente Logo do produto (SVG transparente) existe',
+  exists(join(SRC, 'components', 'brand', 'Logo.tsx')) &&
+  /LogoMark/.test(readSafe(join(SRC, 'components', 'brand', 'Logo.tsx'))),
+  'Deve existir src/components/brand/Logo.tsx com LogoMark.'
+);
+
+// Sidebar desktop: produto SEMPRE + área "Empresa atual" separada
+check(
+  'F27: SidebarDesktop mostra ExodoFlow Pro SEMPRE (não condicional ao logo do tenant)',
+  /<Logo\s+variant="horizontal"/.test(sidebarD) && /EMPRESA ATUAL|Empresa atual/i.test(sidebarD),
+  'A sidebar deve renderizar o Logo do produto sempre + bloco "Empresa atual".'
+);
+check(
+  'F27: SidebarDesktop — logo do tenant vive na área da empresa, não substitui o produto',
+  (() => {
+    // o produto (<Logo) não pode estar dentro de um ternário logoUrl ? ... : <Logo
+    return /<Logo\s+variant="horizontal"\s+onDark/.test(sidebarD) &&
+           !/logoUrl\s*\?[\s\S]{0,200}<Logo\s+variant="horizontal"/.test(sidebarD);
+  })(),
+  'O Logo do produto não pode estar dentro de um ternário sobre tenant.logo_url.'
+);
+check(
+  'F27: SidebarTablet mostra LogoMark do produto sempre + avatar do tenant separado',
+  /LogoMark/.test(sidebarT) && /Empresa/i.test(sidebarT) &&
+  !/logoUrl\s*\?[\s\S]{0,120}LogoMark/.test(sidebarT),
+  'A sidebar tablet deve ter o LogoMark fixo e o avatar do tenant numa área própria.'
+);
+
+// Mobile header: produto presente
+check(
+  'F27: MobileHeader usa o Logo do produto (não só o logo do tenant)',
+  /<Logo\s+variant="horizontal"/.test(mobileH),
+  'O mobile header deve mostrar a marca do produto.'
+);
+
+// Login: produto fixo, sem azul genérico, com rodapé
+check(
+  'F27: Login mostra ExodoFlow Pro + tagline + Powered by Êxodo Tech',
+  /<Logo\s+variant="full"/.test(loginPg) && /Powered by/.test(loginPg) && /Êxodo Tech/.test(loginPg),
+  'O login deve ter o logo do produto, tagline e rodapé Powered by Êxodo Tech.'
+);
+check(
+  'F27: Login NÃO usa azul genérico hardcoded (bg-blue-600)',
+  !/bg-blue-600/.test(loginPg),
+  'O login não pode usar bg-blue-600; deve usar a paleta da marca (--brand).'
+);
+check(
+  'F27: Login usa a paleta da marca (--brand) em vez de cor de tenant',
+  /--tenant-primary[\s\S]{0,30}var\(--brand\)/.test(loginPg),
+  'O login deve sobrescrever --tenant-primary com var(--brand).'
+);
+
+// Tokens de marca
+check(
+  'F27: tokens da marca (--brand, --brand-from/to) definidos em globals.css',
+  /--brand:/.test(globals) && /--brand-from:/.test(globals) && /--brand-to:/.test(globals),
+  'globals.css deve definir os tokens da marca do produto.'
+);
+
+// Favicon não usa logo do tenant
+check(
+  'F27: favicon/app icon é estático (não usa tenant.logo_url)',
+  iconSvg.length > 0 && !/logo_url|tenant/.test(iconSvg),
+  'O favicon do produto não pode depender do logo do tenant.'
+);
+
+// Branding do cliente: copy clara
+check(
+  'F27: PainelBranding deixa claro que o logo do cliente NÃO substitui o produto',
+  /não substitui/i.test(brandPanel) && /ExodoFlow Pro/.test(brandPanel),
+  'O painel de branding deve esclarecer que o logo da empresa não substitui a marca do produto.'
+);
+check(
+  'F27: LogoUpload é descrito como "Logo da empresa"',
+  /Logo da empresa/.test(logoUpload),
+  'O LogoUpload deve chamar-se "Logo da empresa", não logo do sistema.'
 );
 }
 
