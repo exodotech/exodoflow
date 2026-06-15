@@ -5453,6 +5453,26 @@ check(
   'A rota de cron deve validar CRON_SECRET e estar agendada no vercel.json.',
 );
 check(
+  'F40: owner NÃO pode auto-ativar billing (trigger guard)',
+  /fn_guard_tenant_billing/.test(readSafe(join(MIGRATIONS, '0042_billing_subscription.sql'))) &&
+  /current_user NOT IN \('service_role', 'postgres', 'supabase_admin'\)/.test(readSafe(join(MIGRATIONS, '0042_billing_subscription.sql'))),
+  'Deve existir o trigger que impede o cliente de escrever campos de subscrição.',
+);
+check(
+  'F40: billing mock-ready + verificação de assinatura Stripe',
+  /import 'server-only'/.test(readSafe(join(SRC, 'services', 'billing.ts'))) &&
+  /function billingMock/.test(readSafe(join(SRC, 'services', 'billing.ts'))) &&
+  /verificarAssinaturaStripe/.test(readSafe(join(SRC, 'services', 'billing.ts'))) &&
+  /timingSafeEqual/.test(readSafe(join(SRC, 'services', 'billing.ts'))),
+  'billing.ts deve ser server-only, ter modo mock e verificar a assinatura do webhook.',
+);
+check(
+  'F40: rotas de billing (checkout owner-only + webhook)',
+  /role !== 'owner'/.test(readSafe(join(SRC, 'app', 'api', 'billing', 'checkout', 'route.ts'))) &&
+  /verificarAssinaturaStripe/.test(readSafe(join(SRC, 'app', 'api', 'billing', 'webhook', 'route.ts'))),
+  'Checkout deve ser owner-only e o webhook deve validar a assinatura.',
+);
+check(
   'F40: documentação de privacidade criada',
   ['privacy-architecture', 'data-inventory', 'data-retention-policy',
    'data-subject-rights', 'legal-documents-needed', 'go-no-go-real-data']

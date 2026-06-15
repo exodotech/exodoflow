@@ -1561,9 +1561,11 @@ export type Database = {
         Row: {
           address: Json | null
           admin_notes: string | null
+          billing_cycle: string | null
           business_type: string
           country: string
           created_at: string
+          current_period_end: string | null
           deleted_at: string | null
           email: string | null
           id: string
@@ -1577,15 +1579,20 @@ export type Database = {
           plan_started_at: string | null
           settings: Json
           slug: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string
           trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
           address?: Json | null
           admin_notes?: string | null
+          billing_cycle?: string | null
           business_type: string
           country?: string
           created_at?: string
+          current_period_end?: string | null
           deleted_at?: string | null
           email?: string | null
           id?: string
@@ -1599,15 +1606,20 @@ export type Database = {
           plan_started_at?: string | null
           settings?: Json
           slug: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
           trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
           address?: Json | null
           admin_notes?: string | null
+          billing_cycle?: string | null
           business_type?: string
           country?: string
           created_at?: string
+          current_period_end?: string | null
           deleted_at?: string | null
           email?: string | null
           id?: string
@@ -1621,6 +1633,9 @@ export type Database = {
           plan_started_at?: string | null
           settings?: Json
           slug?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
           trial_ends_at?: string | null
           updated_at?: string
         }
