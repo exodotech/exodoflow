@@ -1235,6 +1235,71 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          booking_id: string | null
+          client_id: string
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          rating: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id?: string | null
+          client_id: string
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          rating: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string | null
+          client_id?: string
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          rating?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           color: string

@@ -15,6 +15,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import type { ClienteEditavel } from './NovoClienteModal'
 import { PacotesCliente } from './PacotesCliente'
 import { FichaTratamento } from './FichaTratamento'
+import { AvaliacoesCliente } from './AvaliacoesCliente'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendente', confirmed: 'Confirmada', in_progress: 'Em curso',
@@ -167,6 +168,9 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
 
           {/* Ficha de tratamento (histórico clínico) */}
           <FichaTratamento clientId={cliente.id} />
+
+          {/* Avaliações pós-atendimento */}
+          <AvaliacoesCliente clientId={cliente.id} />
 
           {/* Trilho de consentimento (imutável, RGPD) */}
           <div>

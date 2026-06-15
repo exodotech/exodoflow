@@ -27,6 +27,7 @@ export type AuditAction =
   | 'package.create' | 'package.consume' | 'package.cancel'
   | 'treatment.create' | 'treatment.delete'
   | 'waitlist.create' | 'waitlist.update' | 'waitlist.delete'
+  | 'review.create' | 'review.delete'
 
 interface AuditOpts {
   table?:    string

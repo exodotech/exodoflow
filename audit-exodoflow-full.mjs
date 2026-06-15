@@ -5392,6 +5392,36 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 39 — Avaliações pós-atendimento
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 39 — Avaliações');
+console.log('─'.repeat(72));
+
+const mig40 = readSafe(join(MIGRATIONS, '0040_reviews.sql'));
+check(
+  'F39: tabela reviews com nota 1–5 e RLS por tenant',
+  /CREATE TABLE IF NOT EXISTS reviews/.test(mig40) &&
+  /rating\s+SMALLINT\s+NOT NULL CHECK \(rating BETWEEN 1 AND 5\)/.test(mig40) &&
+  /reviews_select_tenant/.test(mig40) && /tenant_id = auth_tenant_id\(\)/.test(mig40),
+  'reviews deve ter rating 1–5 e RLS tenant-scoped.'
+);
+check(
+  'F39: uma avaliação por marcação (booking_id UNIQUE)',
+  /booking_id\s+UUID\s+UNIQUE/.test(mig40),
+  'booking_id deve ser UNIQUE para evitar avaliações duplicadas por marcação.'
+);
+check(
+  'F39: serviço (média) + validador + UI presentes',
+  /resumoReviews/.test(readSafe(join(SRC, 'services', 'reviews.ts'))) &&
+  /criarReviewSchema/.test(readSafe(join(SRC, 'lib', 'validators', 'review.ts'))) &&
+  /AvaliacoesCliente/.test(readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteDetalheModal.tsx'))),
+  'Devem existir services/reviews.ts, validador e secção na ficha do cliente.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
