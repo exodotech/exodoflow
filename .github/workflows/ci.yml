@@ -62,10 +62,11 @@ jobs:
         with:
           version: latest
 
-      # Sobe uma BD efémera e aplica TODAS as migrações 0001→N de raiz
-      # (valida também que o conjunto de migrações aplica limpo — caminho de deploy).
+      # Sobe o stack local e aplica TODAS as migrações 0001→N de raiz (valida
+      # também que o conjunto de migrações aplica limpo — caminho de deploy).
+      # 'supabase start' aplica migrações + seed; mais fiável que 'db start' em CI.
       - name: Iniciar Supabase local
-        run: supabase db start
+        run: supabase start
 
       # Corre o teste de isolamento: Tenant A não lê nem escreve dados do Tenant B.
       - name: Teste de isolamento RLS
