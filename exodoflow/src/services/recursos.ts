@@ -56,6 +56,7 @@ export async function criarRecurso(input: CriarRecursoInput) {
       type:      input.type,
       color:     input.color,
       metadata:  metadataDe(input.specialization || undefined),
+      commission_percent: input.type === 'staff' ? (input.commission_percent ?? 0) : 0,
       is_active: true,
     })
     .select('id')
@@ -75,6 +76,7 @@ export async function atualizarRecurso(id: string, input: AtualizarRecursoInput)
   if (input.type  !== undefined) patch.type  = input.type
   if (input.color !== undefined) patch.color = input.color
   if (input.specialization !== undefined) patch.metadata = metadataDe(input.specialization || undefined)
+  if (input.commission_percent !== undefined) patch.commission_percent = input.commission_percent
 
   const { data, error } = await supabase
     .from('resources')

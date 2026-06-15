@@ -1173,6 +1173,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           color: string
+          commission_percent: number
           created_at: string
           deleted_at: string | null
           description: string | null
@@ -1188,6 +1189,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           color?: string
+          commission_percent?: number
           created_at?: string
           deleted_at?: string | null
           description?: string | null
@@ -1203,6 +1205,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           color?: string
+          commission_percent?: number
           created_at?: string
           deleted_at?: string | null
           description?: string | null
@@ -1896,6 +1899,17 @@ export type Database = {
           p_target_tenant_id?: string
         }
         Returns: string
+      }
+      relatorio_comissoes: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          commission_percent: number
+          resource_id: string
+          resource_name: string
+          total_comissao: number
+          total_faturado: number
+          total_servicos: number
+        }[]
       }
       reschedule_booking: {
         Args: {

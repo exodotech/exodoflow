@@ -29,19 +29,22 @@ export function RecursoModal({ isOpen, onClose, recurso, onSuccess }: RecursoMod
   const atualizar = useAtualizarRecurso()
 
   const {
-    register, handleSubmit, reset,
+    register, handleSubmit, reset, watch,
     formState: { errors, isSubmitting },
   } = useFormWithZod(criarRecursoSchema, {
     defaultValues: { type: 'staff', color: '#6366f1' },
   })
 
+  // Comissão só faz sentido para colaboradores (staff).
+  const tipoActual = watch('type')
+
   useEffect(() => {
     if (!isOpen) return
     if (recurso) {
       const spec = (recurso.metadata as Record<string, string> | null)?.specialization ?? ''
-      reset({ name: recurso.name, type: recurso.type, color: recurso.color, specialization: spec })
+      reset({ name: recurso.name, type: recurso.type, color: recurso.color, specialization: spec, commission_percent: recurso.commission_percent ?? 0 })
     } else {
-      reset({ type: 'staff', color: '#6366f1', name: '', specialization: '' })
+      reset({ type: 'staff', color: '#6366f1', name: '', specialization: '', commission_percent: 0 })
     }
   }, [isOpen, recurso, reset])
 
@@ -110,6 +113,20 @@ export function RecursoModal({ isOpen, onClose, recurso, onSuccess }: RecursoMod
           error={errors.specialization?.message}
           {...register('specialization')}
         />
+
+        {tipoActual === 'staff' && (
+          <Input
+            label="Comissão (%)"
+            type="number"
+            min="0"
+            max="100"
+            step="0.5"
+            placeholder="0"
+            helperText="Percentagem sobre serviços concluídos. Usada no relatório de comissões."
+            error={errors.commission_percent?.message}
+            {...register('commission_percent')}
+          />
+        )}
 
         <div className="flex items-center gap-3">
           <div>

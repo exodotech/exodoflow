@@ -18,6 +18,12 @@ export const criarRecursoSchema = z.object({
     .max(100, 'Máximo 100 caracteres')
     .optional()
     .or(z.literal('')),
+  // Comissão do colaborador (0–100). Coerção de string (input number) para número.
+  commission_percent: z
+    .coerce.number({ message: 'Percentagem inválida' })
+    .min(0, 'Mínimo 0%')
+    .max(100, 'Máximo 100%')
+    .optional(),
 })
 
 // Actualizar: todos os campos opcionais

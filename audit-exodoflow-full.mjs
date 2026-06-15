@@ -5325,6 +5325,43 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 37 — Comissões por profissional
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 37 — Comissões');
+console.log('─'.repeat(72));
+
+const mig38 = readSafe(join(MIGRATIONS, '0038_commissions.sql'));
+check(
+  'F37: % de comissão por recurso (0–100) com CHECK',
+  /ADD COLUMN IF NOT EXISTS commission_percent/.test(mig38) &&
+  /commission_percent >= 0 AND commission_percent <= 100/.test(mig38),
+  'resources deve ter commission_percent com CHECK 0–100.'
+);
+check(
+  'F37: RPC relatorio_comissoes SECURITY DEFINER valida owner/manager',
+  /FUNCTION relatorio_comissoes/.test(mig38) && /SECURITY DEFINER/.test(mig38) &&
+  /v_role NOT IN \('owner', 'manager'\)/.test(mig38),
+  'A RPC deve validar tenant + role owner/manager.'
+);
+check(
+  'F37: base = marcações concluídas, valor com fallback ao preço do serviço',
+  /b\.status = 'completed'/.test(mig38) &&
+  /COALESCE\(b\.price_charged, s\.price, 0\)/.test(mig38) &&
+  /commission_percent \/ 100/.test(mig38),
+  'O cálculo deve usar marcações completed e price_charged|service.price.'
+);
+check(
+  'F37: serviço, UI e campo de comissão presentes',
+  /relatorio_comissoes/.test(readSafe(join(SRC, 'services', 'comissoes.ts'))) &&
+  /ComissoesModal/.test(readSafe(join(SRC, 'app', 'dashboard', 'financas', 'page.tsx'))) &&
+  /commission_percent/.test(readSafe(join(SRC, 'components', 'features', 'recursos', 'RecursoModal.tsx'))),
+  'Devem existir services/comissoes.ts, ComissoesModal e o campo no RecursoModal.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

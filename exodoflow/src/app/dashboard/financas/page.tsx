@@ -2,7 +2,7 @@
 // /dashboard/financas — controlo interno de caixa (OWNER + MANAGER).
 // NÃO é contabilidade oficial nem faturação certificada. Mobile-first.
 import React, { useMemo, useState } from 'react'
-import { Plus, Minus, Download, Pencil, Trash2, Wallet, Clock, ReceiptText } from 'lucide-react'
+import { Plus, Minus, Download, Pencil, Trash2, Wallet, Clock, ReceiptText, Users } from 'lucide-react'
 import PageHeader       from '@/components/design-system/PageHeader/PageHeader'
 import { Button }       from '@/components/design-system/Button/Button'
 import { StatCard }     from '@/components/design-system/StatCard/StatCard'
@@ -17,6 +17,7 @@ import ConfirmDialog    from '@/components/design-system/ConfirmDialog/ConfirmDi
 import AccessDenied     from '@/components/design-system/AccessDenied/AccessDenied'
 import { TransacaoModal } from '@/components/features/financas/TransacaoModal'
 import { ReciboModal }    from '@/components/features/financas/ReciboModal'
+import { ComissoesModal } from '@/components/features/financas/ComissoesModal'
 import { useTransacoes, useApagarTransacao } from '@/hooks/useFinancas'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth } from '@/providers/AuthProvider'
@@ -50,6 +51,7 @@ export default function FinancasPage() {
   const [editar, setEditar]     = useState<FinancialTransaction | null>(null)
   const [apagar, setApagar]     = useState<FinancialTransaction | null>(null)
   const [recibo, setRecibo]     = useState<FinancialTransaction | null>(null)
+  const [comissoes, setComissoes] = useState(false)
 
   // Resumo: sempre o MÊS corrente (independente dos filtros da lista)
   const { data: doMes = [] } = useTransacoes({ from: inicioMes })
@@ -131,6 +133,9 @@ export default function FinancasPage() {
         description="Controlo interno de caixa — entradas, saídas e saldo. Não é faturação oficial."
         action={
           <div className="flex gap-2">
+            <Button size="md" variant="outline" className="gap-1" onClick={() => setComissoes(true)}>
+              <Users className="w-4 h-4" /> <span className="hidden sm:inline">Comissões</span>
+            </Button>
             <Button size="md" className="gap-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => setNovoTipo('income')}>
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Entrada</span>
             </Button>
@@ -212,6 +217,9 @@ export default function FinancasPage() {
       )}
       {recibo && (
         <ReciboModal isOpen={!!recibo} onClose={() => setRecibo(null)} transacao={recibo} locale={locale} />
+      )}
+      {comissoes && (
+        <ComissoesModal isOpen={comissoes} onClose={() => setComissoes(false)} currency={currency} locale={locale} mesAtual={hoje.slice(0, 7)} />
       )}
       <ConfirmDialog
         isOpen={!!apagar}
