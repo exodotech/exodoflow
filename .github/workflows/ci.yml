@@ -26,6 +26,10 @@ jobs:
         working-directory: exodoflow
         run: npm ci
 
+      - name: Type-check
+        working-directory: exodoflow
+        run: npm run type-check
+
       - name: Lint
         working-directory: exodoflow
         run: npm run lint
@@ -45,3 +49,28 @@ jobs:
 
       - name: Auditoria EEOS
         run: node audit-exodoflow-full.mjs
+
+  rls-isolation:
+    name: Isolamento multi-tenant (RLS)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Sobe uma BD efémera e aplica TODAS as migrações 0001→N de raiz
+      # (valida também que o conjunto de migrações aplica limpo — caminho de deploy).
+      - name: Iniciar Supabase local
+        run: supabase db start
+
+      # Corre o teste de isolamento: Tenant A não lê nem escreve dados do Tenant B.
+      - name: Teste de isolamento RLS
+        run: |
+          docker exec -i "$(docker ps --filter name=supabase_db -q | head -1)" \
+            psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < supabase/tests/rls-isolation.test.sql | tee /tmp/rls.out
+          grep -q "ISOLAMENTO OK" /tmp/rls.out
