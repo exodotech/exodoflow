@@ -5493,6 +5493,13 @@ check(
   'clientKeyFromRequest deve preferir x-real-ip e nunca o primeiro x-forwarded-for.',
 );
 check(
+  'F40: páginas de erro/404 com marca (sem ecrã default do Next)',
+  readSafe(join(SRC, 'app', 'error.tsx')).length > 100 &&
+  readSafe(join(SRC, 'app', 'global-error.tsx')).length > 100 &&
+  /404/.test(readSafe(join(SRC, 'app', 'not-found.tsx'))),
+  'Devem existir error.tsx, global-error.tsx e not-found.tsx com marca.',
+);
+check(
   'F40: documentação de privacidade criada',
   ['privacy-architecture', 'data-inventory', 'data-retention-policy',
    'data-subject-rights', 'legal-documents-needed', 'go-no-go-real-data']
