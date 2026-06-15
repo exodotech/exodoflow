@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import {
   Building2, CreditCard, Plug, Layers,
-  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock,
+  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot,
 } from 'lucide-react'
 import PageHeader  from '@/components/design-system/PageHeader/PageHeader'
 import AccessDenied from '@/components/design-system/AccessDenied/AccessDenied'
@@ -17,12 +17,13 @@ import { PainelTemplates }         from '@/components/features/configuracoes/Pai
 import { PainelWhatsApp }          from '@/components/features/configuracoes/PainelWhatsApp'
 import { PainelRelatorios }        from '@/components/features/configuracoes/PainelRelatorios'
 import { PainelAgenda }            from '@/components/features/configuracoes/PainelAgenda'
+import { PainelAssistente }        from '@/components/features/configuracoes/PainelAssistente'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth }        from '@/providers/AuthProvider'
 import type { SupportedLocale } from '@/types/domain'
 
 type Tab =
-  | 'empresa' | 'branding' | 'localizacao' | 'agenda' | 'comunicacao' | 'whatsapp'
+  | 'empresa' | 'branding' | 'localizacao' | 'agenda' | 'assistente' | 'comunicacao' | 'whatsapp'
   | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios'
 
 const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
@@ -30,6 +31,7 @@ const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'branding',           label: 'Branding',    icon: <Palette       className="w-4 h-4" /> },
   { value: 'localizacao',        label: 'Localização', icon: <Globe         className="w-4 h-4" /> },
   { value: 'agenda',             label: 'Agenda',      icon: <CalendarClock className="w-4 h-4" /> },
+  { value: 'assistente',         label: 'Assistente',  icon: <Bot           className="w-4 h-4" /> },
   { value: 'comunicacao',        label: 'Comunicação', icon: <MessageSquare className="w-4 h-4" /> },
   { value: 'whatsapp',           label: 'WhatsApp',    icon: <MessageCircle className="w-4 h-4" /> },
   { value: 'templates_mensagem', label: 'Mensagens',   icon: <FileText      className="w-4 h-4" /> },
@@ -94,6 +96,7 @@ export default function ConfiguracoesPage() {
       {activeTab === 'branding'           && <PainelBranding />}
       {activeTab === 'localizacao'        && <PainelLocalizacao locale={locale} settings={settings} />}
       {activeTab === 'agenda'             && <PainelAgenda />}
+      {activeTab === 'assistente'         && <PainelAssistente />}
       {activeTab === 'comunicacao'        && <PainelComunicacao />}
       {activeTab === 'whatsapp'           && <PainelWhatsApp />}
       {activeTab === 'templates_mensagem' && <PainelTemplatesMensagem />}

@@ -5214,6 +5214,45 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 34 — Assistente virtual de WhatsApp (IA, mock-ready)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 34 — Assistente virtual');
+console.log('─'.repeat(72));
+
+const responder = readSafe(join(SRC, 'lib', 'assistant', 'responder.ts'));
+check(
+  'F34: responder heurístico (deteta intenção) + testes',
+  /detetarIntencao/.test(responder) && /gerarRespostaAssistente/.test(responder) &&
+  exists(join(SRC, 'lib', 'assistant', 'responder.test.ts')),
+  'Deve existir o responder do assistente com testes.'
+);
+check(
+  'F34: assistente NUNCA marca sozinho (direciona para portal/equipa)',
+  /portalUrl/.test(responder) && !/criar.*booking|insert.*booking/i.test(responder),
+  'O responder não pode criar marcações — só informar e direcionar.'
+);
+const assistSvc = readSafe(join(SRC, 'services', 'assistant.ts'));
+check(
+  'F34: serviço com contexto do tenant + seam para IA (ANTHROPIC_API_KEY)',
+  /construirContexto/.test(assistSvc) && /ANTHROPIC_API_KEY/.test(assistSvc) && /mock/.test(assistSvc),
+  'O serviço deve construir contexto do tenant e ter o seam de IA com fallback mock.'
+);
+check(
+  'F34: rota /api/assistant/responder autenticada + rate-limit',
+  (() => { const r = readSafe(join(SRC, 'app', 'api', 'assistant', 'responder', 'route.ts')); return /getUser\(\)/.test(r) && /checkRateLimit/.test(r); })(),
+  'A rota do assistente deve exigir sessão e ter rate-limit.'
+);
+check(
+  'F34: painel Assistente (toggle + tester) na config',
+  exists(join(SRC, 'components', 'features', 'configuracoes', 'PainelAssistente.tsx')) &&
+  /assistente/.test(readSafe(join(SRC, 'app', 'dashboard', 'configuracoes', 'page.tsx'))),
+  'Deve existir o painel do assistente com toggle e tester na configuração.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

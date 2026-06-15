@@ -49,6 +49,7 @@ export interface TenantSettings {
   branding?:              BrandingSettings
   relatorio?:             RelatorioSettings
   booking?:               BookingSettings
+  assistant?:             { enabled?: boolean }
 }
 
 // Cor primária por defeito (azul profissional)
