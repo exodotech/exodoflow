@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 import { ForgotPasswordForm } from '@/components/features/auth/ForgotPasswordForm'
 
 export const metadata: Metadata = {
-  title: 'Recuperar palavra-passe — ExodoFlow AI',
+  title: 'Recuperar palavra-passe — ExodoFlow Pro',
 }
 
 export default function ForgotPasswordPage() {

@@ -21,6 +21,7 @@ import { cn }             from '@/lib/utils/cn'
 import { forceLogout }    from '@/lib/auth/logout'
 import { useAuth }        from '@/providers/AuthProvider'
 import { usePermissions } from '@/hooks/usePermissions'
+import { LogoMark }       from '@/components/brand/Logo'
 import type { NavItem }   from '@/types/ui/nav'
 import type { TenantSettings } from '@/types/domain/tenant'
 
@@ -75,12 +76,7 @@ export function SidebarTablet() {
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
           />
         ) : (
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-            style={{ background: 'var(--tenant-primary)' }}
-          >
-            E
-          </div>
+          <LogoMark className="h-7 w-auto" />
         )}
       </div>
 

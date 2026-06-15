@@ -28,7 +28,7 @@ export function PainelPlano({ locale }: PainelPlanoProps) {
           <SectionHeader title="Plano Actual" />
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
             <p className="text-sm font-semibold text-blue-900">Trial</p>
-            <p className="text-xs text-blue-700 mt-1">A explorar o ExodoFlow AI gratuitamente</p>
+            <p className="text-xs text-blue-700 mt-1">A explorar o ExodoFlow Pro gratuitamente</p>
           </div>
           <div className="mt-6 space-y-3">
             <p className="text-sm font-medium text-gray-700">Funcionalidades incluídas:</p>

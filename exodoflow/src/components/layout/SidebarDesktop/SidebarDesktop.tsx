@@ -21,6 +21,7 @@ import { cn }             from '@/lib/utils/cn'
 import { forceLogout }    from '@/lib/auth/logout'
 import { useAuth }        from '@/providers/AuthProvider'
 import { usePermissions } from '@/hooks/usePermissions'
+import { LogoMark }       from '@/components/brand/Logo'
 import type { NavItem }   from '@/types/ui/nav'
 import type { TenantSettings } from '@/types/domain/tenant'
 
@@ -86,13 +87,8 @@ export function SidebarDesktop() {
           />
         ) : (
           <div className="flex items-center gap-2 mb-1">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-              style={{ background: 'var(--tenant-primary)' }}
-            >
-              E
-            </div>
-            <span className="text-white font-semibold text-sm tracking-tight">ExodoFlow</span>
+            <LogoMark className="h-6 w-auto" />
+            <span className="text-white font-semibold text-sm tracking-tight">ExodoFlow <span className="text-slate-400 font-normal">Pro</span></span>
           </div>
         )}
         <p className="text-xs text-slate-400 truncate leading-tight">
@@ -166,6 +162,10 @@ export function SidebarDesktop() {
           <LogOut className="w-4 h-4" />
           Sair
         </button>
+        {/* Marca da plataforma (discreta) */}
+        <p className="px-3 pt-1 text-[10px] text-slate-600">
+          ExodoFlow Pro · <span className="text-slate-500">Êxodo Tech</span>
+        </p>
       </div>
     </aside>
   )

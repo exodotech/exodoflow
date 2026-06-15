@@ -1,4 +1,4 @@
-// Layout raiz da aplicação ExodoFlow AI
+// Layout raiz da aplicação ExodoFlow Pro
 // Envolve toda a app com os providers necessários (TanStack Query)
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title:       'ExodoFlow AI — Agenda Inteligente',
-  description: 'Plataforma SaaS de agendamento e automação com IA para negócios de serviços',
+  title:       'ExodoFlow Pro — Tecnologia inteligente para gerir o seu negócio',
+  description: 'ExodoFlow Pro — gestão simples e inteligente para empresas. Agenda, clientes e automação num só lugar. Powered by Êxodo Tech.',
+  applicationName: 'ExodoFlow Pro',
 }
 
 export default function RootLayout({

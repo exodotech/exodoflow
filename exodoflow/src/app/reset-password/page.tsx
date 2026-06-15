@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import { ResetPasswordForm } from '@/components/features/auth/ResetPasswordForm'
 
 export const metadata: Metadata = {
-  title: 'Definir nova palavra-passe — ExodoFlow AI',
+  title: 'Definir nova palavra-passe — ExodoFlow Pro',
 }
 
 export default function ResetPasswordPage() {

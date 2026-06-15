@@ -209,7 +209,7 @@ export function Step7Resumo({ state, locale, onFinalizar, isLoading }: Props) {
         disabled={isLoading}
         onClick={onFinalizar}
       >
-        {isLoading ? 'A finalizar...' : 'Entrar no ExodoFlow AI'}
+        {isLoading ? 'A finalizar...' : 'Entrar no ExodoFlow Pro'}
         {!isLoading && <ChevronRight className="w-5 h-5" />}
       </Button>
     </div>

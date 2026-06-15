@@ -38,7 +38,7 @@ export function gerarRelatorioDiario(
     'Este relatório é apenas um controlo interno de caixa.',
     'Não substitui contabilidade certificada.',
     '',
-    '── ExodoFlow AI ────────────────────────',
+    '── ExodoFlow Pro ────────────────────────',
   ].filter((l) => l !== undefined).join('\n')
 
   return {
@@ -87,7 +87,7 @@ export function gerarRelatorioMensal(
     'Este relatório é apenas um controlo interno de caixa.',
     'Não substitui contabilidade certificada.',
     '',
-    '── ExodoFlow AI ────────────────────────',
+    '── ExodoFlow Pro ────────────────────────',
   ].filter((l) => l !== undefined).join('\n')
 
   return {

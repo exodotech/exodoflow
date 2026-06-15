@@ -4,6 +4,7 @@ import { redirect }     from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AdminNav }     from '@/components/features/admin/AdminNav'
 import { AdminUserMenu } from '@/components/features/admin/AdminUserMenu'
+import { LogoMark }     from '@/components/brand/Logo'
 
 export default async function AdminLayout({
   children,
@@ -36,11 +37,9 @@ export default async function AdminLayout({
         />
         <div className="relative max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 font-bold text-sm text-white shadow-lg shadow-indigo-900/40">
-              E
-            </span>
+            <LogoMark className="h-7 w-auto" />
             <div className="leading-tight">
-              <p className="font-semibold text-sm text-white tracking-tight">ExodoFlow</p>
+              <p className="font-semibold text-sm text-white tracking-tight">ExodoFlow <span className="text-slate-400 font-normal">Pro</span></p>
               <p className="text-xs text-slate-400">Administração do Sistema</p>
             </div>
           </div>
