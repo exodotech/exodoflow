@@ -32,6 +32,10 @@ export interface BrandingSettings {
 export interface BookingSettings {
   // Permite "Marcação Rápida" (sem cliente identificado). Default: true.
   allow_quick_booking?: boolean
+  // Lembretes automáticos de marcação (simulados até o WhatsApp real). Default: false.
+  reminders_enabled?:   boolean
+  // Antecedência do lembrete, em horas. Default: 24.
+  reminder_hours?:      number
 }
 
 // Configurações operacionais (armazenadas no campo settings JSONB)

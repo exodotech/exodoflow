@@ -25,3 +25,24 @@ export async function guardarPermitirMarcacaoRapida(permitir: boolean): Promise<
   assertMutationSuccess(data, error, 'guardar configuração de agenda')
   await registarAuditoria('company.update', { table: 'tenants', recordId: tenant_id, metadata: { section: 'booking', allow_quick_booking: permitir } })
 }
+
+// Liga/desliga os lembretes automáticos (settings.booking.reminders_enabled).
+export async function guardarLembretesAtivos(ativo: boolean): Promise<void> {
+  const supabase  = createClient()
+  const tenant_id = await getTenantId()
+
+  const { data: atual, error: loadErr } = await supabase
+    .from('tenants').select('settings').eq('id', tenant_id).single()
+  if (loadErr) throw new Error(`Erro ao carregar configurações: ${loadErr.message}`)
+
+  const settingsAtuais = (atual?.settings ?? {}) as Record<string, unknown>
+  const bookingAtual   = (settingsAtuais.booking ?? {}) as Record<string, unknown>
+
+  const { data, error } = await supabase
+    .from('tenants')
+    .update({ settings: { ...settingsAtuais, booking: { ...bookingAtual, reminders_enabled: ativo } } })
+    .eq('id', tenant_id)
+    .select('id')
+  assertMutationSuccess(data, error, 'guardar lembretes')
+  await registarAuditoria('company.update', { table: 'tenants', recordId: tenant_id, metadata: { section: 'booking', reminders_enabled: ativo } })
+}

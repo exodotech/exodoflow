@@ -5128,6 +5128,46 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 32 — Lembretes automáticos de marcação
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 32 — Lembretes automáticos');
+console.log('─'.repeat(72));
+
+const lembLib = readSafe(join(SRC, 'lib', 'lembretes', 'lembretes.ts'));
+check(
+  'F32: lib pura de lembretes (janela/dedup/estado) + testes',
+  /precisaLembrete/.test(lembLib) && /bookingsParaLembrar/.test(lembLib) && /corpoLembrete/.test(lembLib) &&
+  exists(join(SRC, 'lib', 'lembretes', 'lembretes.test.ts')),
+  'Deve existir a lib pura de lembretes com testes.'
+);
+const lembSvc = readSafe(join(SRC, 'services', 'lembretes.ts'))
+check(
+  'F32: serviço server-side com dedup por booking_id e modo simulado',
+  /createAdminClient/.test(lembSvc) && /booking_reminder_24h/.test(lembSvc) &&
+  /jaLembrados/.test(lembSvc) && /WHATSAPP_OUTBOUND_MOCK/.test(lembSvc),
+  'O serviço deve usar admin client, deduplicar e suportar modo mock.'
+);
+const lembRoute = readSafe(join(SRC, 'app', 'api', 'lembretes', 'processar', 'route.ts'))
+check(
+  'F32: /api/lembretes/processar autenticado + permissão + rate-limit',
+  /getUser\(\)/.test(lembRoute) && /agenda\.create/.test(lembRoute) && /checkRateLimit/.test(lembRoute),
+  'A rota deve validar sessão, permissão agenda.create e ter rate-limit.'
+);
+check(
+  'F32: config Agenda com toggle de lembretes + envio manual',
+  (() => { const p = readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelAgenda.tsx')); return /reminders_enabled|Lembretes autom/.test(p) && /Enviar lembretes agora/.test(p); })(),
+  'O painel Agenda deve permitir ativar lembretes e enviar manualmente.'
+);
+check(
+  'F32: BookingSettings inclui reminders_enabled/reminder_hours',
+  /reminders_enabled/.test(readSafe(join(SRC, 'types', 'domain', 'tenant.ts'))),
+  'TenantSettings.booking deve ter os campos de lembrete.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
