@@ -174,9 +174,9 @@ export default function ClientesPage() {
         action={
           can('clients.create') ? (
             <div className="flex gap-2">
-              <Button size="md" variant="outline" className="gap-2" onClick={() => setRapidoAberto(true)} title="Cadastro rápido: só nome e telefone">
+              <Button size="md" variant="outline" className="gap-2" onClick={() => setRapidoAberto(true)} title="Visitante: só nome (obrigatório) e telefone (opcional)">
                 <Zap className="w-4 h-4" />
-                <span className="hidden sm:inline">Cliente rápido</span>
+                <span className="hidden sm:inline">Visitante</span>
               </Button>
               <Button size="md" className="gap-2" onClick={() => setCriarAberto(true)}>
                 <Plus className="w-4 h-4" />

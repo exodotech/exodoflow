@@ -292,6 +292,7 @@ export type Database = {
           id: string
           is_anonymized: boolean
           is_guest: boolean
+          is_quick: boolean
           marketing_consent: boolean
           nif: string | null
           notes: string | null
@@ -313,6 +314,7 @@ export type Database = {
           id?: string
           is_anonymized?: boolean
           is_guest?: boolean
+          is_quick?: boolean
           marketing_consent?: boolean
           nif?: string | null
           notes?: string | null
@@ -334,6 +336,7 @@ export type Database = {
           id?: string
           is_anonymized?: boolean
           is_guest?: boolean
+          is_quick?: boolean
           marketing_consent?: boolean
           nif?: string | null
           notes?: string | null
@@ -1534,6 +1537,7 @@ export type Database = {
           slot_start: string
         }[]
       }
+      get_or_create_quick_client: { Args: never; Returns: string }
       get_tenant_feature_flag: {
         Args: { p_flag_name: string; p_tenant_id: string }
         Returns: boolean

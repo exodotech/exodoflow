@@ -9,12 +9,14 @@ import { useRecursos }        from '@/hooks/useRecursos'
 import { useCriarBooking }    from '@/hooks/useBookings'
 import { useDisponibilidade } from '@/hooks/useDisponibilidade'
 import { useAuth }            from '@/providers/AuthProvider'
-import { StepClienteServico } from './steps/StepClienteServico'
+import { StepClienteServico, type TipoCliente } from './steps/StepClienteServico'
 import { StepDataRecurso }    from './steps/StepDataRecurso'
 import { StepHorarios }       from './steps/StepHorarios'
 import { StepConfirmacao }    from './steps/StepConfirmacao'
 import { ClienteRapidoModal } from '@/components/features/clientes/ClienteRapidoModal'
+import { obterClienteRapido } from '@/services/clients'
 import type { SlotDisponivel } from '@/services/disponibilidade'
+import type { TenantSettings } from '@/types/domain/tenant'
 
 interface NovaBookingModalProps {
   isOpen:  boolean
@@ -24,6 +26,7 @@ interface NovaBookingModalProps {
 type Step = 1 | 2 | 3 | 4
 
 interface Selecao {
+  tipo:        TipoCliente
   client_id:   string
   service_id:  string
   date:        string          // 'YYYY-MM-DD'
@@ -35,7 +38,7 @@ interface Selecao {
 const STEP_LABELS = ['Cliente e Serviço', 'Data e Recurso', 'Horário disponível', 'Confirmar']
 
 const SEL_INICIAL: Selecao = {
-  client_id: '', service_id: '', date: '', resource_id: '', slot: null, notes: '',
+  tipo: 'existente', client_id: '', service_id: '', date: '', resource_id: '', slot: null, notes: '',
 }
 
 export function NovaBookingModal({ isOpen, onClose }: NovaBookingModalProps) {
@@ -51,10 +54,12 @@ export function NovaBookingModal({ isOpen, onClose }: NovaBookingModalProps) {
   const [erro, setErro]   = useState<string | null>(null)
   const [rapidoAberto, setRapidoAberto] = useState(false)
 
-  const settings     = tenant?.settings as { timezone?: string; slot_interval_minutes?: number } | null
+  const settings     = tenant?.settings as TenantSettings | null
   const timezone     = settings?.timezone     ?? 'Europe/Lisbon'
   const slotInterval = settings?.slot_interval_minutes ?? 15
   const tenantId     = tenant?.id ?? ''
+  // Marcação Rápida activa por defeito (só desligada se o owner desativar)
+  const allowQuick   = settings?.booking?.allow_quick_booking !== false
 
   const selectedService  = servicos.find((s) => s.id === sel.service_id)
   const selectedClient   = clientes.find((c) => c.id === sel.client_id)
@@ -91,10 +96,20 @@ export function NovaBookingModal({ isOpen, onClose }: NovaBookingModalProps) {
 
   function handleClose() { reset(); onClose() }
 
+  // Trocar o tipo de cliente: limpa a selecção de cliente (excepto visitante já criado)
+  function trocarTipo(t: TipoCliente) {
+    setErro(null)
+    setSel((s) => ({ ...s, tipo: t, client_id: t === 'visitante' ? s.client_id : '' }))
+  }
+
   function avancar() {
     setErro(null)
     if (step === 1) {
-      if (!sel.client_id)  { setErro('Seleccione um cliente');  return }
+      // Marcação Rápida não exige cliente; os outros tipos sim
+      if (sel.tipo !== 'rapida' && !sel.client_id) {
+        setErro(sel.tipo === 'visitante' ? 'Crie o visitante' : 'Seleccione um cliente')
+        return
+      }
       if (!sel.service_id) { setErro('Seleccione um serviço'); return }
     }
     if (step === 2) {
@@ -113,8 +128,10 @@ export function NovaBookingModal({ isOpen, onClose }: NovaBookingModalProps) {
     if (!sel.slot) return
     setErro(null)
     try {
+      // Marcação Rápida: resolve o cliente técnico anónimo do tenant (sem dados pessoais)
+      const clientId = sel.tipo === 'rapida' ? await obterClienteRapido() : sel.client_id
       await criarBooking.mutateAsync({
-        client_id:    sel.client_id,
+        client_id:    clientId,
         service_id:   sel.service_id,
         start_at:     sel.slot.slot_start,
         end_at:       sel.slot.slot_end,
@@ -186,8 +203,12 @@ export function NovaBookingModal({ isOpen, onClose }: NovaBookingModalProps) {
       {/* Conteúdo do passo activo */}
       {step === 1 && (
         <StepClienteServico
+          tipo={sel.tipo}
           clienteId={sel.client_id} servicoId={sel.service_id}
           clientes={clientes} servicos={servicos}
+          visitanteNome={selectedClient?.full_name}
+          allowQuick={allowQuick}
+          onChangeTipo={trocarTipo}
           onChange={(u) => setSel((s) => ({ ...s, ...u }))}
           onCriarVisitante={() => setRapidoAberto(true)}
         />
@@ -215,7 +236,9 @@ export function NovaBookingModal({ isOpen, onClose }: NovaBookingModalProps) {
       )}
       {step === 4 && (
         <StepConfirmacao
-          cliente={selectedClient} servico={selectedService} recurso={selectedResource}
+          cliente={selectedClient}
+          clienteNome={sel.tipo === 'rapida' ? 'Marcação Rápida' : undefined}
+          servico={selectedService} recurso={selectedResource}
           date={sel.date} slot={sel.slot} notes={sel.notes}
           formatarHora={formatarHora}
           onNotesChange={(notes) => setSel((s) => ({ ...s, notes }))}

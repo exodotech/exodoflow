@@ -37,7 +37,7 @@ export type BookingResource = Database['public']['Tables']['booking_resources'][
 
 // Marcação com relações carregadas (para vistas de calendário e lista)
 export type BookingWithRelations = Booking & {
-  client?: { id: string; full_name: string; phone: string | null }
+  client?: { id: string; full_name: string; phone: string | null; is_guest?: boolean | null; is_quick?: boolean | null }
   service?: { id: string; name: string; color: string; duration_minutes: number; price: number | null }
   resources?: Array<{ id: string; name: string; type: string }>
 }

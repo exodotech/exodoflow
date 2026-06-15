@@ -18,6 +18,7 @@ import { AgendaCalendario }     from '@/components/features/agenda/AgendaCalenda
 import { EnviarTemplateWhatsApp } from '@/components/features/agenda/EnviarTemplateWhatsApp'
 import { PagamentoBadge } from '@/components/features/agenda/PagamentoBadge'
 import { PAYMENT_STATUS_LABELS, type BookingPaymentStatus } from '@/types/domain/financas'
+import { rotularClienteBooking } from '@/lib/agenda/cliente-label'
 import {
   useBookings,
   useAtualizarStatusBooking,
@@ -213,18 +214,21 @@ export default function AgendaPage() {
   }
 
   // Cards mobile
-  const bookingItems = filtered.map((booking) => ({
-    id:          booking.id,
-    title:       booking.service?.name ?? '—',
-    subtitle:    booking.client?.full_name ?? '—',
-    description: `${booking.resources?.[0]?.name ?? '—'} • ${formatarDataHora(booking.start_at)} • € ${PAYMENT_STATUS_LABELS[(booking.payment_status as BookingPaymentStatus) ?? 'pending']}`,
-    icon:        <Clock className="w-4 h-4 text-gray-400" />,
-    action: (
-      <Badge variant={STATUS_BADGE_VARIANT[booking.status]}>
-        {STATUS_LABELS[booking.status]}
-      </Badge>
-    ),
-  }))
+  const bookingItems = filtered.map((booking) => {
+    const rot = rotularClienteBooking(booking.client)
+    return {
+      id:          booking.id,
+      title:       booking.service?.name ?? '—',
+      subtitle:    rot.badge ? `${rot.nome} · ${rot.badge}` : rot.nome,
+      description: `${booking.resources?.[0]?.name ?? '—'} • ${formatarDataHora(booking.start_at)} • € ${PAYMENT_STATUS_LABELS[(booking.payment_status as BookingPaymentStatus) ?? 'pending']}`,
+      icon:        <Clock className="w-4 h-4 text-gray-400" />,
+      action: (
+        <Badge variant={STATUS_BADGE_VARIANT[booking.status]}>
+          {STATUS_LABELS[booking.status]}
+        </Badge>
+      ),
+    }
+  })
 
   // Tabela desktop
   const tableColumns = [
@@ -235,9 +239,16 @@ export default function AgendaPage() {
     { key: 'estado',  label: 'Estado e Acções', width: '32%' },
   ]
 
-  const tableRows = filtered.map((booking) => ({
+  const tableRows = filtered.map((booking) => {
+    const rot = rotularClienteBooking(booking.client)
+    return {
     servico: booking.service?.name ?? '—',
-    cliente: booking.client?.full_name ?? '—',
+    cliente: (
+      <span className="inline-flex items-center gap-1.5">
+        <span className={rot.isQuick ? 'text-gray-500 italic' : ''}>{rot.nome}</span>
+        {rot.badge && <Badge variant={rot.variant}>{rot.badge}</Badge>}
+      </span>
+    ),
     recurso: booking.resources?.[0]?.name ?? '—',
     data:    formatarDataHora(booking.start_at),
     estado: (
@@ -251,7 +262,7 @@ export default function AgendaPage() {
         podePagamento={podePagamento}
       />
     ),
-  }))
+  }})
 
   return (
     <div>

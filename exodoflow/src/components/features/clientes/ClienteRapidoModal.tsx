@@ -1,7 +1,8 @@
 'use client'
-// Modal de "Cliente rápido" (visitante): cadastro mínimo — só nome + telefone.
+// Modal de "Visitante": cadastro mínimo — só nome (obrig.) + telefone (opcional).
 // Não pede e-mail, NIF/CPF nem consentimento de marketing (RGPD: não se cria
 // consentimento que o cliente não deu). Pode ser convertido em permanente depois.
+// (Distinto da "Marcação Rápida", que não recolhe NENHUM dado pessoal.)
 import React from 'react'
 import { UserPlus } from 'lucide-react'
 import { useFormWithZod } from '@/hooks/useFormWithZod'
@@ -38,7 +39,7 @@ export function ClienteRapidoModal({ isOpen, onClose, onCriado }: ClienteRapidoM
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Cliente rápido (visitante)"
+      title="Novo visitante"
       size="sm"
       footer={
         <>

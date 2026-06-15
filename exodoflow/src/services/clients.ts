@@ -13,6 +13,7 @@ export async function listarClientes() {
     .from('clients')
     .select('id, full_name, phone, email, tags, birth_date, gdpr_consent_at, marketing_consent, is_guest, created_at')
     .is('deleted_at', null)
+    .eq('is_quick', false)   // esconde o cliente técnico de "Marcação Rápida"
     .order('full_name', { ascending: true })
     .limit(1000)  // protecção contra payloads gigantes; paginação real quando houver busca server-side
 
@@ -60,6 +61,16 @@ export async function criarCliente(input: CriarClienteInput) {
   if (error) throw new Error(`Erro ao criar cliente: ${error.message}`)
   await registarAuditoria('client.create', { table: 'clients', recordId: data.id })
   return data
+}
+
+// Obtém (criando se preciso) o cliente técnico de "Marcação Rápida" do tenant.
+// Usado quando se cria uma marcação SEM cliente identificado (atendimento de
+// balcão). Não recolhe dados pessoais nem gera consentimento (ver RPC 0033).
+export async function obterClienteRapido(): Promise<string> {
+  const supabase = createClient()
+  const { data, error } = await supabase.rpc('get_or_create_quick_client')
+  if (error) throw new Error(`Erro ao preparar marcação rápida: ${error.message}`)
+  return data as string
 }
 
 // Cria um CLIENTE VISITANTE (cadastro rápido): só nome + telefone opcional.

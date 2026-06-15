@@ -9,6 +9,7 @@ import {
   hojeKey, somarDias, diasDaSemana, nomeDiaCurto, diaDoMes,
   formatarDataLonga, agruparPorDia, horaNoFuso, inicioSemana,
 } from '@/lib/agenda/calendario'
+import { rotularClienteBooking } from '@/lib/agenda/cliente-label'
 import type { BookingWithRelations, BookingStatus } from '@/types/domain'
 
 type Variant = 'default' | 'primary' | 'success' | 'warning' | 'error'
@@ -128,7 +129,7 @@ function VistaDia({
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">{b.service?.name ?? 'Serviço'}</p>
                 <p className="text-xs text-slate-500 truncate">
-                  {b.client?.full_name ?? 'Cliente'}{b.resources?.[0]?.name ? ` · ${b.resources[0].name}` : ''}
+                  {(() => { const r = rotularClienteBooking(b.client); return r.badge ? `${r.nome} · ${r.badge}` : r.nome })()}{b.resources?.[0]?.name ? ` · ${b.resources[0].name}` : ''}
                 </p>
               </div>
               <Badge variant={statusVariant[b.status]}>{statusLabels[b.status]}</Badge>

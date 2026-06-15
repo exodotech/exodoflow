@@ -8,6 +8,7 @@ interface RecursoSimples  { name: string }
 
 interface StepConfirmacaoProps {
   cliente:       ClienteSimples  | undefined
+  clienteNome?:  string          // override (ex: "Marcação Rápida")
   servico:       ServicoSimples  | undefined
   recurso:       RecursoSimples  | undefined
   date:          string
@@ -19,6 +20,7 @@ interface StepConfirmacaoProps {
 
 export function StepConfirmacao({
   cliente,
+  clienteNome,
   servico,
   recurso,
   date,
@@ -32,7 +34,7 @@ export function StepConfirmacao({
       <div className="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-gray-600">Cliente</span>
-          <span className="font-medium">{cliente?.full_name}</span>
+          <span className="font-medium">{clienteNome ?? cliente?.full_name}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-600">Serviço</span>

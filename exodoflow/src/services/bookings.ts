@@ -36,7 +36,7 @@ export async function listarBookings(): Promise<BookingWithRelations[]> {
     .from('bookings')
     .select(`
       *,
-      client:clients(id, full_name, phone),
+      client:clients(id, full_name, phone, is_guest, is_quick),
       service:services(id, name, duration_minutes, color, price),
       booking_resources(
         resource_id,

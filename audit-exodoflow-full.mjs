@@ -4938,6 +4938,103 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 29 — Visitante vs Marcação Rápida (cliente não identificado)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 29 — Visitante vs Marcação Rápida');
+console.log('─'.repeat(72));
+
+const mig33 = readSafe(join(MIGRATIONS, '0033_quick_booking.sql'));
+check(
+  'F29: migração 0033 — coluna is_quick + RPC get_or_create_quick_client',
+  /ADD COLUMN IF NOT EXISTS is_quick/.test(mig33) &&
+  /FUNCTION get_or_create_quick_client/.test(mig33) && /SECURITY DEFINER/.test(mig33),
+  'Criar 0033 com clients.is_quick e o RPC idempotente get_or_create_quick_client.'
+);
+check(
+  'F29: quick client é is_guest=true (sem consentimento — trigger salta is_guest)',
+  /is_guest, is_quick, marketing_consent\)\s*VALUES\s*\(v_tenant, 'Marcação Rápida', true, true, false\)/.test(mig33),
+  'O cliente de Marcação Rápida deve ser is_guest=true para não gerar legal_consents.'
+);
+
+const clientsSvc = readSafe(join(SRC, 'services', 'clients.ts'));
+check(
+  'F29: lista de clientes EXCLUI o cliente de Marcação Rápida (is_quick)',
+  /\.eq\('is_quick', false\)/.test(clientsSvc),
+  'listarClientes deve filtrar is_quick=false para não poluir a lista.'
+);
+check(
+  'F29: obterClienteRapido() chama o RPC (não cria cliente solto)',
+  /export async function obterClienteRapido/.test(clientsSvc) && /get_or_create_quick_client/.test(clientsSvc),
+  'Deve existir obterClienteRapido() a usar o RPC.'
+);
+
+// Renomeação Visitante
+const clienteRapidoModal = readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteRapidoModal.tsx'));
+check(
+  'F29: o fluxo com nome/telefone chama-se "Visitante" (não "Cliente rápido")',
+  /title="Novo visitante"/.test(clienteRapidoModal) &&
+  !/Cliente rápido/.test(readSafe(join(SRC, 'app', 'dashboard', 'clientes', 'page.tsx'))),
+  'O cadastro mínimo (nome+telefone) deve chamar-se Visitante.'
+);
+
+// Fluxo 3-vias
+const stepCS = readSafe(join(SRC, 'components', 'features', 'agenda', 'steps', 'StepClienteServico.tsx'))
+const novaModal = readSafe(join(SRC, 'components', 'features', 'agenda', 'NovaBookingModal.tsx'));
+check(
+  'F29: Nova Marcação tem escolha de 3 tipos (existente/visitante/rápida)',
+  /'existente'/.test(stepCS) && /'visitante'/.test(stepCS) && /'rapida'/.test(stepCS) &&
+  /Marcação Rápida/.test(stepCS),
+  'O passo 1 deve oferecer Cliente existente, Visitante e Marcação Rápida.'
+);
+check(
+  'F29: Marcação Rápida resolve o cliente técnico (obterClienteRapido) ao confirmar',
+  /obterClienteRapido/.test(novaModal) && /tipo === 'rapida'/.test(novaModal),
+  'A confirmação deve resolver o cliente rápido só quando o tipo é rápida.'
+);
+check(
+  'F29: Marcação Rápida não pede nome/telefone/email no passo 1',
+  (() => {
+    // no bloco tipo==='rapida' não há inputs de nome/telefone
+    const m = stepCS.match(/tipo === 'rapida'[\s\S]{0,400}/);
+    return m ? !/<input|<Input|register\(/.test(m[0]) : false;
+  })(),
+  'O modo Marcação Rápida não deve recolher dados pessoais.'
+);
+
+// Badges na agenda
+check(
+  'F29: helper de rótulo (rotularClienteBooking) + agenda usa badges',
+  exists(join(SRC, 'lib', 'agenda', 'cliente-label.ts')) &&
+  /rotularClienteBooking/.test(readSafe(join(SRC, 'app', 'dashboard', 'agenda', 'page.tsx'))),
+  'A agenda deve rotular Marcação Rápida (Sem cadastro) e Visitante.'
+);
+check(
+  'F29: badges corretos — "Sem cadastro" (rápida) e "Visitante" (guest)',
+  (() => {
+    const lbl = readSafe(join(SRC, 'lib', 'agenda', 'cliente-label.ts'));
+    return /Sem cadastro/.test(lbl) && /Visitante/.test(lbl) && /Marcação Rápida/.test(lbl);
+  })(),
+  'O helper deve devolver os badges corretos por tipo.'
+);
+
+// Config do tenant
+check(
+  'F29: settings.booking.allow_quick_booking controla a opção (toggle owner)',
+  /allow_quick_booking/.test(readSafe(join(SRC, 'services', 'agenda-config.ts'))) &&
+  /allow_quick_booking/.test(novaModal) &&
+  /isOwner/.test(readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelAgenda.tsx'))),
+  'Deve existir o flag allow_quick_booking, controlado pelo owner, que esconde a opção.'
+);
+check(
+  'F29: BookingSettings tipado em TenantSettings',
+  /allow_quick_booking/.test(readSafe(join(SRC, 'types', 'domain', 'tenant.ts'))),
+  'TenantSettings deve incluir booking.allow_quick_booking.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

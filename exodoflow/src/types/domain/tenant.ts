@@ -28,6 +28,12 @@ export interface BrandingSettings {
   theme_mode:       ThemeMode       // Tema visual (fixo em 'light' nesta fase)
 }
 
+// Configurações de agenda/marcação
+export interface BookingSettings {
+  // Permite "Marcação Rápida" (sem cliente identificado). Default: true.
+  allow_quick_booking?: boolean
+}
+
 // Configurações operacionais (armazenadas no campo settings JSONB)
 export interface TenantSettings {
   timezone:               string
@@ -38,6 +44,7 @@ export interface TenantSettings {
   cancellation_hours?:    number
   branding?:              BrandingSettings
   relatorio?:             RelatorioSettings
+  booking?:               BookingSettings
 }
 
 // Cor primária por defeito (azul profissional)
