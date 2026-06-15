@@ -4704,6 +4704,84 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 26 — Horários/folgas, gráficos e correções visuais
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 26 — Horários/folgas, gráficos e ícones');
+console.log('─'.repeat(72));
+
+// Horários de trabalho + folgas
+const horarioSvc = readSafe(join(SRC, 'services', 'recurso-horario.ts'));
+check(
+  'F26: serviço de horários (availability) + folgas (blocks)',
+  /definirDisponibilidade/.test(horarioSvc) && /listarDisponibilidade/.test(horarioSvc) &&
+  /criarBloqueio/.test(horarioSvc) && /apagarBloqueio/.test(horarioSvc),
+  'recurso-horario.ts deve gerir resource_availability e resource_blocks.'
+);
+check(
+  'F26: RecursoHorarioModal (editor semanal + folgas) integrado em recursos',
+  exists(join(SRC, 'components', 'features', 'recursos', 'RecursoHorarioModal.tsx')) &&
+  /RecursoHorarioModal/.test(readSafe(join(SRC, 'app', 'dashboard', 'recursos', 'page.tsx'))),
+  'A página de recursos deve abrir o modal de horário/folgas.'
+);
+check(
+  'F26: ações de auditoria de horário/folga registadas',
+  (() => {
+    const a = readSafe(join(SRC, 'services', 'audit.ts'));
+    return /resource\.availability_update/.test(a) && /resource\.block_create/.test(a);
+  })(),
+  'AuditAction deve incluir as ações de horário/folga.'
+);
+
+// Gráficos / analytics
+const seriesLib = readSafe(join(SRC, 'lib', 'analytics', 'series.ts'));
+check(
+  'F26: lib/analytics/series.ts (receita/dia, serviços, estado) + testes',
+  /receitaPorDia/.test(seriesLib) && /marcacoesPorServico/.test(seriesLib) &&
+  exists(join(SRC, 'lib', 'analytics', 'series.test.ts')),
+  'Deve existir a lib de séries com testes.'
+);
+check(
+  'F26: componentes de gráfico (Charts) sem dependências externas',
+  exists(join(SRC, 'components', 'design-system', 'Charts', 'Charts.tsx')) &&
+  /ColunasVerticais/.test(readSafe(join(SRC, 'components', 'design-system', 'Charts', 'Charts.tsx'))) &&
+  /BarrasHorizontais/.test(readSafe(join(SRC, 'components', 'design-system', 'Charts', 'Charts.tsx'))),
+  'Deve existir Charts com colunas e barras.'
+);
+check(
+  'F26: dashboard usa os gráficos (receita + serviços mais procurados)',
+  (() => {
+    const d = readSafe(join(SRC, 'app', 'dashboard', 'page.tsx'));
+    return /ColunasVerticais/.test(d) && /BarrasHorizontais/.test(d) && /serieReceita/.test(d);
+  })(),
+  'O dashboard deve mostrar os gráficos de análise.'
+);
+
+// Correção de ícones (centragem) + configurações glass
+check(
+  'F26: ícones dos cartões centrados (sem span inline solto)',
+  (() => {
+    const sc = readSafe(join(SRC, 'components', 'design-system', 'StatCard', 'StatCard.tsx'));
+    const st = readSafe(join(SRC, 'components', 'design-system', 'StatTile', 'StatTile.tsx'));
+    return /\[&>svg\]:block/.test(sc) && /inline-flex/.test(st);
+  })(),
+  'StatCard/StatTile devem centrar o svg (flex/inline-flex + block).'
+);
+check(
+  'F26: painéis de configurações em glass (sem cinza antigo)',
+  (() => {
+    const dir = join(SRC, 'components', 'features', 'configuracoes');
+    for (const f of ['PainelEmpresa.tsx', 'PainelBranding.tsx', 'PainelPlano.tsx']) {
+      if (/bg-white rounded-lg border border-gray-200/.test(readSafe(join(dir, f)))) return false;
+    }
+    return true;
+  })(),
+  'Os painéis de configurações não devem usar o estilo cinza antigo.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));
