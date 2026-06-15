@@ -5090,6 +5090,44 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 31 — Ficha de tratamento (treatment_records)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 31 — Ficha de tratamento');
+console.log('─'.repeat(72));
+
+const mig35 = readSafe(join(MIGRATIONS, '0035_treatment_records.sql'));
+check(
+  'F31: migração 0035 cria treatment_records com RLS por tenant',
+  /CREATE TABLE IF NOT EXISTS treatment_records/.test(mig35) &&
+  /ENABLE ROW LEVEL SECURITY/.test(mig35) && /treatment_records_select_tenant/.test(mig35),
+  'Criar 0035 com treatment_records e RLS tenant-scoped.'
+);
+check(
+  'F31: serviço de tratamentos (listar/criar/apagar)',
+  (() => { const s = readSafe(join(SRC, 'services', 'tratamentos.ts')); return /listarTratamentosCliente/.test(s) && /criarTratamento/.test(s) && /apagarTratamento/.test(s); })(),
+  'Deve existir services/tratamentos.ts com as operações.'
+);
+check(
+  'F31: validador exige notas OU produtos',
+  /Escreva pelo menos as observações ou os produtos/.test(readSafe(join(SRC, 'lib', 'validators', 'tratamento.ts'))),
+  'O registo de tratamento deve exigir notas ou produtos.'
+);
+check(
+  'F31: secção Histórico de tratamento na ficha do cliente',
+  exists(join(SRC, 'components', 'features', 'clientes', 'FichaTratamento.tsx')) &&
+  /FichaTratamento/.test(readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteDetalheModal.tsx'))),
+  'A ficha do cliente deve mostrar o histórico de tratamento.'
+);
+check(
+  'F31: auditoria de tratamento (treatment.create/delete)',
+  (() => { const a = readSafe(join(SRC, 'services', 'audit.ts')); return /treatment\.create/.test(a) && /treatment\.delete/.test(a); })(),
+  'AuditAction deve incluir as ações de tratamento.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

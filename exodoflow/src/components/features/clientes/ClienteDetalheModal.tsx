@@ -14,6 +14,7 @@ import { useConverterVisitante } from '@/hooks/useClientes'
 import { useAuth } from '@/providers/AuthProvider'
 import type { ClienteEditavel } from './NovoClienteModal'
 import { PacotesCliente } from './PacotesCliente'
+import { FichaTratamento } from './FichaTratamento'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendente', confirmed: 'Confirmada', in_progress: 'Em curso',
@@ -163,6 +164,9 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
 
           {/* Pacotes de sessões */}
           <PacotesCliente clientId={cliente.id} />
+
+          {/* Ficha de tratamento (histórico clínico) */}
+          <FichaTratamento clientId={cliente.id} />
 
           {/* Trilho de consentimento (imutável, RGPD) */}
           <div>
