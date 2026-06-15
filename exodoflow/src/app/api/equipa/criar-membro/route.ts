@@ -17,6 +17,7 @@ import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { criarMembroSchema } from '@/lib/validators/equipa'
 import { checkRateLimit, clientKeyFromRequest } from '@/lib/rate-limit'
+import { enviarEmail }       from '@/lib/email/send'
 import { logger }            from '@/lib/logger'
 
 export async function POST(request: Request) {
@@ -131,6 +132,18 @@ export async function POST(request: Request) {
   }
 
   logger.info('Membro de equipa criado', { email, role, tenantId, resourceLinked })
+
+  // Email de boas-vindas (mock-ready). Por segurança, NÃO inclui a palavra-passe:
+  // convida a entrar e, se necessário, a usar "Esqueci a palavra-passe".
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin
+  await enviarEmail({
+    to: email,
+    subject: 'Bem-vindo(a) ao ExodoFlow Pro',
+    html: `<p>Olá ${full_name},</p>
+<p>Foi criada uma conta para si no ExodoFlow Pro. Aceda em <a href="${appUrl}/login">${appUrl}/login</a> com o seu email.</p>
+<p>Se ainda não tiver palavra-passe, use a opção <strong>Esqueci a palavra-passe</strong> na página de entrada.</p>
+<p>— Equipa ExodoFlow Pro</p>`,
+  })
 
   return NextResponse.json({ ok: true, email, role, resourceLinked }, { status: 201 })
 }
