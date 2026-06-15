@@ -43,3 +43,9 @@ next-env.d.ts
 
 # Browser harness screenshots (local, nao versionar)
 .harness-shots/
+
+# Playwright E2E (artefactos locais)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

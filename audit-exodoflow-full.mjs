@@ -5501,6 +5501,14 @@ check(
   'clientKeyFromRequest deve preferir x-real-ip e nunca o primeiro x-forwarded-for.',
 );
 check(
+  'F40: suite E2E (Playwright) com auth + smoke',
+  readSafe(join(APP, 'playwright.config.ts')).length > 100 &&
+  /login válido/.test(readSafe(join(APP, 'e2e', 'auth.spec.ts'))) &&
+  /Smoke do dashboard/.test(readSafe(join(APP, 'e2e', 'smoke.spec.ts'))) &&
+  /"test:e2e"/.test(readSafe(join(APP, 'package.json'))),
+  'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
+);
+check(
   'F40: páginas de erro/404 com marca (sem ecrã default do Next)',
   readSafe(join(SRC, 'app', 'error.tsx')).length > 100 &&
   readSafe(join(SRC, 'app', 'global-error.tsx')).length > 100 &&
