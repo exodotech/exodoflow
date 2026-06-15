@@ -5168,6 +5168,52 @@ check(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FASE 33 — Portal público de marcação
+// ═══════════════════════════════════════════════════════════════════════════
+{
+console.log('\n' + '─'.repeat(72));
+console.log('  FASE 33 — Portal público de marcação');
+console.log('─'.repeat(72));
+
+const pubSvc = readSafe(join(SRC, 'services', 'public-booking.ts'));
+check(
+  'F33: serviço público server-side (admin client) valida flag booking_portal',
+  /createAdminClient/.test(pubSvc) && /booking_portal/.test(pubSvc) &&
+  /getPortalTenant/.test(pubSvc) && /criarMarcacaoPublica/.test(pubSvc),
+  'O serviço público deve validar a flag e usar admin client.'
+);
+check(
+  'F33: marcação pública cria visitante (is_guest) + revalida o slot',
+  /is_guest: true/.test(pubSvc) && /já não está disponível/.test(pubSvc),
+  'A marcação pública deve criar visitante e revalidar o slot.'
+);
+check(
+  'F33: rotas /api/public/[slug] (info), /slots e /book (POST com rate-limit)',
+  exists(join(SRC, 'app', 'api', 'public', '[slug]', 'route.ts')) &&
+  exists(join(SRC, 'app', 'api', 'public', '[slug]', 'slots', 'route.ts')) &&
+  /checkRateLimit/.test(readSafe(join(SRC, 'app', 'api', 'public', '[slug]', 'book', 'route.ts'))),
+  'Devem existir as 3 rotas públicas; a de marcação com rate-limit.'
+);
+check(
+  'F33: página pública /marcar/[slug] + componente PortalMarcacao',
+  exists(join(SRC, 'app', 'marcar', '[slug]', 'page.tsx')) &&
+  exists(join(SRC, 'components', 'features', 'portal', 'PortalMarcacao.tsx')),
+  'Deve existir a página pública e o componente do portal.'
+);
+check(
+  'F33: validador uuidLoose (aceita UUIDs de seed e reais)',
+  exists(join(SRC, 'lib', 'validators', 'uuid.ts')) &&
+  /uuidLoose/.test(readSafe(join(SRC, 'lib', 'validators', 'public-booking.ts'))),
+  'Deve existir uuidLoose para validar IDs sem rejeitar os de seed.'
+);
+check(
+  'F33: link do portal partilhável na config Agenda',
+  /\/marcar\//.test(readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelAgenda.tsx'))),
+  'O painel Agenda deve mostrar o link do portal.'
+);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // RELATÓRIO FINAL
 // ═══════════════════════════════════════════════════════════════════════════
 console.log('\n' + '═'.repeat(72));

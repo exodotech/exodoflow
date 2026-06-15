@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { uuidLoose } from './uuid'
 
 // Registo de tratamento (ficha clínica por visita). Exige notas OU produtos.
 export const criarTratamentoSchema = z.object({
-  client_id:    z.string().uuid(),
-  service_id:   z.string().uuid().optional().or(z.literal('')),
+  client_id:    uuidLoose(),
+  service_id:   uuidLoose().optional().or(z.literal('')),
   performed_at: z.string().date('Data inválida').optional().or(z.literal('')),
   notes:        z.string().trim().max(2000, 'Máximo 2000 caracteres').optional().or(z.literal('')),
   products:     z.string().trim().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),

@@ -1,5 +1,6 @@
 // Schemas de validação do painel de administração (SUPERADMIN)
 import { z } from 'zod'
+import { uuidLoose } from './uuid'
 
 // Nichos de negócio suportados (alinhado com o CHECK constraint da BD)
 const NICHE_VALUES = ['estetica', 'veterinaria', 'barbearia', 'dentista', 'oficina', 'fisioterapia', 'outro'] as const
@@ -84,8 +85,8 @@ export type PlanoInput = z.infer<typeof planoSchema>
 // Gerir o acesso do OWNER de uma empresa (SUPERADMIN, via service_role).
 // Acção 'reset_password' define uma nova palavra-passe temporária para o owner.
 export const gerirOwnerSchema = z.object({
-  tenant_id: z.string().uuid('Empresa inválida'),
-  owner_id:  z.string().uuid('Owner inválido'),
+  tenant_id: uuidLoose('Empresa inválida'),
+  owner_id:  uuidLoose('Owner inválido'),
   action:    z.enum(['reset_password'], { error: 'Acção inválida' }),
   password:  z.string().min(8, 'A palavra-passe deve ter pelo menos 8 caracteres').max(72, 'Demasiado longa'),
 })

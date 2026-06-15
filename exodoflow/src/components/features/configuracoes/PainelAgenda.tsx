@@ -3,7 +3,7 @@
 // identificado). Só o OWNER pode alterar; restantes vêem o estado em leitura.
 import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Zap, Bell, Send } from 'lucide-react'
+import { Zap, Bell, Send, Link2, Copy } from 'lucide-react'
 import SectionHeader from '@/components/design-system/SectionHeader/SectionHeader'
 import AccessDenied  from '@/components/design-system/AccessDenied/AccessDenied'
 import { Button }    from '@/components/design-system/Button/Button'
@@ -46,6 +46,15 @@ export function PainelAgenda() {
     const novo = !lembretes
     setLembretes(novo)
     guardarLembr.mutate(novo)
+  }
+
+  const [copiado, setCopiado] = useState(false)
+  const portalUrl = typeof window !== 'undefined' && tenant?.slug
+    ? `${window.location.origin}/marcar/${tenant.slug}` : ''
+  function copiarLink() {
+    if (!portalUrl) return
+    void navigator.clipboard?.writeText(portalUrl)
+    setCopiado(true); setTimeout(() => setCopiado(false), 2000)
   }
 
   if (!isOwner) {
@@ -141,6 +150,25 @@ export function PainelAgenda() {
         </div>
         <p className="text-xs text-slate-400 mt-2">
           Processa as marcações das próximas 24h sem lembrete. Cada marcação recebe só um lembrete.
+        </p>
+      </div>
+
+      {/* Portal público de marcações */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
+        <SectionHeader title="Portal de marcações" />
+        <p className="text-sm text-gray-500 mt-1 mb-4">
+          Partilhe este link para os clientes marcarem sozinhos (escolhem serviço, dia e hora).
+          As marcações entram como <strong>pendentes</strong> para confirmar.
+        </p>
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+          <Link2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <code className="text-xs text-slate-700 truncate flex-1">{portalUrl || '...'}</code>
+          <button onClick={copiarLink} className="inline-flex items-center gap-1 text-xs font-medium text-[color:var(--tenant-primary)] hover:bg-white px-2 py-1 rounded-lg flex-shrink-0">
+            <Copy className="w-3.5 h-3.5" /> {copiado ? 'Copiado!' : 'Copiar'}
+          </button>
+        </div>
+        <p className="text-xs text-slate-400 mt-2">
+          O portal só funciona se a funcionalidade estiver ativa no seu plano.
         </p>
       </div>
     </div>
