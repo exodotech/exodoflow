@@ -673,6 +673,86 @@ export type Database = {
           },
         ]
       }
+      data_subject_requests: {
+        Row: {
+          created_at: string
+          handled_by: string | null
+          id: string
+          notes: string | null
+          received_at: string
+          request_type: string
+          requester_email: string | null
+          requester_name: string
+          resolved_at: string | null
+          status: string
+          target_client_id: string | null
+          target_profile_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          handled_by?: string | null
+          id?: string
+          notes?: string | null
+          received_at?: string
+          request_type: string
+          requester_email?: string | null
+          requester_name: string
+          resolved_at?: string | null
+          status?: string
+          target_client_id?: string | null
+          target_profile_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          handled_by?: string | null
+          id?: string
+          notes?: string | null
+          received_at?: string
+          request_type?: string
+          requester_email?: string | null
+          requester_name?: string
+          resolved_at?: string | null
+          status?: string
+          target_client_id?: string | null
+          target_profile_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_subject_requests_handled_by_fkey"
+            columns: ["handled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_subject_requests_target_client_id_fkey"
+            columns: ["target_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_subject_requests_target_profile_id_fkey"
+            columns: ["target_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_subject_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_flags: {
         Row: {
           config: Json
