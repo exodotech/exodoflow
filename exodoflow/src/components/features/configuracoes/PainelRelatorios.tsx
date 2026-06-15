@@ -77,7 +77,7 @@ export function PainelRelatorios() {
       </div>
 
       {/* Configurações */}
-      <form onSubmit={handleSubmit((d) => salvar.mutate(d))} className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+      <form onSubmit={handleSubmit((d) => salvar.mutate(d))} className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6 space-y-4">
         <SectionHeader title="Configurações de Relatório" />
         <p className="text-sm text-gray-500">
           Configure o e-mail de destino e os relatórios automáticos (simulados).
@@ -157,7 +157,7 @@ export function PainelRelatorios() {
 
       {/* Trigger manual */}
       {canEdit && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6 space-y-4">
           <SectionHeader title="Gerar relatório agora" />
           <p className="text-sm text-gray-500">
             Gera e loga um relatório imediatamente, sem aguardar o agendamento automático.

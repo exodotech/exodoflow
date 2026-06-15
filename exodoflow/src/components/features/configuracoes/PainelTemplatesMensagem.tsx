@@ -30,7 +30,7 @@ export function PainelTemplatesMensagem() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <SectionHeader title="Templates de Mensagem" />
         <p className="text-sm text-gray-500 mt-1 mb-4">
           Templates configurados por evento. Placeholders disponíveis:{' '}

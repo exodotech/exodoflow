@@ -15,7 +15,7 @@ export function PainelLocalizacao({ locale, settings }: PainelLocalizacaoProps) 
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <SectionHeader title="Localização e Idioma" />
         <div className="space-y-4 mt-4">
           <div>

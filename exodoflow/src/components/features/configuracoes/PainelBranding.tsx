@@ -48,7 +48,7 @@ export function PainelBranding() {
       )}
       {isOwner && (
         <form onSubmit={brandingForm.handleSubmit(onSubmitBranding)} className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
             <SectionHeader title="Identidade Visual" />
             <p className="text-sm text-gray-500 mt-1 mb-6">
               Personalize as cores e o logótipo da sua empresa. As alterações aplicam-se a toda a interface.
@@ -72,7 +72,7 @@ export function PainelBranding() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
             <BrandingPreview
               branding={{ primary_color: brandingForm.watch('primary_color') }}
               tenantName={tenant?.name ?? 'Empresa'}

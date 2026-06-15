@@ -98,7 +98,7 @@ export function PainelEmpresa({ settings }: PainelEmpresaProps) {
   return (
     <div className="max-w-2xl space-y-6">
       {/* País e nicho — IMUTÁVEIS após a criação */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <SectionHeader title="País e Nicho" />
         <div className="grid grid-cols-2 gap-4 mt-4">
           <CampoBloqueado label="País" valor={paisLabel} />
@@ -111,7 +111,7 @@ export function PainelEmpresa({ settings }: PainelEmpresaProps) {
       </div>
 
       {/* Dados operacionais editáveis */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <SectionHeader title="Dados da Empresa" />
 
         {!editar && (
@@ -213,7 +213,7 @@ export function PainelEmpresa({ settings }: PainelEmpresaProps) {
 
       {/* Configurações de Agenda — derivadas do país (leitura) */}
       {settings && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
           <SectionHeader title="Configurações de Agenda" />
           <div className="space-y-4 mt-4">
             <Campo label="Fuso horário" valor={settings.timezone} />

@@ -24,7 +24,7 @@ export function PainelPlano({ locale }: PainelPlanoProps) {
         />
       )}
       {isManagerOrAbove && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
           <SectionHeader title="Plano Actual" />
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
             <p className="text-sm font-semibold text-blue-900">Trial</p>

@@ -26,7 +26,7 @@ export function PainelIntegracoes() {
       {INTEGRACOES.map((integration) => (
         <div
           key={integration.name}
-          className="bg-white rounded-lg border border-gray-200 p-5 flex items-start gap-4"
+          className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-5 flex items-start gap-4"
         >
           <span className="text-2xl flex-shrink-0">{integration.logo}</span>
           <div className="flex-1 min-w-0">

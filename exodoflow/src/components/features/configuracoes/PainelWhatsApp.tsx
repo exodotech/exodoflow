@@ -16,7 +16,7 @@ export function PainelWhatsApp() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <div className="flex items-center justify-between">
           <SectionHeader title="WhatsApp" />
           <Badge variant={ligado ? 'success' : 'default'}>

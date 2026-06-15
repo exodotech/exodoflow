@@ -48,7 +48,7 @@ export function PainelTemplates({ locale, niche }: PainelTemplatesProps) {
         contacte o suporte.
       </p>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-5 space-y-3">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-5 space-y-3">
         <div className="flex items-center gap-3">
           <span
             className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0"

@@ -21,7 +21,7 @@ export function PainelComunicacao() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <SectionHeader title="Canais de Comunicação" />
         <p className="text-sm text-gray-500 mt-1 mb-4">
           Canais disponíveis para envio de notificações. A integração real será activada em fases futuras.
@@ -67,7 +67,7 @@ export function PainelComunicacao() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-6">
         <SectionHeader title="Como funciona" />
         <div className="mt-4 space-y-3">
           {[
