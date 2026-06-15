@@ -82,7 +82,8 @@ Aplicados a todas as rotas em `next.config.ts`:
 
 - O auditor falha o CI se qualquer tabela criada nas migrações **não** tiver
   `ENABLE ROW LEVEL SECURITY` — evita o erro nº1 de Supabase (tabela sem RLS = porta aberta).
-- Estado verificado: **22/22 tabelas com RLS**.
+- Estado verificado: **30/30 tabelas `public` com RLS** e 0 tabelas com RLS sem
+  políticas (confirmado em BD e pelo teste `supabase/tests/rls-isolation.test.sql`).
 
 ## 7. Pendente antes de produção (BLOQUEADORES)
 
@@ -94,6 +95,13 @@ Aplicados a todas as rotas em `next.config.ts`:
 - [ ] Health checks monitorizados externamente.
 - [ ] Backups verificados e procedimento de restauro testado (ver `docs/incident-response.md`).
 - [ ] `npm audit` / revisão de dependências (CVEs) no CI.
+
+> **Risco de dependências (aceite, documentado):** `npm audit` reporta 2 vulns
+> **moderadas** de `postcss` (XSS via `</style>` no stringify), transitivas do
+> Next.js (versão modificada deste projeto). É um problema **de build-time** (o
+> postcss processa CSS de autoria nossa, não input do utilizador), por isso **não
+> é alcançável em runtime**. **NÃO correr `npm audit fix --force`** — despromove o
+> Next 16→9 e parte o build. Mitigação: rever quando o Next subir de versão.
 
 ## 8. Checklist de pentest (antes de clientes reais)
 
@@ -110,7 +118,7 @@ Testar, idealmente por alguém externo:
 9. **Headers:** confirmar HSTS/X-Frame-Options/nosniff presentes; tentar embeber a app num iframe.
 10. **Auditoria:** confirmar que ações sensíveis ficam em `audit_logs`/`system_audit_logs` e que são append-only.
 
-## 8. Resposta a incidentes
+## 9. Resposta a incidentes
 
 Ver [`docs/incident-response.md`](./incident-response.md) e
 [`docs/observability.md`](./observability.md).
