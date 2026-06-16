@@ -2077,6 +2077,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_public_booking: {
+        Args: {
+          p_client_id: string
+          p_end_at: string
+          p_resource_id: string
+          p_service_id: string
+          p_start_at: string
+          p_tenant_id: string
+        }
+        Returns: string
+      }
       current_marketing_consent_version: { Args: never; Returns: string }
       emitir_recibo: {
         Args: { p_transaction_id: string }

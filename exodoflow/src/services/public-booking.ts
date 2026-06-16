@@ -107,20 +107,21 @@ export async function criarMarcacaoPublica(input: CriarMarcacaoPublicaInput): Pr
     .select('id').single()
   if (cErr || !cliente) throw new Error('Não foi possível registar o cliente.')
 
-  // 3. Criar a marcação (pending — a clínica confirma) + recurso
-  const { data: booking, error: bErr } = await admin
-    .from('bookings')
-    .insert({
-      tenant_id: input.tenantId, client_id: cliente.id, service_id: input.serviceId,
-      start_at: input.start_at, end_at: input.end_at, status: 'pending', source: 'booking_portal',
-    })
-    .select('id').single()
-  if (bErr || !booking) throw new Error('Não foi possível criar a marcação.')
-
-  const { error: rErr } = await admin
-    .from('booking_resources')
-    .insert({ tenant_id: input.tenantId, booking_id: booking.id, resource_id: input.resource_id })
-  if (rErr) throw new Error('Não foi possível associar o profissional.')
+  // 3. Criar a marcação ATOMICAMENTE (advisory lock + overlap, anti double-booking).
+  //    O check do passo 1 não basta: entre verificar e inserir, outro pedido podia
+  //    ocupar o slot (TOCTOU). A RPC serializa concorrentes para o mesmo recurso.
+  const { error: bErr } = await admin.rpc('create_public_booking', {
+    p_tenant_id:   input.tenantId,
+    p_client_id:   cliente.id,
+    p_service_id:  input.serviceId,
+    p_start_at:    input.start_at,
+    p_end_at:      input.end_at,
+    p_resource_id: input.resource_id,
+  })
+  if (bErr) {
+    // Mensagem do overlap chega ao cliente como "horário indisponível".
+    throw new Error(/indispon|Horário/i.test(bErr.message) ? 'Esse horário já não está disponível. Escolha outro.' : 'Não foi possível criar a marcação.')
+  }
 
   return { ok: true }
 }

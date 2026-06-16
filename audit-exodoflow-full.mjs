@@ -5566,6 +5566,19 @@ check(
   'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
 );
 check(
+  'F40: marcação pública atómica (anti double-booking no portal)',
+  (() => {
+    const mig = readSafe(join(MIGRATIONS, '0050_atomic_public_booking.sql'));
+    const svc = readSafe(join(SRC, 'services', 'public-booking.ts'));
+    return /FUNCTION create_public_booking/.test(mig) &&
+           /pg_advisory_xact_lock/.test(mig) &&
+           /create_public_booking/.test(svc) &&
+           // já não faz raw insert de bookings no portal
+           !/\.from\('bookings'\)\s*\.insert/.test(svc);
+  })(),
+  'O portal deve criar marcações via create_public_booking (lock+overlap), sem raw insert.',
+);
+check(
   'F40: índices de performance (tenant_id RLS + FKs sem cobertura)',
   (() => { const m = readSafe(join(MIGRATIONS, '0049_performance_indexes.sql'));
     return /idx_ai_contexts_tenant\s+ON ai_contexts \(tenant_id\)/.test(m) &&
