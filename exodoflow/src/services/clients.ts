@@ -130,6 +130,17 @@ export async function listarConsentimentosCliente(clientId: string) {
   return data
 }
 
+// Anonimiza um cliente (RGPD/LGPD — direito ao apagamento). Remove a PII mas
+// preserva o histórico estatístico. Irreversível. O RPC (SECURITY DEFINER) só
+// permite ao OWNER do próprio tenant (migração 0044) e regista em audit_logs.
+export async function anonimizarCliente(id: string) {
+  const supabase  = createClient()
+  const tenant_id = await getTenantId()
+  const { error } = await supabase.rpc('anonymize_client', { p_client_id: id, p_tenant_id: tenant_id })
+  if (error) throw new Error(`Erro ao anonimizar cliente: ${error.message}`)
+  // A auditoria é feita pelo próprio RPC (client.anonymized).
+}
+
 // Apaga (soft-delete) um cliente via RPC soft_delete_client.
 // O RPC (SECURITY DEFINER) valida tenant + role e marca deleted_at.
 // Preserva o histórico de marcações; não anonimiza (ver anonymize_client/RGPD).

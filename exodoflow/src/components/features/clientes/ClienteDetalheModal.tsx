@@ -3,12 +3,13 @@
 // marcações. Acções de editar / apagar são delegadas ao componente pai para
 // evitar modais aninhados.
 import React, { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Pencil, Trash2, Calendar, UserCheck, MessageSquare, Download } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Pencil, Trash2, Calendar, UserCheck, MessageSquare, Download, ShieldOff } from 'lucide-react'
 import { Modal }  from '@/components/design-system/Modal/Modal'
 import { Button } from '@/components/design-system/Button/Button'
 import { Badge }  from '@/components/design-system/Badge/Badge'
-import { buscarClientePorId, listarConsentimentosCliente } from '@/services/clients'
+import ConfirmDialog from '@/components/design-system/ConfirmDialog/ConfirmDialog'
+import { buscarClientePorId, listarConsentimentosCliente, anonimizarCliente } from '@/services/clients'
 import { listarBookingsPorCliente } from '@/services/bookings'
 import { exportarDadosTitular, descarregarExportacao } from '@/services/dsr-export'
 import { useConverterVisitante } from '@/hooks/useClientes'
@@ -35,8 +36,25 @@ interface Props {
 export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApagar }: Props) {
   const ativo = isOpen && !!clientId
   const converter = useConverterVisitante()
-  const { isManagerOrAbove } = usePermissions()
+  const qc = useQueryClient()
+  const { isManagerOrAbove, isOwner } = usePermissions()
   const [aExportar, setAExportar] = useState(false)
+  const [confirmAnon, setConfirmAnon] = useState(false)
+  const [anonState, setAnonState] = useState<{ loading: boolean; error: string | null }>({ loading: false, error: null })
+
+  async function handleAnonimizar() {
+    if (!clientId) return
+    setAnonState({ loading: true, error: null })
+    try {
+      await anonimizarCliente(clientId)
+      void qc.invalidateQueries({ queryKey: ['clientes'] })
+      void qc.invalidateQueries({ queryKey: ['cliente', clientId] })
+      setConfirmAnon(false)
+      onClose()
+    } catch (e) {
+      setAnonState({ loading: false, error: e instanceof Error ? e.message : 'Erro ao anonimizar.' })
+    }
+  }
   // Label fiscal conforme o país do tenant (PT → NIF; BR → CPF/CNPJ)
   const { tenant } = useAuth()
   const fiscalLabel = tenant?.country === 'BR' ? 'CPF / CNPJ' : 'NIF'
@@ -89,6 +107,7 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
   }
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -187,21 +206,35 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
           {/* Avaliações pós-atendimento */}
           <AvaliacoesCliente clientId={cliente.id} />
 
-          {/* Exportação de dados do titular (RGPD/LGPD) — só manager+ */}
+          {/* Direitos do titular (RGPD/LGPD) — exportar (manager+) e anonimizar (owner) */}
           {isManagerOrAbove && (
-            <div className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-              <p className="text-xs text-gray-500">
-                Exportar todos os dados deste titular (acesso/portabilidade).
-              </p>
-              <Button
-                variant="outline" size="sm"
-                onClick={() => handleExportar(cliente.full_name)}
-                isLoading={aExportar}
-                disabled={aExportar}
-                className="flex items-center gap-1 flex-shrink-0"
-              >
-                <Download className="w-4 h-4" /> Exportar (RGPD)
-              </Button>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-gray-500">Exportar todos os dados deste titular (acesso/portabilidade).</p>
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => handleExportar(cliente.full_name)}
+                  isLoading={aExportar} disabled={aExportar}
+                  className="flex items-center gap-1 flex-shrink-0"
+                >
+                  <Download className="w-4 h-4" /> Exportar (RGPD)
+                </Button>
+              </div>
+              {isOwner && !cliente.is_anonymized && (
+                <div className="flex items-center justify-between gap-2 border-t border-gray-200 pt-2">
+                  <p className="text-xs text-gray-500">Anonimizar (apagamento) — remove a PII e mantém o histórico. Irreversível.</p>
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => { setAnonState({ loading: false, error: null }); setConfirmAnon(true) }}
+                    className="flex items-center gap-1 flex-shrink-0 border-red-300 text-red-700 hover:bg-red-50"
+                  >
+                    <ShieldOff className="w-4 h-4" /> Anonimizar
+                  </Button>
+                </div>
+              )}
+              {cliente.is_anonymized && (
+                <p className="text-xs text-gray-400 italic border-t border-gray-200 pt-2">Este titular já foi anonimizado.</p>
+              )}
             </div>
           )}
 
@@ -293,6 +326,18 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
         </div>
       )}
     </Modal>
+
+    <ConfirmDialog
+      isOpen={confirmAnon}
+      onClose={() => setConfirmAnon(false)}
+      onConfirm={handleAnonimizar}
+      title="Anonimizar titular (RGPD)"
+      description="Esta ação remove definitivamente o nome, contactos e outros dados pessoais deste titular, revoga os consentimentos e mantém o histórico para estatística/legal. É IRREVERSÍVEL. Confirme a identidade do requerente e as exceções legais antes de continuar."
+      confirmLabel="Anonimizar definitivamente"
+      isLoading={anonState.loading}
+      error={anonState.error}
+    />
+    </>
   )
 }
 

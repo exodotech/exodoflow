@@ -5480,6 +5480,14 @@ check(
   'O seam de email deve ser server-only, mock-ready e usado no convite de equipa.',
 );
 check(
+  'F40: anonimização (apagamento) endurecida + exposta (owner-only)',
+  /v_jwt_role IS DISTINCT FROM 'service_role'/.test(readSafe(join(MIGRATIONS, '0044_harden_anonymize_client.sql'))) &&
+  /auth_user_role\(\) IS DISTINCT FROM 'owner'/.test(readSafe(join(MIGRATIONS, '0044_harden_anonymize_client.sql'))) &&
+  /anonimizarCliente/.test(readSafe(join(SRC, 'services', 'clients.ts'))) &&
+  /Anonimizar/.test(readSafe(join(SRC, 'components', 'features', 'clientes', 'ClienteDetalheModal.tsx'))),
+  'anonymize_client deve exigir owner do próprio tenant e ter UI (ConfirmDialog).',
+);
+check(
   'F40: exportação de dados por titular (acesso/portabilidade RGPD)',
   /exportarDadosTitular/.test(readSafe(join(SRC, 'services', 'dsr-export.ts'))) &&
   /financial_transactions/.test(readSafe(join(SRC, 'services', 'dsr-export.ts'))) &&

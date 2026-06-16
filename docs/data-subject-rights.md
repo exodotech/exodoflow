@@ -35,10 +35,12 @@ Campos de prazo: `received_at`, `resolved_at`, `handled_by`, `notes`.
 - ✅ **Auditoria** das ações (criação/edição/remoção) para prova de tratamento.
 - ✅ **Tela em Configurações** para registar/gerir pedidos (PainelPrivacidade).
 - ✅ **Exportação por titular** (cliente) em JSON — direito de acesso/portabilidade.
+- ✅ **Anonimização** (apagamento) — botão owner-only no detalhe do cliente, com
+  confirmação; remove a PII, revoga consentimentos e preserva o histórico
+  (RPC `anonymize_client`, endurecido na 0044: só owner do próprio tenant).
 - 🔜 **Roadmap:**
-  1. Fluxo de anonimização assistido (substituir nome/contactos, manter agregados).
-  2. Exportação também por perfil de equipa (hoje cobre clientes).
-  3. Modelos de resposta ao titular (a redigir com revisão jurídica).
+  1. Exportação também por perfil de equipa (hoje cobre clientes).
+  2. Modelos de resposta ao titular (a redigir com revisão jurídica).
 
 ## 4. Procedimento manual recomendado (até existir UI)
 
