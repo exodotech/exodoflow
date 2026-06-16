@@ -5570,6 +5570,27 @@ check(
   'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
 );
 check(
+  'F40: toda a rota de API mutável tem auth (getUser) ou segredo/assinatura',
+  (() => {
+    // Apanha o erro "esqueci a autenticação numa rota nova". Rotas POST/PUT/PATCH/
+    // DELETE têm de validar sessão (getUser) OU um segredo/assinatura (cron/webhook).
+    // Allowlist: públicas intencionais (portal de marcação, csp-report).
+    const ALLOW = ['public', 'csp-report'];
+    for (const f of collectFiles(join(APP, 'src', 'app', 'api'), ['.ts'])) {
+      if (!f.replace(/\\/g, '/').endsWith('/route.ts')) continue;
+      const t = readSafe(f);
+      const muta = /export async function (POST|PUT|PATCH|DELETE)/.test(t);
+      if (!muta) continue;
+      const protegida = /getUser\(\)/.test(t) ||
+        /CRON_SECRET|verifyMetaSignature|verificarAssinaturaStripe|WHATSAPP_VERIFY/.test(t);
+      const isAllow = ALLOW.some((a) => f.replace(/\\/g, '/').includes(`/api/${a}`));
+      if (!protegida && !isAllow) return false;
+    }
+    return true;
+  })(),
+  'Rotas mutáveis de API têm de ter getUser ou segredo/assinatura (exceto públicas intencionais).',
+);
+check(
   'F40: nenhum cliente seleciona config/* de communication_channels (anti-fuga)',
   (() => {
     // O config dos canais pode conter segredos (access_token). Ficheiros que usam
