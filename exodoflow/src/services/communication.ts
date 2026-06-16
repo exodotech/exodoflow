@@ -12,12 +12,14 @@ import type {
   TemplateContext,
 } from '@/types/domain/communication'
 
-// Busca todos os canais configurados do tenant
+// Busca os canais configurados do tenant.
+// SEGURANÇA: NÃO seleciona `config` — pode conter segredos (ex.: access_token do
+// WhatsApp) e iria para o browser. O painel só precisa de channel/is_active.
 export async function listarCanaisComunicacao(): Promise<CommunicationChannelConfig[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('communication_channels')
-    .select('*')
+    .select('id, tenant_id, channel, is_active, created_at, updated_at')
     .order('channel', { ascending: true })
 
   if (error) throw new Error(`Erro ao listar canais: ${error.message}`)

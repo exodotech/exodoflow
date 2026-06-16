@@ -5570,6 +5570,27 @@ check(
   'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
 );
 check(
+  'F40: nenhum cliente seleciona config/* de communication_channels (anti-fuga)',
+  (() => {
+    // O config dos canais pode conter segredos (access_token). Ficheiros que usam
+    // o cliente (anon/authenticated) NÃO podem selecionar config nem '*' dessa
+    // tabela. Server-side (admin) pode. Varre serviços/componentes/hooks.
+    for (const f of collectFiles(SRC, ['.ts', '.tsx'])) {
+      const t = readSafe(f);
+      if (/createAdminClient/.test(t)) continue; // server-side (service_role) pode ler config
+      // Isola a cadeia from('communication_channels').select('...') e inspeciona
+      // SÓ esse select. Barra '*' ou o `config` nu; permite `config->>campo`.
+      const re = /from\(['"]communication_channels['"]\)\s*\.select\(\s*(['"`])([^'"`]*)\1/g;
+      let m;
+      while ((m = re.exec(t)) !== null) {
+        if (/(\*|config(?!->))/.test(m[2])) return false;
+      }
+    }
+    return true;
+  })(),
+  'Código cliente não pode selecionar config/* de communication_channels (segredo).',
+);
+check(
   'F40: WhatsApp connect UI + token não vaza para o cliente',
   // estado projeta só campos não-secretos (nunca o config inteiro/token)
   /config->>phone_number_id/.test(readSafe(join(SRC, 'services', 'whatsapp.ts'))) &&

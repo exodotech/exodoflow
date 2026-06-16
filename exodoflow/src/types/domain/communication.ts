@@ -48,7 +48,8 @@ export interface CommunicationChannelConfig {
   tenant_id:  string
   channel:    CommunicationChannel
   is_active:  boolean
-  config:     Record<string, unknown>
+  // Opcional: NÃO é lido pelo cliente (pode conter segredos — ver listarCanaisComunicacao).
+  config?:    Record<string, unknown>
   created_at: string
   updated_at: string
 }
