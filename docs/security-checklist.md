@@ -98,7 +98,9 @@ Aplicados a todas as rotas em `next.config.ts`:
 - [x] Rate limit **distribuído** na rota pública de marcação (tabela `rate_limits`
       + RPC atómica `rl_hit`, migração 0043) com fallback in-memory. Pendente:
       estender às restantes rotas e captcha no login.
-- [ ] MFA/2FA, pelo menos para superadmin e owners.
+- [x] **MFA/2FA (TOTP)** — opt-in para todos + banner que exige a owner/superadmin
+      (Configurações → Segurança; desafio no login). Em produção, confirmar que o
+      TOTP está ativo no projeto Supabase (hosted: ligado por omissão).
 - [ ] Sentry com DSN de produção (captura de erros + contexto tenant/user).
 - [ ] Health checks monitorizados externamente.
 - [ ] Backups verificados e procedimento de restauro testado (ver `docs/incident-response.md`).
