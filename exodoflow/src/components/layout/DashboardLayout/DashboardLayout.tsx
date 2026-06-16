@@ -3,6 +3,7 @@ import BottomNav from '@/components/layout/BottomNav/BottomNav'
 import MobileHeader from '@/components/layout/MobileHeader/MobileHeader'
 import SidebarDesktop from '@/components/layout/SidebarDesktop/SidebarDesktop'
 import SidebarTablet from '@/components/layout/SidebarTablet/SidebarTablet'
+import { MfaBanner } from '@/components/features/auth/MfaBanner'
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <main className="md:ml-[72px] lg:ml-0 xl:ml-64 pb-20 sm:pb-0 md:pb-0 lg:pb-0 xl:pb-0">
         <div className="p-4 sm:p-6">
+          <MfaBanner />
           {children}
         </div>
       </main>

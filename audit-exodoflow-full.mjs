@@ -5551,6 +5551,16 @@ check(
   'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
 );
 check(
+  'F40: MFA/2FA (TOTP) — serviço, inscrição, desafio no login e banner',
+  /auth\.mfa\.enroll/.test(readSafe(join(SRC, 'services', 'mfa.ts'))) &&
+  /auth\.mfa\.verify/.test(readSafe(join(SRC, 'services', 'mfa.ts'))) &&
+  /enroll_enabled = true/.test(readSafe(join(ROOT, 'supabase', 'config.toml'))) &&
+  /PainelSeguranca/.test(readSafe(join(SRC, 'app', 'dashboard', 'configuracoes', 'page.tsx'))) &&
+  /desafiarLogin/.test(readSafe(join(SRC, 'components', 'features', 'auth', 'LoginForm.tsx'))) &&
+  /MfaBanner/.test(readSafe(join(SRC, 'components', 'layout', 'DashboardLayout', 'DashboardLayout.tsx'))),
+  'Deve existir MFA TOTP: serviço, config ativa, painel Segurança, desafio no login e banner owner/superadmin.',
+);
+check(
   'F40: páginas de erro/404 com marca (sem ecrã default do Next)',
   readSafe(join(SRC, 'app', 'error.tsx')).length > 100 &&
   readSafe(join(SRC, 'app', 'global-error.tsx')).length > 100 &&

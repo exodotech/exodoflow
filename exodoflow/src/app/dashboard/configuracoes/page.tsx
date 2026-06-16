@@ -1,8 +1,8 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Building2, CreditCard, Plug, Layers,
-  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot, ShieldCheck,
+  Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot, ShieldCheck, Lock,
 } from 'lucide-react'
 import PageHeader  from '@/components/design-system/PageHeader/PageHeader'
 import AccessDenied from '@/components/design-system/AccessDenied/AccessDenied'
@@ -19,13 +19,14 @@ import { PainelRelatorios }        from '@/components/features/configuracoes/Pai
 import { PainelAgenda }            from '@/components/features/configuracoes/PainelAgenda'
 import { PainelAssistente }        from '@/components/features/configuracoes/PainelAssistente'
 import { PainelPrivacidade }       from '@/components/features/configuracoes/PainelPrivacidade'
+import { PainelSeguranca }         from '@/components/features/configuracoes/PainelSeguranca'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth }        from '@/providers/AuthProvider'
 import type { SupportedLocale } from '@/types/domain'
 
 type Tab =
   | 'empresa' | 'branding' | 'localizacao' | 'agenda' | 'assistente' | 'comunicacao' | 'whatsapp'
-  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios' | 'privacidade'
+  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios' | 'privacidade' | 'seguranca'
 
 const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'empresa',            label: 'Empresa',     icon: <Building2     className="w-4 h-4" /> },
@@ -41,10 +42,19 @@ const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'templates',          label: 'Templates',   icon: <Layers        className="w-4 h-4" /> },
   { value: 'relatorios',         label: 'Relatórios',  icon: <BarChart2     className="w-4 h-4" /> },
   { value: 'privacidade',        label: 'Privacidade', icon: <ShieldCheck   className="w-4 h-4" /> },
+  { value: 'seguranca',          label: 'Segurança',   icon: <Lock          className="w-4 h-4" /> },
 ]
+
+const TAB_VALUES = new Set<Tab>(TABS.map((t) => t.value))
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState<Tab>('empresa')
+  // Separador inicial pode vir do URL (?tab=seguranca) — usado, ex., pelo banner
+  // de 2FA. Lido após montar (não no render) para não causar hydration mismatch.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('tab') as Tab | null
+    if (q && TAB_VALUES.has(q)) setActiveTab(q)
+  }, [])
   const { can, isOwner, isManagerOrAbove } = usePermissions()
   const { tenant } = useAuth()
 
@@ -104,6 +114,7 @@ export default function ConfiguracoesPage() {
       {activeTab === 'templates_mensagem' && <PainelTemplatesMensagem />}
       {activeTab === 'plano'              && <PainelPlano locale={locale} />}
       {activeTab === 'privacidade'        && <PainelPrivacidade />}
+      {activeTab === 'seguranca'          && <PainelSeguranca />}
       {activeTab === 'integracoes'        && <PainelIntegracoes />}
       {activeTab === 'templates'          && <PainelTemplates locale={locale} niche={tenant?.business_type} />}
       {activeTab === 'relatorios'         && isManagerOrAbove && <PainelRelatorios />}
