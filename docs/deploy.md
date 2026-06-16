@@ -1,5 +1,9 @@
 # Deploy — ExodoFlow Pro (produção)
 
+> 👉 Para a sequência **executável passo-a-passo** (local → produção, com as
+> caixas a marcar), usa **[go-live-checklist.md](go-live-checklist.md)**. Este
+> ficheiro é o guia de contexto; o checklist é a lista de execução.
+
 Guia para pôr o ExodoFlow Pro online. O produto está completo a nível de código;
 isto cobre a infraestrutura. Tempo estimado: ~1–2h.
 
