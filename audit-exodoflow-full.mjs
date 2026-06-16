@@ -5566,6 +5566,14 @@ check(
   'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
 );
 check(
+  'F40: índices de performance (tenant_id RLS + FKs sem cobertura)',
+  (() => { const m = readSafe(join(MIGRATIONS, '0049_performance_indexes.sql'));
+    return /idx_ai_contexts_tenant ON ai_contexts \(tenant_id\)/.test(m) &&
+           /idx_bookings_client_fk ON bookings \(client_id\)/.test(m) &&
+           /idx_dsr_target_profile/.test(m); })(),
+  'Deve existir a migração 0049 com o índice de tenant_id (ai_contexts) e os das FKs.',
+);
+check(
   'F40: toda a rota de API mutável tem auth (getUser) ou segredo/assinatura',
   (() => {
     // Apanha o erro "esqueci a autenticação numa rota nova". Rotas POST/PUT/PATCH/
