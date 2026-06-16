@@ -5569,6 +5569,12 @@ check(
   'O Input deve associar label↔input e o e2e deve verificar getByLabel.',
 );
 check(
+  'F40: imagem Open Graph com a marca (partilhas sociais)',
+  /ImageResponse/.test(readSafe(join(SRC, 'app', 'opengraph-image.tsx'))) &&
+  /width: 1200, height: 630/.test(readSafe(join(SRC, 'app', 'opengraph-image.tsx'))),
+  'Deve existir app/opengraph-image.tsx (1200×630) com a marca.',
+);
+check(
   'F40: robots.txt bloqueia áreas privadas + PWA manifest',
   /disallow:[\s\S]*\/dashboard\//.test(readSafe(join(SRC, 'app', 'robots.ts'))) &&
   /\/admin/.test(readSafe(join(SRC, 'app', 'robots.ts'))) &&
