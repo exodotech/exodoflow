@@ -89,12 +89,12 @@ export function Step6Equipa({ recursos, onNext, onBack, isLoading }: Props) {
         </p>
       </div>
 
-      {/* Nota "em breve" */}
-      <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-        <span className="text-amber-500 text-sm mt-0.5">⚠️</span>
-        <p className="text-xs text-amber-800">
-          <span className="font-medium">Envio de e-mail em breve.</span> Os convites são registados
-          e podem ser reenviados após o lançamento do módulo de e-mail.
+      {/* Nota sobre o e-mail de boas-vindas */}
+      <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+        <span className="text-blue-500 text-sm mt-0.5">✉️</span>
+        <p className="text-xs text-blue-800">
+          Ao criar um membro é enviado um <span className="font-medium">e-mail de boas-vindas</span>
+          {' '}(simulado até configurar o provedor de e-mail em produção).
         </p>
       </div>
 
