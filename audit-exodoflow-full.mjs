@@ -5561,6 +5561,13 @@ check(
   'Deve existir MFA TOTP: serviço, config ativa, painel Segurança, desafio no login e banner owner/superadmin.',
 );
 check(
+  'F40: robots.txt bloqueia áreas privadas + PWA manifest',
+  /disallow:[\s\S]*\/dashboard\//.test(readSafe(join(SRC, 'app', 'robots.ts'))) &&
+  /\/admin/.test(readSafe(join(SRC, 'app', 'robots.ts'))) &&
+  /MetadataRoute\.Manifest/.test(readSafe(join(SRC, 'app', 'manifest.ts'))),
+  'Devem existir app/robots.ts (bloqueia dashboard/admin/api) e app/manifest.ts.',
+);
+check(
   'F40: páginas de erro/404 com marca (sem ecrã default do Next)',
   readSafe(join(SRC, 'app', 'error.tsx')).length > 100 &&
   readSafe(join(SRC, 'app', 'global-error.tsx')).length > 100 &&
