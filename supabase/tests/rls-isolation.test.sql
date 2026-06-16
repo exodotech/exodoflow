@@ -73,5 +73,29 @@ BEGIN
   RAISE NOTICE 'T3 OK — A não escreve no B';
 END $$;
 
+-- ── Teste 4: invariante estrutural — toda a tabela public tem RLS + política ──
+-- Trava o erro nº1 de Supabase: uma migração futura criar uma tabela sem RLS
+-- (porta aberta) ou com RLS mas sem políticas (deny-all silencioso).
+RESET role;
+DO $$
+DECLARE v_sem_rls TEXT; v_sem_pol TEXT;
+BEGIN
+  SELECT string_agg(tablename, ', ') INTO v_sem_rls
+  FROM pg_tables WHERE schemaname='public' AND rowsecurity=false;
+  ASSERT v_sem_rls IS NULL, 'FALHA: tabelas public SEM RLS: ' || v_sem_rls;
+
+  -- 'rate_limits' é deny-all INTENCIONAL: só acessível via RPC SECURITY DEFINER
+  -- (rl_hit/rl_cleanup); nenhum cliente lhe toca. Allowlist de deny-all legítimo.
+  SELECT string_agg(t.tablename, ', ') INTO v_sem_pol
+  FROM pg_tables t
+  LEFT JOIN (SELECT tablename, count(*) n FROM pg_policies WHERE schemaname='public' GROUP BY tablename) p
+    ON p.tablename=t.tablename
+  WHERE t.schemaname='public' AND t.rowsecurity=true AND COALESCE(p.n,0)=0
+    AND t.tablename NOT IN ('rate_limits');
+  ASSERT v_sem_pol IS NULL, 'FALHA: tabelas com RLS mas SEM políticas: ' || v_sem_pol;
+
+  RAISE NOTICE 'T4 OK — todas as tabelas public têm RLS + pelo menos uma política';
+END $$;
+
 \echo '>>> ISOLAMENTO OK <<<'
 ROLLBACK;
