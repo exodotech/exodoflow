@@ -5480,6 +5480,12 @@ check(
   'O seam de email deve ser server-only, mock-ready e usado no convite de equipa.',
 );
 check(
+  'F40: helpers internos não expostos como RPC público',
+  /REVOKE ALL ON FUNCTION log_audit_event/.test(readSafe(join(MIGRATIONS, '0045_revoke_internal_rpc_exec.sql'))) &&
+  /REVOKE ALL ON FUNCTION provision_tenant_for_user/.test(readSafe(join(MIGRATIONS, '0045_revoke_internal_rpc_exec.sql'))),
+  'log_audit_event e provision_tenant_for_user devem ter EXECUTE revogado de PUBLIC/anon/authenticated.',
+);
+check(
   'F40: anonimização (apagamento) endurecida + exposta (owner-only)',
   /v_jwt_role IS DISTINCT FROM 'service_role'/.test(readSafe(join(MIGRATIONS, '0044_harden_anonymize_client.sql'))) &&
   /auth_user_role\(\) IS DISTINCT FROM 'owner'/.test(readSafe(join(MIGRATIONS, '0044_harden_anonymize_client.sql'))) &&
