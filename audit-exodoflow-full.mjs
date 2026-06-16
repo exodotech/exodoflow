@@ -5568,8 +5568,8 @@ check(
 check(
   'F40: índices de performance (tenant_id RLS + FKs sem cobertura)',
   (() => { const m = readSafe(join(MIGRATIONS, '0049_performance_indexes.sql'));
-    return /idx_ai_contexts_tenant ON ai_contexts \(tenant_id\)/.test(m) &&
-           /idx_bookings_client_fk ON bookings \(client_id\)/.test(m) &&
+    return /idx_ai_contexts_tenant\s+ON ai_contexts \(tenant_id\)/.test(m) &&
+           /idx_bookings_client_fk\s+ON bookings \(client_id\)/.test(m) &&
            /idx_dsr_target_profile/.test(m); })(),
   'Deve existir a migração 0049 com o índice de tenant_id (ai_contexts) e os das FKs.',
 );
