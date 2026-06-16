@@ -5446,6 +5446,14 @@ check(
   'Deve existir supabase/tests/rls-isolation.test.sql.',
 );
 check(
+  'F40: retenção automática conservadora (opt-in, sistema-only) + cron',
+  /FUNCTION aplicar_retencao/.test(readSafe(join(MIGRATIONS, '0048_retention.sql'))) &&
+  /só pode ser chamada pelo sistema/.test(readSafe(join(MIGRATIONS, '0048_retention.sql'))) &&
+  /REVOKE ALL ON FUNCTION aplicar_retencao/.test(readSafe(join(MIGRATIONS, '0048_retention.sql'))) &&
+  /api\/cron\/retencao/.test(readSafe(join(APP, 'vercel.json'))),
+  'aplicar_retencao deve ser sistema-only, opt-in e agendada em vercel.json.',
+);
+check(
   'F40: cron de lembretes protegido por CRON_SECRET + agendado',
   /Bearer \$\{secret\}/.test(readSafe(join(SRC, 'app', 'api', 'cron', 'lembretes', 'route.ts'))) &&
   /CRON_SECRET/.test(readSafe(join(SRC, 'app', 'api', 'cron', 'lembretes', 'route.ts'))) &&

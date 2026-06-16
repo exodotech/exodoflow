@@ -24,20 +24,28 @@
 | Conta desativada (tenant) | `tenants` + dependentes | Período de carência + eliminação/anonimização | Processo manual aprovado | Definir no contrato/DPA. |
 | Convites de equipa | `team_invites` | Curta (expiram) | Apagar expirados | Contêm email. |
 
-## 2. Campos de retenção por tenant (roadmap)
+## 2. Retenção automática por tenant (implementado — conservador e opt-in)
 
-Para tornar a retenção configurável por tenant (futuro), prever em
-`tenants.settings` (ou colunas dedicadas):
+A RPC `aplicar_retencao()` (migração 0048) corre **diariamente** via Vercel Cron
+(`/api/cron/retencao`). É **opt-in**: por omissão **nada** é apagado. Cada tenant
+configura os prazos em `tenants.settings.retention`:
 
-- `retention_reviews_days`
-- `retention_waitlist_days`
-- `retention_whatsapp_days`
-- `retention_audit_days` (com mínimo de segurança)
-- `retention_treatment_days` (**sujeito a mínimo legal de saúde** — não reduzir sem base)
+```json
+"retention": {
+  "waitlist_days": 30,      // limpa entradas RESOLVIDAS (scheduled/cancelled)
+  "reviews_days": 730,
+  "whatsapp_days": 180,
+  "ai_context_days": 30
+}
+```
 
-> Implementação sugerida: tarefa agendada (cron/Edge Function) que **anonimiza**
-> ou soft-delete conforme a política aprovada, **nunca** apagando recibos/fichas
-> dentro do prazo legal.
+**Só** atua nestas categorias transitórias/baixo-risco. **NUNCA** toca em dados
+críticos/legais: finanças, recibos, **fichas de tratamento**, clientes, marcações,
+consentimentos, auditoria — esses seguem soft-delete/anonimização sob decisão e
+prazo legal. Provado em teste: sem config não apaga; com config apaga o antigo.
+
+> Para o direito ao apagamento de um cliente, usar a **anonimização** (botão no
+> detalhe do cliente, `anonymize_client`), não a retenção automática.
 
 ## 3. Princípios
 

@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/lembretes",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/retencao",
+      "schedule": "0 3 * * *"
     }
   ]
 }

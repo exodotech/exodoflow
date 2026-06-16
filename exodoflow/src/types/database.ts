@@ -2013,6 +2013,7 @@ export type Database = {
         Args: { p_client_id: string; p_tenant_id: string }
         Returns: undefined
       }
+      aplicar_retencao: { Args: never; Returns: Json }
       auth_tenant_id: { Args: never; Returns: string }
       auth_user_role: { Args: never; Returns: string }
       consumir_sessao_pacote: {
