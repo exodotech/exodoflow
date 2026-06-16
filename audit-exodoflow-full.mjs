@@ -5486,6 +5486,14 @@ check(
   'log_audit_event e provision_tenant_for_user devem ter EXECUTE revogado de PUBLIC/anon/authenticated.',
 );
 check(
+  'F40: get_available_slots isola disponibilidade por tenant',
+  (() => { const m = readSafe(join(MIGRATIONS, '0047_harden_get_available_slots.sql'));
+    return /<> 'service_role'/.test(m) &&
+           /p_tenant_id IS DISTINCT FROM auth_tenant_id\(\)/.test(m) &&
+           /Sem permissao para ver disponibilidade de outro tenant/.test(m); })(),
+  'get_available_slots deve barrar consulta de disponibilidade de outro tenant (exceto service_role).',
+);
+check(
   'F40: grants de RPC apertados (feature_flag/slots sem anon)',
   /REVOKE ALL ON FUNCTION get_tenant_feature_flag/.test(readSafe(join(MIGRATIONS, '0046_tighten_public_rpc_grants.sql'))) &&
   /REVOKE EXECUTE ON FUNCTION\s+get_available_slots[\s\S]*FROM PUBLIC/.test(readSafe(join(MIGRATIONS, '0046_tighten_public_rpc_grants.sql'))),
