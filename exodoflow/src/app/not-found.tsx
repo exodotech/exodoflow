@@ -32,7 +32,7 @@ export default function NotFound() {
           </Link>
         </div>
 
-        <PoweredBy className="mt-6 text-center" />
+        <PoweredBy className="mt-6 text-center" legal />
       </div>
     </main>
   )

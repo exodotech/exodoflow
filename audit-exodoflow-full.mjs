@@ -5569,6 +5569,14 @@ check(
   'O Input deve associar label↔input e o e2e deve verificar getByLabel.',
 );
 check(
+  'F40: páginas legais (privacidade/termos) placeholder honesto + rodapé',
+  /Documento em prepara/.test(readSafe(join(SRC, 'components', 'brand', 'LegalPage.tsx'))) &&
+  /LegalPage/.test(readSafe(join(SRC, 'app', 'privacidade', 'page.tsx'))) &&
+  /LegalPage/.test(readSafe(join(SRC, 'app', 'termos', 'page.tsx'))) &&
+  /\/privacidade/.test(readSafe(join(SRC, 'components', 'brand', 'PoweredBy.tsx'))),
+  'Devem existir /privacidade e /termos (placeholder honesto) + links no rodapé público.',
+);
+check(
   'F40: imagem Open Graph com a marca (partilhas sociais)',
   /ImageResponse/.test(readSafe(join(SRC, 'app', 'opengraph-image.tsx'))) &&
   /width: 1200, height: 630/.test(readSafe(join(SRC, 'app', 'opengraph-image.tsx'))),

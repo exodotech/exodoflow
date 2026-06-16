@@ -63,7 +63,7 @@ function LoginView() {
         </div>
 
         {/* Rodapé discreto da marca — Êxodo Tech clicável */}
-        <PoweredBy className="mt-6 text-center" />
+        <PoweredBy className="mt-6 text-center" legal />
       </div>
     </main>
   )

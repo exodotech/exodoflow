@@ -24,7 +24,7 @@ export default function ResetPasswordPage() {
           <ResetPasswordForm />
         </div>
 
-        <PoweredBy className="mt-6 text-center" />
+        <PoweredBy className="mt-6 text-center" legal />
       </div>
     </main>
   )
