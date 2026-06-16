@@ -12,6 +12,9 @@ test.describe('Privacidade — exportação de dados do titular (RGPD)', () => {
     await page.locator('button.hover\\:underline, table button').first().click().catch(() => {})
     await expect(botaoExportar).toBeVisible({ timeout: 10_000 })
 
+    // a11y: o detalhe abre como diálogo acessível (role=dialog + aria-modal)
+    await expect(page.getByRole('dialog')).toBeVisible()
+
     // Captura o download despoletado pelo botão
     const [download] = await Promise.all([
       page.waitForEvent('download'),

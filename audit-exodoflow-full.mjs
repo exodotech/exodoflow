@@ -5569,6 +5569,13 @@ check(
   'Deve existir MFA TOTP: serviço, config ativa, painel Segurança, desafio no login e banner owner/superadmin.',
 );
 check(
+  'F40: a11y — Modal com aria-labelledby + focus trap + restauro de foco',
+  /aria-labelledby=\{title \? titleId/.test(readSafe(join(SRC, 'components', 'design-system', 'Modal', 'Modal.tsx'))) &&
+  /focus trap/i.test(readSafe(join(SRC, 'components', 'design-system', 'Modal', 'Modal.tsx'))) &&
+  /anterior\?\.focus/.test(readSafe(join(SRC, 'components', 'design-system', 'Modal', 'Modal.tsx'))),
+  'O Modal deve ter nome acessível (aria-labelledby), focus trap e restauro de foco.',
+);
+check(
   'F40: a11y — Input associa label (htmlFor/useId) + aria-invalid/describedby',
   /React\.useId\(\)/.test(readSafe(join(SRC, 'components', 'design-system', 'Input', 'Input.tsx'))) &&
   /htmlFor=\{inputId\}/.test(readSafe(join(SRC, 'components', 'design-system', 'Input', 'Input.tsx'))) &&

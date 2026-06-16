@@ -1,7 +1,9 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useId } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
 export interface ModalProps {
   isOpen:       boolean
@@ -21,16 +23,36 @@ const sizeClasses = {
 }
 
 export function Modal({ isOpen, onClose, title, children, footer, closeButton = true, size = 'md', className }: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+
   useEffect(() => {
     if (!isOpen) return
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = 'auto' }
   }, [isOpen])
 
-  // Fechar com Escape
+  // Gestão de foco (a11y): ao abrir, guarda o foco anterior e move o foco para o
+  // diálogo; ao fechar, devolve o foco a quem abriu o modal.
   useEffect(() => {
     if (!isOpen) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const anterior = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+    return () => { anterior?.focus?.() }
+  }, [isOpen])
+
+  // Escape fecha; Tab fica preso dentro do diálogo (focus trap, WCAG 2.4.3).
+  useEffect(() => {
+    if (!isOpen) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab') return
+      const f = dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE)
+      if (!f || f.length === 0) return
+      const primeiro = f[0], ultimo = f[f.length - 1]
+      if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus() }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus() }
+    }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [isOpen, onClose])
@@ -66,6 +88,9 @@ export function Modal({ isOpen, onClose, title, children, footer, closeButton = 
         style={{ backdropFilter: 'blur(20px) saturate(1.6)', WebkitBackdropFilter: 'blur(20px) saturate(1.6)' }}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        ref={dialogRef}
+        tabIndex={-1}
       >
         {/* Brilho decorativo no topo */}
         <div
@@ -77,7 +102,7 @@ export function Modal({ isOpen, onClose, title, children, footer, closeButton = 
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
-            <h2 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>
+            <h2 id={titleId} className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>
             {closeButton && (
               <button
                 onClick={onClose}
