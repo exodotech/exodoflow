@@ -21,6 +21,7 @@ export type AuditAction =
   | 'team.role_change' | 'team.suspend' | 'team.reactivate' | 'team.create'
   | 'company.update' | 'branding.update'
   | 'whatsapp.send' | 'whatsapp.assign' | 'whatsapp.status' | 'whatsapp.note'
+  | 'whatsapp.connect' | 'whatsapp.disconnect'
   | 'finance.create' | 'finance.update' | 'finance.delete'
   | 'receipt.issue'
   | 'booking.payment'

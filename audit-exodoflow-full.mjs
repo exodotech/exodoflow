@@ -3734,14 +3734,14 @@ check(
   'A página de conversas deve avisar que é simulador e que o WhatsApp real não está ligado.'
 );
 check(
-  'WA0: secção WhatsApp em Configurações (Não configurado + botão "em breve")',
+  'WA0: secção WhatsApp em Configurações com formulário de ligação real',
   (() => {
     const p = readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelWhatsApp.tsx'));
     const cfg = readSafe(join(SRC, 'app', 'dashboard', 'configuracoes', 'page.tsx'));
-    return /Não configurado/.test(p) && /em breve/i.test(p) && /disabled/.test(p) &&
+    return /Não configurado/.test(p) && /Ligar WhatsApp/.test(p) && /Phone Number ID/.test(p) &&
            /PainelWhatsApp/.test(cfg) && /'whatsapp'/.test(cfg);
   })(),
-  'Configurações deve ter a secção WhatsApp com estado Não configurado e botão desactivado.'
+  'Configurações deve ter a secção WhatsApp com o formulário real de ligação (owner).'
 );
 check(
   'WA0: canal whatsapp existe desactivado por padrão (trigger + backfill)',
@@ -3751,18 +3751,20 @@ check(
   'Cada tenant deve ter um canal whatsapp com is_active=FALSE (trigger para novos + backfill).'
 );
 check(
-  'WA: outbound/access_token só no SERVIDOR (nunca num componente cliente)',
+  'WA: endpoint Graph (Meta) só no SERVIDOR (nunca num componente cliente)',
   (() => {
-    // A partir da Fase 1B o envio existe — mas o access_token e o endpoint Graph
-    // só podem aparecer em código server-side, NUNCA num ficheiro 'use client'.
+    // O endpoint Graph e as chamadas reais à Meta só podem aparecer server-side.
+    // Nota: o NOME do campo "access_token" pode legitimamente aparecer no
+    // formulário de ligação (o owner digita o token e envia-o à rota server-side);
+    // o token GUARDADO nunca é lido pelo cliente (ver obterEstadoWhatsApp).
     for (const f of collectFiles(SRC, ['.ts', '.tsx'])) {
       const t = readSafe(f);
       const isClient = /^\s*['"]use client['"]/m.test(t);
-      if (isClient && /graph\.facebook\.com|access_token/i.test(t)) return false;
+      if (isClient && /graph\.facebook\.com/i.test(t)) return false;
     }
     return true;
   })(),
-  'graph.facebook.com / access_token nunca podem estar num componente cliente (só server-side).'
+  'graph.facebook.com (chamada à Meta) nunca pode estar num componente cliente.'
 );
 
 // ── Hardening de segurança ───────────────────────────────────────────────────
@@ -5566,6 +5568,18 @@ check(
   /Smoke do dashboard/.test(readSafe(join(APP, 'e2e', 'smoke.spec.ts'))) &&
   /"test:e2e"/.test(readSafe(join(APP, 'package.json'))),
   'Devem existir playwright.config + specs e2e (auth/smoke) + script test:e2e.',
+);
+check(
+  'F40: WhatsApp connect UI + token não vaza para o cliente',
+  // estado projeta só campos não-secretos (nunca o config inteiro/token)
+  /config->>phone_number_id/.test(readSafe(join(SRC, 'services', 'whatsapp.ts'))) &&
+  !/\.select\('is_active, config'\)/.test(readSafe(join(SRC, 'services', 'whatsapp.ts'))) &&
+  // rota owner-only guarda o token server-side
+  /role !== 'owner'/.test(readSafe(join(SRC, 'app', 'api', 'whatsapp', 'configurar', 'route.ts'))) &&
+  // painel tem o formulário real (não "em breve")
+  /Ligar WhatsApp/.test(readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelWhatsApp.tsx'))) &&
+  !/em breve/.test(readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelWhatsApp.tsx'))),
+  'O painel WhatsApp deve permitir ligar (owner) e o estado nunca expor o access_token.',
 );
 check(
   'F40: MFA/2FA (TOTP) — serviço, inscrição, desafio no login e banner',

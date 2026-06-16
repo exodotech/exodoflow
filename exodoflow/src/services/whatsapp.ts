@@ -10,26 +10,49 @@ import type { TemplatePurpose } from '@/types/domain/communication'
 export type ConversaStatus = 'active' | 'waiting' | 'resolved' | 'archived'
 
 export interface EstadoWhatsApp {
-  existe:    boolean
-  is_active: boolean
-  numero:    string | null   // settings futuros (config.phone_number); hoje sempre null
+  existe:         boolean
+  is_active:      boolean
+  numero:         string | null   // config.phone_number (não secreto)
+  tem_credencial: boolean         // config tem phone_number_id (sem expor o token)
 }
 
+// SEGURANÇA: nunca selecionar o `config` inteiro — contém o access_token (segredo)
+// e seria enviado ao browser (owner/manager/recepção têm SELECT). Projetamos só
+// os campos NÃO secretos via caminho jsonb (->>).
 export async function obterEstadoWhatsApp(): Promise<EstadoWhatsApp> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('communication_channels')
-    .select('is_active, config')
+    .select('is_active, numero:config->>phone_number, phone_id:config->>phone_number_id')
     .eq('channel', 'whatsapp')
     .maybeSingle()
 
   if (error) throw new Error(`Erro ao carregar estado do WhatsApp: ${error.message}`)
-  const config = (data?.config ?? {}) as { phone_number?: string }
+  const row = data as { is_active?: boolean; numero?: string | null; phone_id?: string | null } | null
   return {
-    existe:    !!data,
-    is_active: data?.is_active ?? false,
-    numero:    config.phone_number ?? null,
+    existe:         !!row,
+    is_active:      row?.is_active ?? false,
+    numero:         row?.numero ?? null,
+    tem_credencial: !!row?.phone_id,
   }
+}
+
+// Liga o canal WhatsApp (via rota server-side; o token nunca fica no cliente).
+export async function ligarWhatsApp(input: { phone_number: string; phone_number_id: string; access_token: string }): Promise<void> {
+  const res = await fetch('/api/whatsapp/configurar', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  })
+  const d = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(d?.error ?? 'Erro ao ligar o WhatsApp.')
+}
+
+// Desliga o canal WhatsApp (remove o token no servidor).
+export async function desligarWhatsApp(): Promise<void> {
+  const res = await fetch('/api/whatsapp/configurar', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ disconnect: true }),
+  })
+  const d = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(d?.error ?? 'Erro ao desligar o WhatsApp.')
 }
 
 // ── Fase 1A: leitura de conversas/mensagens reais (gravadas pelo webhook) ──────
