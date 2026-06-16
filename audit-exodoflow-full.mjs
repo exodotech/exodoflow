@@ -5486,6 +5486,12 @@ check(
   'log_audit_event e provision_tenant_for_user devem ter EXECUTE revogado de PUBLIC/anon/authenticated.',
 );
 check(
+  'F40: grants de RPC apertados (feature_flag/slots sem anon)',
+  /REVOKE ALL ON FUNCTION get_tenant_feature_flag/.test(readSafe(join(MIGRATIONS, '0046_tighten_public_rpc_grants.sql'))) &&
+  /REVOKE EXECUTE ON FUNCTION\s+get_available_slots[\s\S]*FROM PUBLIC/.test(readSafe(join(MIGRATIONS, '0046_tighten_public_rpc_grants.sql'))),
+  'get_tenant_feature_flag e get_available_slots não devem ser executáveis por anon.',
+);
+check(
   'F40: anonimização (apagamento) endurecida + exposta (owner-only)',
   /v_jwt_role IS DISTINCT FROM 'service_role'/.test(readSafe(join(MIGRATIONS, '0044_harden_anonymize_client.sql'))) &&
   /auth_user_role\(\) IS DISTINCT FROM 'owner'/.test(readSafe(join(MIGRATIONS, '0044_harden_anonymize_client.sql'))) &&
