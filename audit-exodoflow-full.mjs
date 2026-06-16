@@ -967,12 +967,8 @@ check(
 );
 
 // Componentes
-check(
-  'PermissionGate existe',
-  exists(join(SRC, 'components', 'design-system', 'PermissionGate', 'PermissionGate.tsx')),
-  'Criar PermissionGate component.'
-);
-
+// (PermissionGate removido — era código morto; o controlo de acesso é feito via
+//  usePermissions().can() + AccessDenied, verificados aqui.)
 check(
   'AccessDenied existe',
   exists(join(SRC, 'components', 'design-system', 'AccessDenied', 'AccessDenied.tsx')),
