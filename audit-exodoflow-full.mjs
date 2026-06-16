@@ -5240,6 +5240,15 @@ check(
   'O serviço deve construir contexto do tenant e ter o seam de IA com fallback mock.'
 );
 check(
+  'F34: IA real (Claude via Anthropic Messages API) + fallback heurístico',
+  /api\.anthropic\.com\/v1\/messages/.test(assistSvc) &&
+  /anthropic-version/.test(assistSvc) &&
+  /construirSystemPrompt/.test(assistSvc) &&
+  /NUNCA marcas/.test(assistSvc) &&
+  /gerarRespostaAssistente\(mensagem, ctx\)/.test(assistSvc),
+  'O serviço deve chamar o Claude real (com regra de não marcar) e cair no heurístico em falha.'
+);
+check(
   'F34: rota /api/assistant/responder autenticada + rate-limit',
   (() => { const r = readSafe(join(SRC, 'app', 'api', 'assistant', 'responder', 'route.ts')); return /getUser\(\)/.test(r) && /checkRateLimit/.test(r); })(),
   'A rota do assistente deve exigir sessão e ter rate-limit.'
