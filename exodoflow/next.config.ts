@@ -38,6 +38,9 @@ const csp = [
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   `connect-src 'self' ${supabaseHost} ${supabaseHost.replace("http", "ws")}`,
   "font-src 'self' data:",
+  // Recolhe violações em /api/csp-report (pré-requisito para mudar para enforce
+  // com confiança). Em Report-Only, o browser envia os relatórios sem bloquear.
+  "report-uri /api/csp-report",
 ].join("; ");
 
 // Headers de segurança aplicados a todas as rotas. Os 5 primeiros são seguros

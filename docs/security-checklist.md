@@ -75,8 +75,14 @@ Controlos verificados:
 Aplicados a todas as rotas em `next.config.ts`:
 - `Strict-Transport-Security` (HSTS), `X-Frame-Options: DENY` (anti-clickjacking),
   `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`.
-- **CSP em modo Report-Only** (monitoriza violações sem bloquear). Antes de produção:
-  validar e mudar para `Content-Security-Policy` (enforce) numa passagem dedicada.
+- **CSP em modo Report-Only** com `report-uri /api/csp-report` — as violações são
+  recolhidas e registadas (`logger.security`, ação `csp.violation`). **Rollout para
+  enforce:**
+  1. Recolher violações reais em staging/produção durante um período.
+  2. Rever os relatórios e ajustar as diretivas (sobretudo `connect-src`/`script-src`).
+  3. **Só então** trocar o header `Content-Security-Policy-Report-Only` por
+     `Content-Security-Policy` (enforce). Validar com `npm run test:e2e` num build
+     de produção (em dev há falsos positivos do HMR/eval).
 
 ## 6.2 Cobertura de RLS (estrutural)
 

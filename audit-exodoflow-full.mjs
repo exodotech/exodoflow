@@ -5494,6 +5494,12 @@ check(
   'Deve existir o serviço DSR e o painel de privacidade nas Configurações.',
 );
 check(
+  'F40: recolha de violações CSP (report-uri) — prepara o enforce',
+  /report-uri \/api\/csp-report/.test(readSafe(join(APP, 'next.config.ts'))) &&
+  /csp\.violation/.test(readSafe(join(SRC, 'app', 'api', 'csp-report', 'route.ts'))),
+  'O CSP Report-Only deve ter report-uri ligado ao endpoint /api/csp-report.',
+);
+check(
   'F40: rate-limit distribuído (atómico) nas rotas públicas',
   /FUNCTION rl_hit/.test(readSafe(join(MIGRATIONS, '0043_rate_limits.sql'))) &&
   /ON CONFLICT \(key\) DO UPDATE/.test(readSafe(join(MIGRATIONS, '0043_rate_limits.sql'))) &&
