@@ -9,6 +9,14 @@ test.describe('Autenticação', () => {
     await expect(page.locator('input[type="password"]')).toBeVisible()
   })
 
+  test('a11y: campos do login têm label acessível associado', async ({ page }) => {
+    await page.goto('/login')
+    // getByLabel só encontra o input se a label estiver associada (htmlFor/id ou aria).
+    // exact:true para não colidir com o botão "Mostrar palavra-passe".
+    await expect(page.getByLabel('E-mail', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('Palavra-passe', { exact: true })).toBeVisible()
+  })
+
   test('login válido entra no dashboard', async ({ page }) => {
     const dest = await login(page, 'owner')
     expect(dest.startsWith('/dashboard')).toBeTruthy()

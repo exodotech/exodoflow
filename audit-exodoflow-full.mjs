@@ -5561,6 +5561,14 @@ check(
   'Deve existir MFA TOTP: serviço, config ativa, painel Segurança, desafio no login e banner owner/superadmin.',
 );
 check(
+  'F40: a11y — Input associa label (htmlFor/useId) + aria-invalid/describedby',
+  /React\.useId\(\)/.test(readSafe(join(SRC, 'components', 'design-system', 'Input', 'Input.tsx'))) &&
+  /htmlFor=\{inputId\}/.test(readSafe(join(SRC, 'components', 'design-system', 'Input', 'Input.tsx'))) &&
+  /aria-describedby/.test(readSafe(join(SRC, 'components', 'design-system', 'Input', 'Input.tsx'))) &&
+  /getByLabel/.test(readSafe(join(APP, 'e2e', 'auth.spec.ts'))),
+  'O Input deve associar label↔input e o e2e deve verificar getByLabel.',
+);
+check(
   'F40: robots.txt bloqueia áreas privadas + PWA manifest',
   /disallow:[\s\S]*\/dashboard\//.test(readSafe(join(SRC, 'app', 'robots.ts'))) &&
   /\/admin/.test(readSafe(join(SRC, 'app', 'robots.ts'))) &&

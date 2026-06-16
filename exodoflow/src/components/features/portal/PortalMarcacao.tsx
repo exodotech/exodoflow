@@ -152,7 +152,7 @@ export function PortalMarcacao({ slug }: { slug: string }) {
               {passo === 'data' && servico && (
                 <div className="space-y-3">
                   <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Escolha o dia</h2>
-                  <input type="date" min={hoje} value={data}
+                  <input type="date" min={hoje} value={data} aria-label="Escolha o dia"
                     onChange={(e) => { setData(e.target.value); if (e.target.value) { carregarSlots(servico.id, e.target.value); setPasso('hora') } }}
                     className="w-full h-12 px-3 rounded-xl border border-slate-200 text-base focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
                 </div>
@@ -187,13 +187,13 @@ export function PortalMarcacao({ slug }: { slug: string }) {
                     {servico.name} · {data && fmtData(data)} · {fmtHora(slot.slot_start)}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Nome *</label>
-                    <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="O seu nome"
+                    <label htmlFor="portal-nome" className="block text-sm font-medium text-slate-700 mb-1">Nome *</label>
+                    <input id="portal-nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="O seu nome" required
                       className="w-full h-11 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Telefone (opcional)</label>
-                    <input value={tel} onChange={(e) => setTel(e.target.value)} type="tel" placeholder="+351 ..."
+                    <label htmlFor="portal-tel" className="block text-sm font-medium text-slate-700 mb-1">Telefone (opcional)</label>
+                    <input id="portal-tel" value={tel} onChange={(e) => setTel(e.target.value)} type="tel" placeholder="+351 ..."
                       className="w-full h-11 px-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
                   </div>
                   {erro && <p className="text-sm text-red-600">{erro}</p>}

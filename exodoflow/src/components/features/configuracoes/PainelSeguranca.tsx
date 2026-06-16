@@ -81,7 +81,7 @@ export function PainelSeguranca() {
             <p className="text-xs text-gray-500">Ou introduza a chave manualmente:</p>
             <code className="block text-xs bg-white border border-gray-200 rounded px-2 py-1 font-mono break-all">{inscricao.secret}</code>
             <p className="text-sm font-medium text-gray-900 pt-1">2. Introduza o código de 6 dígitos</p>
-            <Input label="" inputMode="numeric" placeholder="000000" value={codigo} onChange={(e) => setCodigo(e.target.value)} />
+            <Input aria-label="Código de verificação" inputMode="numeric" placeholder="000000" value={codigo} onChange={(e) => setCodigo(e.target.value)} />
             {erro && <p className="text-xs text-red-600">{erro}</p>}
             <div className="flex items-center gap-2">
               <Button size="sm" className="gap-1.5" onClick={() => confirmar.mutate()} isLoading={confirmar.isPending} disabled={confirmar.isPending || codigo.trim().length < 6}>

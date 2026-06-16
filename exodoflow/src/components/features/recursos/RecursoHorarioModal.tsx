@@ -147,9 +147,9 @@ function EditorHorario({ resourceId, inicial, onClose }: { resourceId: string; i
               </label>
               {l.ativo ? (
                 <div className="flex items-center gap-2">
-                  <input type="time" value={l.inicio} onChange={(e) => set(d.dow, { inicio: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
+                  <input type="time" aria-label={`Hora de início — ${d.label}`} value={l.inicio} onChange={(e) => set(d.dow, { inicio: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
                   <span className="text-slate-400 text-sm">às</span>
-                  <input type="time" value={l.fim} onChange={(e) => set(d.dow, { fim: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
+                  <input type="time" aria-label={`Hora de fim — ${d.label}`} value={l.fim} onChange={(e) => set(d.dow, { fim: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
                 </div>
               ) : (
                 <span className="text-sm text-slate-400">Fechado</span>
@@ -219,15 +219,15 @@ function SeccaoFolgas({ resourceId, bloqueios }: { resourceId: string; bloqueios
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div>
             <label className="block text-xs font-medium text-slate-600 mb-1">Data</label>
-            <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="w-full h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
+            <input type="date" aria-label="Data da folga" value={data} onChange={(e) => setData(e.target.value)} className="w-full h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-600 mb-1">Início</label>
-            <input type="time" value={inicio} onChange={(e) => setInicio(e.target.value)} className="w-full h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
+            <input type="time" aria-label="Hora de início da folga" value={inicio} onChange={(e) => setInicio(e.target.value)} className="w-full h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-600 mb-1">Fim</label>
-            <input type="time" value={fim} onChange={(e) => setFim(e.target.value)} className="w-full h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
+            <input type="time" aria-label="Hora de fim da folga" value={fim} onChange={(e) => setFim(e.target.value)} className="w-full h-9 px-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]" />
           </div>
         </div>
         <Input label="Motivo (opcional)" placeholder="Férias, formação, almoço..." value={motivo} onChange={(e) => setMotivo(e.target.value)} />
