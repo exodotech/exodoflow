@@ -1,5 +1,6 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Building2, CreditCard, Plug, Layers,
   Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot, ShieldCheck, Lock,
@@ -48,13 +49,14 @@ const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
 const TAB_VALUES = new Set<Tab>(TABS.map((t) => t.value))
 
 export default function ConfiguracoesPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('empresa')
   // Separador inicial pode vir do URL (?tab=seguranca) — usado, ex., pelo banner
-  // de 2FA. Lido após montar (não no render) para não causar hydration mismatch.
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get('tab') as Tab | null
-    if (q && TAB_VALUES.has(q)) setActiveTab(q)
-  }, [])
+  // de 2FA. useSearchParams dá o mesmo valor no servidor e no cliente (sem
+  // hydration mismatch) e o inicializador lazy evita setState num efeito.
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const q = searchParams.get('tab') as Tab | null
+    return q && TAB_VALUES.has(q) ? q : 'empresa'
+  })
   const { can, isOwner, isManagerOrAbove } = usePermissions()
   const { tenant } = useAuth()
 
