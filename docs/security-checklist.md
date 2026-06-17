@@ -106,12 +106,24 @@ Aplicados a todas as rotas em `next.config.ts`:
 - [ ] Backups verificados e procedimento de restauro testado (ver `docs/incident-response.md`).
 - [ ] `npm audit` / revisão de dependências (CVEs) no CI.
 
-> **Risco de dependências (aceite, documentado):** `npm audit` reporta 2 vulns
-> **moderadas** de `postcss` (XSS via `</style>` no stringify), transitivas do
-> Next.js (versão modificada deste projeto). É um problema **de build-time** (o
-> postcss processa CSS de autoria nossa, não input do utilizador), por isso **não
-> é alcançável em runtime**. **NÃO correr `npm audit fix --force`** — despromove o
-> Next 16→9 e parte o build. Mitigação: rever quando o Next subir de versão.
+> **Risco de dependências (aceite, documentado):**
+>
+> `npm audit` reporta **7 vulns** (1 crítica, 2 altas, 4 moderadas) — mas o que
+> importa é o que vai para **produção (runtime)**:
+>
+> - **Runtime (`npm audit --omit=dev`) → apenas 2 MODERADAS** de `postcss` (XSS via
+>   `</style>` no stringify), transitivas do Next.js. É **build-time** (postcss
+>   processa CSS de autoria nossa, não input do utilizador) → **não alcançável em
+>   runtime**.
+> - A **crítica + 2 altas** (`vitest` → `vite` → `esbuild`) são **100% do
+>   toolchain de DEV** (test runner) — **NÃO são instaladas em produção** (não
+>   estão em `dependencies`). O esbuild GHSA exige um `NPM_CONFIG_REGISTRY`
+>   malicioso (registry comprometido), risco de dev-build, não de runtime.
+>
+> **NÃO correr `npm audit fix --force`:** despromove o Next 16→9 (parte o build) e
+> força um major breaking do `vitest` (parte os 110 testes). Para uma vuln dev-only
+> não compensa. Mitigação: rever ao subir o Next; opcionalmente bumpar o vitest
+> numa passagem dedicada (com re-validação dos testes).
 
 ## 8. Checklist de pentest (antes de clientes reais)
 
