@@ -13,7 +13,7 @@ const __dirname  = dirname(__filename);
 
 // ── Paths principais ──────────────────────────────────────────────────────────
 const ROOT       = __dirname;
-const APP        = join(ROOT, 'exodoflow');
+const APP        = ROOT;
 const SRC        = join(APP, 'src');
 const SUPABASE   = join(ROOT, 'supabase');
 const MIGRATIONS = join(SUPABASE, 'migrations');
@@ -4700,7 +4700,7 @@ check(
 // Browser harness (ferramenta de dev)
 check(
   'F25: browser harness existe (revisão visual via Playwright)',
-  exists(join(ROOT, 'exodoflow', 'browser-harness.mjs')),
+  exists(join(ROOT, 'browser-harness.mjs')),
   'Deve existir o browser-harness.mjs para revisão visual.'
 );
 }

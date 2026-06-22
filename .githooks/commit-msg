@@ -7,4 +7,4 @@ case "$1" in
   /*) msg="$1" ;;
   *)  msg="$root/$1" ;;
 esac
-cd "$root/exodoflow" && npx --no -- commitlint --edit "$msg"
+cd "$root" && npx --no -- commitlint --edit "$msg"
