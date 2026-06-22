@@ -16,6 +16,7 @@ import crypto from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { decryptSecret } from '@/lib/crypto/secret'
+import { podeUsarFeature } from '@/services/plan-access'
 import { logger } from '@/lib/logger'
 import type { Database } from '@/types/database'
 import type { SupportedLocale, TemplatePurpose } from '@/types/domain/communication'
@@ -37,7 +38,7 @@ export const TEMPLATE_PURPOSES = Object.keys(PURPOSE_TO_EVENT) as TemplatePurpos
 
 export type TemplateErrorCode =
   | 'no-booking' | 'no-phone' | 'no-template' | 'not-approved'
-  | 'no-channel' | 'send-failed' | 'invalid'
+  | 'no-channel' | 'send-failed' | 'invalid' | 'plan'
 
 export class TemplateError extends Error {
   constructor(message: string, readonly code: TemplateErrorCode) {
@@ -233,6 +234,11 @@ export async function enviarTemplateWhatsApp(input: EnviarTemplateInput): Promis
     throw new TemplateError('Canal WhatsApp não configurado ou inactivo', 'no-channel')
   }
   const accessToken = decryptSecret(cfg.access_token)   // encriptado em repouso
+
+  // 5b. O envio REAL exige que o plano inclua WhatsApp (override por flag possível).
+  if (!mockAtivo() && !(await podeUsarFeature(admin, input.tenant_id, 'whatsapp'))) {
+    throw new TemplateError('Envio de WhatsApp não está incluído no plano atual.', 'plan')
+  }
 
   // 6. Em envio REAL, a Meta exige template aprovado. Em mock, ignora-se.
   if (!mockAtivo() && template.meta_status !== 'APPROVED') {

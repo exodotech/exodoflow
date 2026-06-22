@@ -5,6 +5,7 @@
 // REGRA do projeto: IA é só camada de conversa, NUNCA escreve na agenda.
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { podeUsarFeature } from '@/services/plan-access'
 import { gerarRespostaAssistente, type ContextoAssistente } from '@/lib/assistant/responder'
 import { formatCurrencyByCode } from '@/lib/i18n/currency'
 import { logger } from '@/lib/logger'
@@ -105,9 +106,11 @@ export async function responderAssistente(tenant_id: string, mensagem: string): 
 
   const temChaveIA = !!process.env.ANTHROPIC_API_KEY
   const forcarMock = process.env.ASSISTANT_MOCK === 'true'
+  // A IA real exige que o PLANO do tenant a inclua (override por flag possível).
+  const planoTemIA = await podeUsarFeature(createAdminClient(), tenant_id, 'ai')
 
-  // IA real quando há chave e não está forçado o mock; fallback heurístico se falhar.
-  if (temChaveIA && !forcarMock) {
+  // IA real quando há chave, plano permite e não está forçado o mock; senão heurístico.
+  if (temChaveIA && planoTemIA && !forcarMock) {
     const reply = await gerarRespostaIA(ctx, mensagem)
     if (reply) return { reply, mode: 'ai' }
     // falhou → fallback determinístico (não quebra a auto-resposta)

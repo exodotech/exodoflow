@@ -1588,12 +1588,15 @@ check(
 );
 
 check(
-  'BrandingProvider trata tema dark/light/system',
+  'Tema claro/escuro + sistema gerido pelo ThemeProvider',
   (() => {
-    const f = readSafe(join(SRC, 'providers', 'BrandingProvider.tsx'));
-    return f.includes("'dark'") && f.includes("'light'") && f.includes("'system'");
+    // O tema é uma preferência POR UTILIZADOR (localStorage + sistema), gerida
+    // pelo ThemeProvider dedicado — não pelo BrandingProvider (que só trata da
+    // cor do tenant). Verifica claro/escuro + seguimento do sistema.
+    const f = readSafe(join(SRC, 'providers', 'ThemeProvider.tsx'));
+    return f.includes("'dark'") && f.includes("'light'") && f.includes('prefers-color-scheme');
   })(),
-  "BrandingProvider deve gerir os três modos de tema: 'dark', 'light', 'system'."
+  "ThemeProvider deve gerir claro/escuro e seguir o sistema (prefers-color-scheme)."
 );
 
 // dashboard/layout.tsx usa BrandingProvider
@@ -1703,13 +1706,13 @@ check(
   'PainelBranding deve usar ColorPicker para selecção da cor primária.'
 );
 
-// NOTA: ThemePicker foi removido do painel por decisão de produto (TIER 3).
-// Nesta fase só o tema claro é suportado; o theme_mode fica fixo em 'light'.
-// O check abaixo garante que NÃO regressa enquanto o dark mode não tiver CSS.
+// NOTA: o tema claro/escuro é uma preferência POR UTILIZADOR (ThemeToggle na
+// sidebar/header + ThemeProvider), não uma definição do tenant. Por isso o painel
+// de branding NÃO tem ThemePicker — o branding do tenant é só cor + logo.
 check(
-  'PainelBranding.tsx não usa ThemePicker (light-only por agora)',
+  'PainelBranding.tsx não usa ThemePicker (tema é por-utilizador)',
   !readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelBranding.tsx')).includes('ThemePicker'),
-  'Enquanto o dark mode não estiver implementado, o ThemePicker deve ficar fora do painel.'
+  'O tema é escolhido pelo utilizador (ThemeToggle), não no painel de branding do tenant.'
 );
 
 check(
@@ -2116,12 +2119,12 @@ check(
 );
 
 check(
-  'PainelBranding fixa theme_mode em light (dark não implementado)',
+  'PainelBranding mantém theme_mode default light (tema é por-utilizador)',
   (() => {
     const f = readSafe(join(SRC, 'components', 'features', 'configuracoes', 'PainelBranding.tsx'));
     return f.includes("theme_mode:      'light'") && !f.includes('ThemePicker');
   })(),
-  'Nesta fase só o tema claro é suportado — ThemePicker deve sair do painel.'
+  'O branding do tenant mantém o default light; o claro/escuro é escolhido pelo utilizador (ThemeToggle).'
 );
 
 // ── Parte 3: Cadastro privado + SUPERADMIN ──────────────────────────────────
