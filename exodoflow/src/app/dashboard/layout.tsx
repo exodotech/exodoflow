@@ -6,6 +6,7 @@ import { createClient }       from '@/lib/supabase/server'
 import { DashboardLayout }    from '@/components/layout/DashboardLayout/DashboardLayout'
 import { AuthProvider }       from '@/providers/AuthProvider'
 import { BrandingProvider }   from '@/providers/BrandingProvider'
+import { subscricaoBloqueia, type SubscriptionStatus } from '@/lib/billing/plan'
 import type { Profile }       from '@/types/domain/profile'
 import type { Tenant }        from '@/types/domain/tenant'
 
@@ -50,6 +51,19 @@ export default async function Layout({ children }: { children: React.ReactNode }
   // Vem ANTES do check de onboarding: um tenant suspenso não deve poder
   // continuar o onboarding nem usar o dashboard.
   if (tenantData && tenantData.is_active === false) redirect('/suspenso')
+
+  // Subscrição: planos PAGOS com pagamento em atraso/cancelado bloqueiam o acesso
+  // (gratuitos nunca bloqueiam — ver subscricaoBloqueia). Vem antes do onboarding.
+  if (tenantData?.plan_id) {
+    const { data: plan } = await supabase
+      .from('plans').select('price_monthly').eq('id', tenantData.plan_id).single()
+    if (plan && subscricaoBloqueia(
+      { price_monthly: plan.price_monthly },
+      (tenantData.subscription_status ?? 'none') as SubscriptionStatus,
+    )) {
+      redirect('/assinatura')
+    }
+  }
 
   // STAFF não faz onboarding — acede directamente ao dashboard
   const isStaff = profileData?.role === 'staff'

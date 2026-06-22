@@ -165,26 +165,27 @@ VALUES
     0.00, 0.00,
     2,    -- máximo 2 recursos (ex: 1 profissional + 1 sala)
     50,   -- máximo 50 clientes
-    '{"booking_portal": true, "whatsapp_simulator": false, "ai": false}',
+    -- price_brl_*: preço próprio para o Brasil (impostos incluídos). Grátis = 0.
+    '{"booking_portal": true, "whatsapp_simulator": false, "ai": false, "price_brl_monthly": 0, "price_brl_yearly": 0}',
     1
   ),
   (
     'a1000000-0000-0000-0000-000000000002',
     'Starter',
     'starter',
-    29.00, 290.00,
+    20.00, 200.00,   -- € (IVA incluído); anual = 10 meses (2 grátis)
     5, 500,
-    '{"booking_portal": true, "whatsapp_simulator": true, "ai": false}',
+    '{"booking_portal": true, "whatsapp_simulator": true, "ai": false, "price_brl_monthly": 79, "price_brl_yearly": 790}',
     2
   ),
   (
     'a1000000-0000-0000-0000-000000000003',
     'Pro',
     'pro',
-    79.00, 790.00,
+    40.00, 400.00,   -- € (IVA incluído); anual = 10 meses (2 grátis)
     NULL,  -- ilimitado
     NULL,  -- ilimitado
-    '{"booking_portal": true, "whatsapp_simulator": true, "ai": true}',
+    '{"booking_portal": true, "whatsapp_simulator": true, "ai": true, "price_brl_monthly": 159, "price_brl_yearly": 1590}',
     3
   );
 

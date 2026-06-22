@@ -21,7 +21,10 @@ import { cn }             from '@/lib/utils/cn'
 import { forceLogout }    from '@/lib/auth/logout'
 import { useAuth }        from '@/providers/AuthProvider'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useNicheTerms }  from '@/hooks/useNicheTerms'
+import { capitalize }     from '@/lib/niche-templates'
 import { LogoMark }       from '@/components/brand/Logo'
+import { ThemeToggle }    from '@/components/brand/ThemeToggle'
 import type { NavItem }   from '@/types/ui/nav'
 import type { TenantSettings } from '@/types/domain/tenant'
 
@@ -29,6 +32,7 @@ export function SidebarTablet() {
   const pathname = usePathname()
   const { tenant } = useAuth()
   const { can }  = usePermissions()
+  const terms    = useNicheTerms()
 
   const settings = tenant?.settings as TenantSettings | null | undefined
   const logoUrl  = settings?.branding?.logo_url
@@ -38,7 +42,7 @@ export function SidebarTablet() {
   const allNavItems: NavItem[] = [
     { href: '/dashboard',               label: 'Dashboard',    icon: LayoutDashboard },
     { href: '/dashboard/agenda',        label: 'Agenda',       icon: Calendar,        permission: 'agenda.view_own' },
-    { href: '/dashboard/clientes',      label: 'Clientes',     icon: Users,           permission: 'clients.view' },
+    { href: '/dashboard/clientes',      label: capitalize(terms.clientPlural), icon: Users, permission: 'clients.view' },
     { href: '/dashboard/servicos',      label: 'Serviços',     icon: Briefcase,       permission: 'services.view' },
     { href: '/dashboard/recursos',      label: 'Recursos',     icon: Zap,             permission: 'resources.view' },
     { href: '/dashboard/conversas',     label: 'Conversas',    icon: MessageSquare,   permission: 'conversas.view' },
@@ -120,8 +124,9 @@ export function SidebarTablet() {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="relative px-2 py-3 border-t border-white/[0.07]">
+      {/* Tema + Logout */}
+      <div className="relative px-2 py-3 border-t border-white/[0.07] flex flex-col items-center gap-1">
+        <ThemeToggle className="w-10 h-10 text-slate-400 hover:text-slate-200 hover:bg-white/[0.08]" />
         <button
           onClick={handleLogout}
           title="Sair"

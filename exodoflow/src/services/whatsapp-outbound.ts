@@ -11,6 +11,8 @@
 // fake no formato Meta e grava tudo na mesma. Em produção exige a flag + aviso.
 import crypto from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decryptSecret } from '@/lib/crypto/secret'
+import { podeUsarFeature } from '@/services/plan-access'
 import { logger } from '@/lib/logger'
 import type { Json } from '@/types/database'
 
@@ -19,7 +21,7 @@ const JANELA_24H_MS = 24 * 60 * 60 * 1000
 const MAX_LEN = 4096
 
 export class OutboundError extends Error {
-  constructor(message: string, readonly code: 'no-channel' | 'no-conversation' | 'window' | 'send-failed' | 'invalid') {
+  constructor(message: string, readonly code: 'no-channel' | 'no-conversation' | 'window' | 'send-failed' | 'invalid' | 'plan') {
     super(message)
   }
 }
@@ -93,6 +95,13 @@ export async function enviarMensagemWhatsAppManual(input: EnviarManualInput): Pr
   if (!channel || !cfg.phone_number_id || !cfg.access_token) {
     throw new OutboundError('Canal WhatsApp não configurado ou inactivo', 'no-channel')
   }
+  const accessToken = decryptSecret(cfg.access_token)   // encriptado em repouso
+
+  // 2b. O envio REAL exige que o plano inclua WhatsApp (override por flag possível).
+  const isMockEnv = process.env.WHATSAPP_OUTBOUND_MOCK === 'true'
+  if (!isMockEnv && !(await podeUsarFeature(admin, input.tenant_id, 'whatsapp'))) {
+    throw new OutboundError('Envio de WhatsApp não está incluído no plano atual.', 'plan')
+  }
 
   // 3. Janela de 24h — desde a última mensagem INBOUND do cliente
   const { data: lastIn } = await admin
@@ -111,7 +120,7 @@ export async function enviarMensagemWhatsAppManual(input: EnviarManualInput): Pr
   // 4. Enviar (Meta real ou mock). Em falha → log FAILED + lança.
   let sent: { id: string; raw: Json }
   try {
-    sent = await callMeta(cfg.phone_number_id, cfg.access_token, conv.wa_phone_number, content)
+    sent = await callMeta(cfg.phone_number_id, accessToken, conv.wa_phone_number, content)
   } catch (e) {
     await admin.from('communication_logs').insert({
       tenant_id:  input.tenant_id,

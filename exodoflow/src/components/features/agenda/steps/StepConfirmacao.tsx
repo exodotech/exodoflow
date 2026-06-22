@@ -1,5 +1,7 @@
 'use client'
 import React from 'react'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize } from '@/lib/niche-templates'
 import type { SlotDisponivel } from '@/services/disponibilidade'
 
 interface ClienteSimples  { full_name: string }
@@ -29,11 +31,12 @@ export function StepConfirmacao({
   formatarHora,
   onNotesChange,
 }: StepConfirmacaoProps) {
+  const terms = useNicheTerms()
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600">Cliente</span>
+          <span className="text-gray-600">{capitalize(terms.clientSingular)}</span>
           <span className="font-medium">{clienteNome ?? cliente?.full_name}</span>
         </div>
         <div className="flex justify-between">

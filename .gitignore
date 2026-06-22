@@ -43,5 +43,5 @@ yarn-error.log*
 # Deploy
 .vercel
 
-# Claude Code (settings locais da máquina)
-.claude/settings.local.json
+# Claude Code (settings locais da máquina — não partilhar)
+.claude/

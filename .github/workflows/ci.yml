@@ -50,6 +50,21 @@ jobs:
       - name: Auditoria EEOS
         run: node audit-exodoflow-full.mjs
 
+  secret-scan:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Histórico completo — varre TODOS os commits, não só o último.
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   rls-isolation:
     name: Isolamento multi-tenant (RLS)
     runs-on: ubuntu-latest

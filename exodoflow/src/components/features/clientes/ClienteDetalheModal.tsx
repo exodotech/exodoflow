@@ -14,6 +14,8 @@ import { listarBookingsPorCliente } from '@/services/bookings'
 import { exportarDadosTitular, descarregarExportacao } from '@/services/dsr-export'
 import { useConverterVisitante } from '@/hooks/useClientes'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize } from '@/lib/niche-templates'
 import { useAuth } from '@/providers/AuthProvider'
 import type { ClienteEditavel } from './NovoClienteModal'
 import { PacotesCliente } from './PacotesCliente'
@@ -35,6 +37,7 @@ interface Props {
 
 export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApagar }: Props) {
   const ativo = isOpen && !!clientId
+  const terms = useNicheTerms()
   const converter = useConverterVisitante()
   const qc = useQueryClient()
   const { isManagerOrAbove, isOwner } = usePermissions()
@@ -111,7 +114,7 @@ export function ClienteDetalheModal({ isOpen, clientId, onClose, onEditar, onApa
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={cliente?.full_name ?? 'Cliente'}
+      title={cliente?.full_name ?? capitalize(terms.clientSingular)}
       size="lg"
       footer={
         editavel ? (

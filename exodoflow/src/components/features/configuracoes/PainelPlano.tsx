@@ -9,7 +9,7 @@ import AccessDenied  from '@/components/design-system/AccessDenied/AccessDenied'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth }        from '@/providers/AuthProvider'
 import { listarPlanos, iniciarCheckout, type Plan } from '@/services/planos'
-import { SUBSCRIPTION_STATUS_LABELS, precoDoCiclo, type SubscriptionStatus, type BillingCycle } from '@/lib/billing/plan'
+import { SUBSCRIPTION_STATUS_LABELS, precoDoCicloMoeda, type SubscriptionStatus, type BillingCycle } from '@/lib/billing/plan'
 import { formatCurrencyByCode } from '@/lib/i18n/currency'
 import type { SupportedLocale } from '@/types/domain'
 
@@ -78,7 +78,7 @@ export function PainelPlano({ locale }: { locale: SupportedLocale }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
           {planos.map((p) => {
             const atual = p.id === t?.plan_id && status === 'active'
-            const preco = precoDoCiclo(p, cycle)
+            const preco = precoDoCicloMoeda(p, cycle, currency)
             return (
               <div key={p.id} className={`rounded-xl border p-4 flex flex-col ${atual ? 'border-[color:var(--tenant-primary)] ring-1 ring-[color:var(--tenant-primary)]' : 'border-slate-200'}`}>
                 <p className="text-sm font-semibold text-gray-900">{p.name}</p>
@@ -104,7 +104,7 @@ export function PainelPlano({ locale }: { locale: SupportedLocale }) {
           })}
         </div>
         <p className="text-[11px] text-gray-400 mt-4">
-          Pagamento via Stripe. Em ambiente de demonstração, a subscrição é ativada em modo simulado.
+          Preços com impostos incluídos. Pagamento via Stripe. Em ambiente de demonstração, a subscrição é ativada em modo simulado.
         </p>
       </div>
     </div>

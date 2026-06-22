@@ -9,6 +9,8 @@ import { criarClienteSchema, type CriarClienteInput } from '@/lib/validators/cli
 import { parseTags } from '@/lib/clientes/insights'
 import { MARKETING_CONSENT_TEXT, OPERATIONAL_COMMS_NOTE } from '@/lib/consent'
 import { useAuth } from '@/providers/AuthProvider'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize } from '@/lib/niche-templates'
 import { getTaxIdPlaceholder } from '@/lib/i18n/tax-id'
 import { Modal }   from '@/components/design-system/Modal/Modal'
 import { Button }  from '@/components/design-system/Button/Button'
@@ -42,6 +44,7 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
   // Campo fiscal conforme o país do tenant: PT → NIF; BR → CPF/CNPJ.
   // Regra: nunca mostrar CPF/CNPJ a Portugal nem NIF ao Brasil.
   const { tenant } = useAuth()
+  const terms = useNicheTerms()
   const isBR = tenant?.country === 'BR'
   const fiscalLabel       = isBR ? 'CPF / CNPJ' : 'NIF'
   const fiscalPlaceholder = getTaxIdPlaceholder(isBR ? 'cpf' : 'nif')
@@ -101,7 +104,7 @@ export function NovoClienteModal({ isOpen, onClose, cliente, onSuccess }: NovoCl
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={modoEdicao ? 'Editar Cliente' : 'Novo Cliente'}
+      title={modoEdicao ? `Editar ${capitalize(terms.clientSingular)}` : terms.clientNew}
       size="md"
       footer={
         <>

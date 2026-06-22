@@ -28,21 +28,23 @@ export function StatCard({ label, value, icon, trend, className, description }: 
         className
       )}
     >
-      {/* Brilho decorativo no canto superior direito */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-10"
-        style={{ background: 'var(--tenant-primary)' }}
-      />
-
       <div className="flex items-start justify-between mb-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
         {icon && (
-          <div
-            className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:block"
-            style={{ background: 'color-mix(in srgb, var(--tenant-primary) 12%, transparent)', color: 'var(--tenant-primary)' }}
-          >
-            {icon}
+          // Badge do ícone com um halo suave CENTRADO atrás dele (em vez de um
+          // brilho preso ao canto, que fazia o ícone parecer descentrado).
+          <div className="relative flex-shrink-0">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full blur-xl opacity-20"
+              style={{ background: 'var(--tenant-primary)' }}
+            />
+            <div
+              className="relative flex items-center justify-center w-9 h-9 rounded-xl [&>svg]:w-[18px] [&>svg]:h-[18px] [&>svg]:block"
+              style={{ background: 'color-mix(in srgb, var(--tenant-primary) 12%, transparent)', color: 'var(--tenant-primary)' }}
+            >
+              {icon}
+            </div>
           </div>
         )}
       </div>

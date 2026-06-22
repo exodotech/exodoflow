@@ -4,6 +4,7 @@
 // O cliente do browser fala com as API routes /api/public/* (com rate-limit),
 // não com o Supabase — zero superfície de acesso anónimo.
 import { createAdminClient } from '@/lib/supabase/admin'
+import { podeUsarFeature } from '@/services/plan-access'
 import type { SlotDisponivel } from '@/services/disponibilidade'
 
 export interface PortalTenant {
@@ -29,13 +30,8 @@ export async function getPortalTenant(slug: string): Promise<PortalTenant | null
     .maybeSingle()
   if (!t || t.is_active === false) return null
 
-  const { data: flag } = await admin
-    .from('feature_flags')
-    .select('is_enabled')
-    .eq('tenant_id', t.id)
-    .eq('flag_name', 'booking_portal')
-    .maybeSingle()
-  if (!flag?.is_enabled) return null
+  // Portal ligado conforme o PLANO (com override por feature_flag do superadmin)
+  if (!(await podeUsarFeature(admin, t.id, 'booking_portal'))) return null
 
   const branding = (t.settings as { branding?: { primary_color?: string; logo_url?: string } } | null)?.branding
   return {
