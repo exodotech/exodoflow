@@ -39,9 +39,9 @@ export function Hero() {
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Marcações online, portal 24/7, lembretes automáticos e um assistente
-              com IA — tudo num só lugar. Feito para clínicas de estética e outros
-              negócios de serviços.
+              Marcações online, portal 24/7, lembretes automáticos e assistente
+              com IA — a plataforma completa para gerir e fazer crescer o seu
+              negócio de serviços.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
@@ -288,26 +288,26 @@ export function FinalCta() {
 // ── FOOTER ────────────────────────────────────────────────────────────────────
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--border-subtle)] bg-white/60">
+    <footer className="border-t border-[var(--border-subtle)] bg-white/60 dark:bg-white/[0.02]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="text-center sm:text-left">
             <Logo variant="horizontal" />
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Tecnologia inteligente para gerir o seu negócio.
             </p>
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm" aria-label="Rodapé">
-            <a href="#funcionalidades" className="text-slate-500 hover:text-slate-900 transition-colors">Funcionalidades</a>
-            <a href="#precos" className="text-slate-500 hover:text-slate-900 transition-colors">Preços</a>
-            <a href="#faq" className="text-slate-500 hover:text-slate-900 transition-colors">Perguntas</a>
-            <Link href="/login" className="text-slate-500 hover:text-slate-900 transition-colors">Entrar</Link>
+            <a href="#funcionalidades" className="text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Funcionalidades</a>
+            <a href="#precos" className="text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Preços</a>
+            <a href="#faq" className="text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Perguntas</a>
+            <Link href="/login" className="text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Entrar</Link>
           </nav>
         </div>
 
         <div className="mt-8 pt-6 border-t border-[var(--border-subtle)] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 dark:text-slate-400">
             © {new Date().getFullYear()} ExodoFlow Pro. Todos os direitos reservados.
           </p>
           <PoweredBy legal />

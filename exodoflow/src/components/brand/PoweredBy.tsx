@@ -29,16 +29,16 @@ export function ExodoTechLink({ className }: { className?: string }) {
 // `legal`: nas páginas públicas, mostra também os links Privacidade · Termos.
 export function PoweredBy({ className, legal }: { className?: string; legal?: boolean }) {
   return (
-    <div className={cn('text-xs text-slate-400', className)}>
+    <div className={cn('text-xs text-slate-400 dark:text-slate-400', className)}>
       <p>
         Powered by{' '}
-        <ExodoTechLink className="text-slate-500 hover:text-[color:var(--brand)]" />
+        <ExodoTechLink className="text-slate-500 dark:text-slate-300 hover:text-[color:var(--brand)]" />
       </p>
       {legal && (
         <p className="mt-1.5">
-          <Link href="/privacidade" className="text-slate-400 hover:text-slate-600 underline-offset-2 hover:underline">Privacidade</Link>
+          <Link href="/privacidade" className="text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline-offset-2 hover:underline">Privacidade</Link>
           <span className="mx-1.5">·</span>
-          <Link href="/termos" className="text-slate-400 hover:text-slate-600 underline-offset-2 hover:underline">Termos</Link>
+          <Link href="/termos" className="text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline-offset-2 hover:underline">Termos</Link>
         </p>
       )}
     </div>

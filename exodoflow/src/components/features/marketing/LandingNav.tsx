@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/brand/Logo'
+import { ThemeToggle } from '@/components/brand/ThemeToggle'
 
 // Navegação da landing pública. Fixa no topo, ganha fundo "glass" ao fazer
 // scroll, e colapsa num menu mobile (hambúrguer) abaixo de md.
@@ -31,7 +32,7 @@ export function LandingNav() {
       className={[
         'fixed top-0 inset-x-0 z-50 transition-all duration-200',
         scrolled
-          ? 'bg-white/80 backdrop-blur-md border-b border-[var(--border-subtle)] shadow-[var(--shadow-xs)]'
+          ? 'bg-white/80 dark:bg-slate-950/70 backdrop-blur-md border-b border-[var(--border-subtle)] shadow-[var(--shadow-xs)]'
           : 'bg-transparent border-b border-transparent',
       ].join(' ')}
     >
@@ -48,7 +49,7 @@ export function LandingNav() {
               <a
                 key={l.href}
                 href={l.href}
-                className="px-3 py-2 text-sm font-medium text-slate-600 rounded-lg transition-colors hover:text-slate-900 hover:bg-slate-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+                className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 rounded-lg transition-colors hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
               >
                 {l.label}
               </a>
@@ -57,9 +58,10 @@ export function LandingNav() {
 
           {/* Ações — desktop */}
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle className="text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10" />
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-semibold text-slate-700 rounded-xl transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+              className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
             >
               Entrar
             </Link>
@@ -72,17 +74,20 @@ export function LandingNav() {
             </Link>
           </div>
 
-          {/* Botão menu — mobile */}
+          {/* Tema + Botão menu — mobile */}
+          <div className="md:hidden flex items-center gap-1 -mr-2">
+          <ThemeToggle className="text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10" />
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
-            className="md:hidden inline-flex items-center justify-center w-11 h-11 -mr-2 rounded-xl text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+            className="inline-flex items-center justify-center w-11 h-11 rounded-xl text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
             aria-expanded={menuOpen}
             aria-controls="menu-mobile"
             aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
           >
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
+          </div>
         </div>
 
         {/* Painel mobile */}
@@ -91,13 +96,13 @@ export function LandingNav() {
             id="menu-mobile"
             className="md:hidden pb-4 animate-slide-down"
           >
-            <div className="flex flex-col gap-1 rounded-2xl border border-[var(--border-subtle)] bg-white/95 backdrop-blur-md p-2 shadow-[var(--shadow-md)]">
+            <div className="flex flex-col gap-1 rounded-2xl border border-[var(--border-subtle)] bg-white/95 dark:bg-[var(--surface-1)] backdrop-blur-md p-2 shadow-[var(--shadow-md)]">
               {NAV_LINKS.map((l) => (
                 <a
                   key={l.href}
                   href={l.href}
                   onClick={() => setMenuOpen(false)}
-                  className="px-4 py-3 text-sm font-medium text-slate-700 rounded-xl transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+                  className="px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
                 >
                   {l.label}
                 </a>
@@ -106,7 +111,7 @@ export function LandingNav() {
               <Link
                 href="/login"
                 onClick={() => setMenuOpen(false)}
-                className="px-4 py-3 text-sm font-semibold text-slate-700 rounded-xl transition-colors hover:bg-slate-100 text-center"
+                className="px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-white/5 text-center"
               >
                 Entrar
               </Link>
