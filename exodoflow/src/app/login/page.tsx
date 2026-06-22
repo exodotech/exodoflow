@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { LoginForm } from '@/components/features/auth/LoginForm'
 import { Logo }      from '@/components/brand/Logo'
 import { PoweredBy } from '@/components/brand/PoweredBy'
+import { ThemeToggle } from '@/components/brand/ThemeToggle'
 
 export const metadata: Metadata = {
   title: 'Entrar — ExodoFlow Pro',
@@ -33,9 +34,14 @@ function LoginView() {
     // da marca ExodoFlow Pro (teal do logo) em vez do azul genérico. Botão,
     // links e foco dos inputs herdam --tenant-primary aqui sobrescrito.
     <main
-      className="min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className="relative min-h-screen app-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8"
       style={{ ['--tenant-primary' as string]: 'var(--brand)', ['--btn-gradient' as string]: 'var(--brand-cta-gradient)' }}
     >
+      {/* Alternar tema (canto superior direito) */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle className="text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10" />
+      </div>
+
       {/* Cabeçalho da marca */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
         <Logo variant="full" showTagline className="w-full" />

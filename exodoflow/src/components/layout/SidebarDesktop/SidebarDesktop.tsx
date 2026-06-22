@@ -25,6 +25,7 @@ import { useNicheTerms }  from '@/hooks/useNicheTerms'
 import { capitalize }     from '@/lib/niche-templates'
 import { Logo }           from '@/components/brand/Logo'
 import { ExodoTechLink }  from '@/components/brand/PoweredBy'
+import { ThemeToggle }    from '@/components/brand/ThemeToggle'
 import type { NavItem }   from '@/types/ui/nav'
 import type { TenantSettings } from '@/types/domain/tenant'
 
@@ -169,6 +170,11 @@ export function SidebarDesktop() {
             </div>
           </Link>
         )}
+        {/* Alternar tema claro/escuro (preferência do utilizador) */}
+        <div className="flex items-center justify-between gap-2 px-3 py-1.5">
+          <span className="text-xs font-medium text-slate-500">Tema</span>
+          <ThemeToggle className="text-slate-400 hover:text-slate-200 hover:bg-white/[0.07]" />
+        </div>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-white/[0.07] hover:text-slate-300 transition-all duration-150"

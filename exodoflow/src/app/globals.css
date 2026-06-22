@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
+/* Variante `dark:` ativada por classe `.dark` no <html> (controlada pelo
+   ThemeProvider). Permite usar utilitários `dark:` além dos tokens semânticos. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ─── Tokens de design globais ──────────────────────────────────────────────── */
 :root {
+  color-scheme: light;
   --background:  #f8fafc;
   --foreground:  #0f172a;
 
@@ -153,3 +158,75 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ═══ MODO NOTURNO ════════════════════════════════════════════════════════════
+   Tema escuro premium (deep slate, não preto puro). Grande parte da UI flui
+   sozinha porque depende dos tokens semânticos acima — aqui só os
+   sobrescrevemos. Para o código light-first com cores fixas, há uma camada de
+   compatibilidade no fim, LIMITADA ao conteúdo (apenas <main>), para não afetar
+   barras laterais, cabeçalhos e o rodapé (que têm estilo escuro próprio). */
+.dark {
+  color-scheme: dark;
+
+  --background: #0a0e17;
+  --foreground: #e6eaf2;
+
+  --tenant-primary: #2dd4bf;   /* fallback mais vivo no escuro (login/landing) */
+
+  --surface-1: #131a29;
+  --surface-2: #0e1421;
+  --surface-3: #1c2434;
+
+  --glass-bg:     rgba(19, 26, 41, 0.66);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+
+  --border-subtle:  rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.12);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.40);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.40);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.50), 0 2px 4px rgba(0,0,0,0.40);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.55), 0 4px 8px rgba(0,0,0,0.45);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.60), 0 6px 12px rgba(0,0,0,0.50);
+}
+
+/* Fundo da app — mesh escuro subtil */
+.dark .app-bg {
+  background-color: #0a0e17;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99, 102, 241, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(34, 201, 239, 0.05) 0%, transparent 70%);
+}
+
+/* Transição suave ao alternar tema — só cores de superfície (evita jank) */
+body, .app-bg, .glass-card, .glass-overlay {
+  transition:
+    background-color var(--transition-normal),
+    border-color     var(--transition-normal),
+    color            var(--transition-normal);
+}
+
+/* Scrollbar no escuro */
+.dark ::-webkit-scrollbar-thumb       { background: rgba(255,255,255,0.16); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.26); }
+
+/* ── Camada de compatibilidade (light-first → dark) ──────────────────────────
+   Remapeia as cores NEUTRAS fixas mais comuns, só no conteúdo (apenas <main>).
+   Não toca em cores intencionais (emerald/amber/rose…), em text-white, nem nas
+   barras laterais/cabeçalhos/rodapé. A especificidade (0,2,1) vence os utilitários. */
+.dark main .bg-white { background-color: var(--surface-1); }
+.dark main :is(.bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-white\/70, .bg-white\/60, .bg-white\/50) { background-color: var(--glass-bg); }
+.dark main :is(.bg-gray-50, .bg-slate-50) { background-color: var(--surface-2); }
+.dark main :is(.bg-gray-100, .bg-slate-100, .bg-gray-200, .bg-slate-200) { background-color: var(--surface-3); }
+
+.dark main :is(.border-white\/60, .border-white\/50, .border-white\/40, .border-gray-200, .border-slate-200, .border-gray-100, .border-slate-100, .border-gray-300, .border-slate-300) { border-color: var(--border-subtle); }
+
+.dark main :is(.text-gray-900, .text-slate-900) { color: #f1f5f9; }
+.dark main :is(.text-gray-800, .text-slate-800) { color: #e2e8f0; }
+.dark main :is(.text-gray-700, .text-slate-700) { color: #cbd5e1; }
+.dark main :is(.text-gray-600, .text-slate-600) { color: #9fb0c3; }
+.dark main :is(.text-gray-500, .text-slate-500) { color: #8a97a9; }
+.dark main :is(.text-gray-400, .text-slate-400) { color: #6b7688; }
+.dark main :is(.text-gray-300, .text-slate-300) { color: #59647a; }
