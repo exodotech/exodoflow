@@ -21,6 +21,8 @@ import { cn }             from '@/lib/utils/cn'
 import { forceLogout }    from '@/lib/auth/logout'
 import { useAuth }        from '@/providers/AuthProvider'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useNicheTerms }  from '@/hooks/useNicheTerms'
+import { capitalize }     from '@/lib/niche-templates'
 import { Logo }           from '@/components/brand/Logo'
 import { ExodoTechLink }  from '@/components/brand/PoweredBy'
 import type { NavItem }   from '@/types/ui/nav'
@@ -37,6 +39,7 @@ export function SidebarDesktop() {
   const pathname  = usePathname()
   const { tenant, profile } = useAuth()
   const { can }   = usePermissions()
+  const terms     = useNicheTerms()
 
   const settings  = tenant?.settings as TenantSettings | null | undefined
   const logoUrl   = settings?.branding?.logo_url
@@ -44,7 +47,7 @@ export function SidebarDesktop() {
   const allNavItems: NavItem[] = [
     { href: '/dashboard',               label: 'Dashboard',     icon: LayoutDashboard },
     { href: '/dashboard/agenda',        label: 'Agenda',        icon: Calendar,        permission: 'agenda.view_own' },
-    { href: '/dashboard/clientes',      label: 'Clientes',      icon: Users,           permission: 'clients.view' },
+    { href: '/dashboard/clientes',      label: capitalize(terms.clientPlural), icon: Users,  permission: 'clients.view' },
     { href: '/dashboard/servicos',      label: 'Serviços',      icon: Briefcase,       permission: 'services.view' },
     { href: '/dashboard/recursos',      label: 'Recursos',      icon: Zap,             permission: 'resources.view' },
     { href: '/dashboard/conversas',     label: 'Conversas',     icon: MessageSquare,   permission: 'conversas.view' },

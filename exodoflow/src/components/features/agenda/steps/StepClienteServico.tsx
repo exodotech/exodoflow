@@ -1,6 +1,8 @@
 'use client'
 import React from 'react'
 import { User, UserPlus, Zap, Check } from 'lucide-react'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize } from '@/lib/niche-templates'
 
 export type TipoCliente = 'existente' | 'visitante' | 'rapida'
 
@@ -20,23 +22,24 @@ interface StepClienteServicoProps {
   onCriarVisitante: () => void
 }
 
-const OPCOES: { tipo: TipoCliente; label: string; desc: string; icon: typeof User }[] = [
-  { tipo: 'existente', label: 'Cliente existente', desc: 'Use um cliente já cadastrado.',          icon: User },
-  { tipo: 'visitante', label: 'Visitante',         desc: 'Nome obrigatório, telefone opcional.',   icon: UserPlus },
-  { tipo: 'rapida',    label: 'Marcação Rápida',   desc: 'Sem cadastro. Ideal para atendimento imediato.', icon: Zap },
-]
-
 export function StepClienteServico({
   tipo, clienteId, servicoId, clientes, servicos, visitanteNome, allowQuick,
   onChangeTipo, onChange, onCriarVisitante,
 }: StepClienteServicoProps) {
+  const terms = useNicheTerms()
+  // Opções construídas com a terminologia do nicho (cliente/paciente/tutor).
+  const OPCOES: { tipo: TipoCliente; label: string; desc: string; icon: typeof User }[] = [
+    { tipo: 'existente', label: `${capitalize(terms.clientSingular)} existente`, desc: `Use um ${terms.clientSingular} já cadastrado.`, icon: User },
+    { tipo: 'visitante', label: 'Visitante',         desc: 'Nome obrigatório, telefone opcional.',   icon: UserPlus },
+    { tipo: 'rapida',    label: 'Marcação Rápida',   desc: 'Sem cadastro. Ideal para atendimento imediato.', icon: Zap },
+  ]
   const opcoes = OPCOES.filter((o) => o.tipo !== 'rapida' || allowQuick)
 
   return (
     <div className="space-y-4">
       {/* Escolha do tipo de cliente */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de cliente</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de {terms.clientSingular}</label>
         <div className="grid grid-cols-1 gap-2">
           {opcoes.map((o) => {
             const Icon = o.icon
@@ -68,14 +71,14 @@ export function StepClienteServico({
       {tipo === 'existente' && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cliente <span className="text-red-600">*</span>
+            {capitalize(terms.clientSingular)} <span className="text-red-600">*</span>
           </label>
           <select
             value={clienteId}
             onChange={(e) => onChange({ client_id: e.target.value })}
             className="w-full h-12 rounded-lg border border-gray-300 px-3 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--tenant-primary)]"
           >
-            <option value="">Seleccionar cliente...</option>
+            <option value="">Seleccionar {terms.clientSingular}...</option>
             {clientes.map((c) => (
               <option key={c.id} value={c.id}>{c.full_name}{c.is_guest ? ' (visitante)' : ''}</option>
             ))}

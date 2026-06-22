@@ -10,6 +10,8 @@ import Badge      from '@/components/design-system/Badge/Badge'
 import { useClientes } from '@/hooks/useClientes'
 import { useServicos } from '@/hooks/useServicos'
 import { useRecursos } from '@/hooks/useRecursos'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize } from '@/lib/niche-templates'
 import { useFormWithZod } from '@/hooks/useFormWithZod'
 import { listarWaitlist, criarWaitlist, atualizarStatusWaitlist, removerWaitlist, type WaitlistEntry } from '@/services/waitlist'
 import { criarWaitlistSchema, type CriarWaitlistInput } from '@/lib/validators/waitlist'
@@ -122,6 +124,7 @@ function FormAdicionar({ onDone }: { onDone: () => void }) {
   const { data: clientes = [] } = useClientes()
   const { data: servicos = [] } = useServicos()
   const { data: recursos = [] } = useRecursos()
+  const terms = useNicheTerms()
   const staff = recursos.filter((r) => r.type === 'staff')
 
   const form = useFormWithZod(criarWaitlistSchema, {
@@ -137,9 +140,9 @@ function FormAdicionar({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={form.handleSubmit((d) => criar.mutate(d))} className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-3">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{capitalize(terms.clientSingular)}</label>
         <select className={SELECT_CLS} {...form.register('client_id')}>
-          <option value="">— Sem cliente registado —</option>
+          <option value="">— Sem {terms.clientSingular} registado —</option>
           {clientes.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
         </select>
       </div>

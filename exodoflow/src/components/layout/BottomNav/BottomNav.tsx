@@ -5,16 +5,19 @@ import { usePathname } from 'next/navigation'
 import { Home, Calendar, Users, MessageSquare, Grid2x2 } from 'lucide-react'
 import { cn }             from '@/lib/utils/cn'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useNicheTerms }  from '@/hooks/useNicheTerms'
+import { capitalize }     from '@/lib/niche-templates'
 import type { NavItem }   from '@/types/ui/nav'
 
 export function BottomNav() {
   const pathname = usePathname()
   const { can }  = usePermissions()
+  const terms    = useNicheTerms()
 
   const allNavItems: NavItem[] = [
     { href: '/dashboard',           label: 'Início',   icon: Home },
     { href: '/dashboard/agenda',    label: 'Agenda',   icon: Calendar,      permission: 'agenda.view_own' },
-    { href: '/dashboard/clientes',  label: 'Clientes', icon: Users,         permission: 'clients.view' },
+    { href: '/dashboard/clientes',  label: capitalize(terms.clientPlural), icon: Users, permission: 'clients.view' },
     { href: '/dashboard/conversas', label: 'Chat',     icon: MessageSquare, permission: 'conversas.view' },
     { href: '/dashboard/servicos',  label: 'Mais',     icon: Grid2x2,       permission: 'services.view' },
   ]

@@ -17,6 +17,8 @@ import { ClienteRapidoModal } from '@/components/features/clientes/ClienteRapido
 import { useClientes, useApagarCliente } from '@/hooks/useClientes'
 import { useBookings } from '@/hooks/useBookings'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize, type NicheTerms } from '@/lib/niche-templates'
 import {
   agregarStatsPorCliente, clienteInativo, fazAnosNoMes, gerarCSVClientes,
   todasAsTags, type ClienteBase,
@@ -38,6 +40,7 @@ export default function ClientesPage() {
   const { data: bookings } = useBookings()
   const apagarMut = useApagarCliente()
   const { can } = usePermissions()
+  const terms = useNicheTerms()   // terminologia do nicho (cliente/paciente/tutor)
 
   const agoraISO = new Date().toISOString()
   const mesAtual = new Date().getMonth() + 1
@@ -60,10 +63,10 @@ export default function ClientesPage() {
     catch { /* erro mostrado no diálogo */ }
   }
 
-  if (isLoading) return <LoadingState message="A carregar clientes..." />
+  if (isLoading) return <LoadingState message={`A carregar ${terms.clientPlural}...`} />
   if (error) return (
     <ErrorState
-      title="Erro ao carregar clientes"
+      title={`Erro ao carregar ${terms.clientPlural}`}
       description={error instanceof Error ? error.message : 'Erro desconhecido'}
       action={<Button size="sm" onClick={() => void refetch()}>Tentar novamente</Button>}
     />
@@ -131,7 +134,7 @@ export default function ClientesPage() {
     icon:        fazAnosNoMes(c.birth_date, mesAtual) ? <Cake className="w-4 h-4 text-pink-500" /> : <Mail className="w-4 h-4 text-gray-400" />,
     onClick:     () => setDetalheId(c.id),
     action: (
-      <Badge variant={c.is_guest ? 'warning' : 'primary'}>{c.is_guest ? 'Visitante' : 'Cliente'}</Badge>
+      <Badge variant={c.is_guest ? 'warning' : 'primary'}>{c.is_guest ? 'Visitante' : capitalize(terms.clientSingular)}</Badge>
     ),
   }))
 
@@ -155,12 +158,12 @@ export default function ClientesPage() {
     tags:    <TagsChips tags={c.tags} />,
     visitas: <span className="text-sm font-medium text-gray-700">{statsMap.get(c.id)?.total ?? 0}</span>,
     ultima:  <span className={`text-sm ${clienteInativo(statsMap.get(c.id), agoraISO, 3) ? 'text-amber-600 font-medium' : 'text-gray-600'}`}>{fmtUltimaVisita(c.id)}</span>,
-    tipo:    <Badge variant={c.is_guest ? 'warning' : 'primary'}>{c.is_guest ? 'Visitante' : 'Cliente'}</Badge>,
+    tipo:    <Badge variant={c.is_guest ? 'warning' : 'primary'}>{c.is_guest ? 'Visitante' : capitalize(terms.clientSingular)}</Badge>,
   }))
 
   const FILTROS: { value: TipoFilter; label: string }[] = [
     { value: 'todos',           label: 'Todos' },
-    { value: 'clientes',        label: 'Clientes' },
+    { value: 'clientes',        label: capitalize(terms.clientPlural) },
     { value: 'visitantes',      label: 'Visitantes' },
     { value: 'aniversariantes', label: '🎂 Aniversariantes' },
     { value: 'inativos',        label: 'Inativos' },
@@ -169,8 +172,8 @@ export default function ClientesPage() {
   return (
     <div>
       <PageHeader
-        title="Clientes"
-        description="A sua base de clientes — pesquise, organize por etiquetas e veja quem precisa de atenção."
+        title={capitalize(terms.clientPlural)}
+        description={`A sua base de ${terms.clientPlural} — pesquise, organize por etiquetas e veja quem precisa de atenção.`}
         action={
           can('clients.create') ? (
             <div className="flex gap-2">
@@ -180,7 +183,7 @@ export default function ClientesPage() {
               </Button>
               <Button size="md" className="gap-2" onClick={() => setCriarAberto(true)}>
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Novo cliente</span>
+                <span className="hidden sm:inline">{terms.clientNew}</span>
               </Button>
             </div>
           ) : null
@@ -189,7 +192,7 @@ export default function ClientesPage() {
 
       {/* Resumo — cartões glass com explicação simples */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <ResumoCard label="Total de clientes" valor={lista.length} dica="Toda a sua base" icon={<Users className="w-4 h-4" />} />
+        <ResumoCard label={`Total de ${terms.clientPlural}`} valor={lista.length} dica="Toda a sua base" icon={<Users className="w-4 h-4" />} />
         <ResumoCard label="Aniversariantes" valor={aniversariantes} dica="Fazem anos este mês" cor="text-pink-600" icon={<Cake className="w-4 h-4" />}
           onClick={() => setTipoFilter('aniversariantes')} />
         <ResumoCard label="Precisam de atenção" valor={inativos} dica="Sem vir há 3+ meses" cor="text-amber-600" icon={<Clock className="w-4 h-4" />}
@@ -249,11 +252,11 @@ export default function ClientesPage() {
 
       {/* Lista mobile */}
       <div className="sm:hidden bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4">
-        <SectionHeader title={`${filtered.length} cliente(s)`} />
+        <SectionHeader title={`${filtered.length} ${filtered.length === 1 ? terms.clientSingular : terms.clientPlural}`} />
         {filtered.length > 0 ? (
           <MobileCardList items={clientItems} />
         ) : (
-          <EmptyClientes search={search} canCreate={can('clients.create')} onCreate={() => setCriarAberto(true)} />
+          <EmptyClientes search={search} terms={terms} canCreate={can('clients.create')} onCreate={() => setCriarAberto(true)} />
         )}
       </div>
 
@@ -262,7 +265,7 @@ export default function ClientesPage() {
         {filtered.length > 0 ? (
           <DataTableWrapper columns={tableColumns} rows={tableRows} />
         ) : (
-          <EmptyClientes search={search} canCreate={can('clients.create')} onCreate={() => setCriarAberto(true)} />
+          <EmptyClientes search={search} terms={terms} canCreate={can('clients.create')} onCreate={() => setCriarAberto(true)} />
         )}
       </div>
 
@@ -288,8 +291,8 @@ export default function ClientesPage() {
         isOpen={!!apagar}
         onClose={() => { setApagar(null); apagarMut.reset() }}
         onConfirm={confirmarApagar}
-        title="Apagar cliente"
-        description={apagar ? `Tem a certeza que quer apagar "${apagar.full_name}"? O cliente deixa de aparecer na lista; o histórico de marcações é preservado.` : undefined}
+        title={`Apagar ${terms.clientSingular}`}
+        description={apagar ? `Tem a certeza que quer apagar "${apagar.full_name}"? O ${terms.clientSingular} deixa de aparecer na lista; o histórico de marcações é preservado.` : undefined}
         confirmLabel="Apagar"
         isLoading={apagarMut.isPending}
         error={apagarMut.isError ? (apagarMut.error as Error).message : null}
@@ -318,13 +321,13 @@ function ResumoCard({ label, valor, dica, cor = 'text-gray-900', icon, onClick }
   )
 }
 
-function EmptyClientes({ search, canCreate, onCreate }: { search: string; canCreate: boolean; onCreate: () => void }) {
+function EmptyClientes({ search, terms, canCreate, onCreate }: { search: string; terms: NicheTerms; canCreate: boolean; onCreate: () => void }) {
   return (
     <EmptyState
       icon={<Users className="w-12 h-12" />}
-      title={search ? 'Nenhum cliente encontrado' : 'Ainda não tem clientes'}
-      description={search ? 'Tente outra pesquisa ou limpe os filtros.' : 'Adicione o primeiro cliente para começar a organizar a sua agenda.'}
-      action={canCreate ? <Button size="sm" onClick={onCreate}><Plus className="w-4 h-4 mr-1" /> Novo cliente</Button> : undefined}
+      title={search ? `Nenhum ${terms.clientSingular} encontrado` : `Ainda não tem ${terms.clientPlural}`}
+      description={search ? 'Tente outra pesquisa ou limpe os filtros.' : `Adicione o primeiro ${terms.clientSingular} para começar a organizar a sua agenda.`}
+      action={canCreate ? <Button size="sm" onClick={onCreate}><Plus className="w-4 h-4 mr-1" /> {terms.clientNew}</Button> : undefined}
     />
   )
 }

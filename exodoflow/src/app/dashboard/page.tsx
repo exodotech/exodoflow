@@ -12,6 +12,8 @@ import LoadingState   from '@/components/design-system/LoadingState/LoadingState
 import ErrorState    from '@/components/design-system/ErrorState/ErrorState'
 import { useBookings }  from '@/hooks/useBookings'
 import { useClientes }  from '@/hooks/useClientes'
+import { useNicheTerms } from '@/hooks/useNicheTerms'
+import { capitalize }   from '@/lib/niche-templates'
 import { resumoReviews } from '@/services/reviews'
 import { useAuth }      from '@/providers/AuthProvider'
 import { formatCurrencyByCode }        from '@/lib/i18n/currency'
@@ -45,6 +47,7 @@ const STATUS_BADGE_VARIANT: Record<BookingStatus, 'default' | 'primary' | 'succe
 
 export default function DashboardPage() {
   const { tenant } = useAuth()
+  const terms = useNicheTerms()
   const { data: bookings, isLoading: loadingBookings, error: erroBookings, refetch: refetchBookings } = useBookings()
   const { data: clientes, isLoading: loadingClientes, error: erroClientes } = useClientes()
   // Satisfação média (avaliações) — falha em silêncio se o utilizador não tiver acesso.
@@ -197,7 +200,7 @@ export default function DashboardPage() {
             <Link href="/dashboard/clientes" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 hover:bg-amber-100/60 transition-colors">
               <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex-shrink-0"><Clock className="w-5 h-5" /></span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-amber-900">{clientesAtencao} cliente(s) a precisar de atenção</p>
+                <p className="text-sm font-semibold text-amber-900">{clientesAtencao} {clientesAtencao === 1 ? terms.clientSingular : terms.clientPlural} a precisar de atenção</p>
                 <p className="text-xs text-amber-700">Sem vir há 3+ meses — talvez um convite para voltar.</p>
               </div>
             </Link>
@@ -218,7 +221,7 @@ export default function DashboardPage() {
           icon={<Calendar className="w-5 h-5" />}
         />
         <StatCard
-          label="Clientes"
+          label={capitalize(terms.clientPlural)}
           value={listaClientes.length}
           icon={<Users className="w-5 h-5" />}
         />
