@@ -9,16 +9,18 @@ import {
 } from '@/components/features/marketing/LandingSections'
 
 const DESCRIPTION =
-  'ExodoFlow Pro — agenda online, portal de marcações 24/7, lembretes automáticos por WhatsApp e assistente com IA. Gestão simples e inteligente para clínicas de estética e negócios de serviços.'
+  'ExodoFlow Pro — agenda online, portal de marcações 24/7, lembretes automáticos por WhatsApp e assistente com IA. A plataforma completa para gerir e fazer crescer o seu negócio de serviços.'
 
 // SEO da página inicial (sobrescreve o título genérico do layout raiz).
 export const metadata: Metadata = {
   title: 'ExodoFlow Pro — Agenda e automação com IA para o seu negócio',
   description: DESCRIPTION,
+  // Palavras-chave abrangentes (vários setores) — ajudam o SEO sem limitar a marca.
   keywords: [
     'software de marcações', 'agenda online', 'portal de marcações',
-    'clínica de estética', 'lembretes WhatsApp', 'assistente IA',
-    'gestão de clientes', 'ExodoFlow',
+    'gestão de clientes', 'lembretes WhatsApp', 'assistente IA',
+    'software para clínicas', 'software para barbearias', 'agenda para oficinas',
+    'marcações online', 'ExodoFlow',
   ],
   alternates: { canonical: '/' },
   openGraph: {
