@@ -7,6 +7,7 @@ import { NextResponse }      from 'next/server'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, clientKeyFromRequest } from '@/lib/rate-limit'
+import { encryptSecret }     from '@/lib/crypto/secret'
 import { logger }            from '@/lib/logger'
 
 export async function POST(request: Request) {
@@ -50,11 +51,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Phone Number ID e Access Token são obrigatórios.' }, { status: 400 })
   }
 
+  // O access_token é encriptado em repouso (AES-256-GCM). O phone_number_id NÃO é
+  // segredo (é usado no lookup do webhook) e fica em claro.
   const { error } = await admin.from('communication_channels').upsert({
     tenant_id: profile.tenant_id,
     channel:   'whatsapp',
     is_active: true,
-    config:    { phone_number, phone_number_id, access_token },
+    config:    { phone_number, phone_number_id, access_token: encryptSecret(access_token) },
   }, { onConflict: 'tenant_id,channel' })
   if (error) {
     logger.error('Erro ao guardar canal WhatsApp', { erro: error.message })

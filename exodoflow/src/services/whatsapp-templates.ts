@@ -15,6 +15,7 @@
 import crypto from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decryptSecret } from '@/lib/crypto/secret'
 import { logger } from '@/lib/logger'
 import type { Database } from '@/types/database'
 import type { SupportedLocale, TemplatePurpose } from '@/types/domain/communication'
@@ -231,6 +232,7 @@ export async function enviarTemplateWhatsApp(input: EnviarTemplateInput): Promis
     })
     throw new TemplateError('Canal WhatsApp não configurado ou inactivo', 'no-channel')
   }
+  const accessToken = decryptSecret(cfg.access_token)   // encriptado em repouso
 
   // 6. Em envio REAL, a Meta exige template aprovado. Em mock, ignora-se.
   if (!mockAtivo() && template.meta_status !== 'APPROVED') {
@@ -261,7 +263,7 @@ export async function enviarTemplateWhatsApp(input: EnviarTemplateInput): Promis
   try {
     sent = await callMetaTemplate({
       phoneNumberId: cfg.phone_number_id,
-      accessToken:   cfg.access_token,
+      accessToken:   accessToken,
       to:            phone,
       templateName:  template.meta_template_name,
       languageCode:  template.meta_language_code ?? (locale === 'pt-BR' ? 'pt_BR' : 'pt_PT'),

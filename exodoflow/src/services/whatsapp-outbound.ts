@@ -11,6 +11,7 @@
 // fake no formato Meta e grava tudo na mesma. Em produção exige a flag + aviso.
 import crypto from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decryptSecret } from '@/lib/crypto/secret'
 import { logger } from '@/lib/logger'
 import type { Json } from '@/types/database'
 
@@ -93,6 +94,7 @@ export async function enviarMensagemWhatsAppManual(input: EnviarManualInput): Pr
   if (!channel || !cfg.phone_number_id || !cfg.access_token) {
     throw new OutboundError('Canal WhatsApp não configurado ou inactivo', 'no-channel')
   }
+  const accessToken = decryptSecret(cfg.access_token)   // encriptado em repouso
 
   // 3. Janela de 24h — desde a última mensagem INBOUND do cliente
   const { data: lastIn } = await admin
@@ -111,7 +113,7 @@ export async function enviarMensagemWhatsAppManual(input: EnviarManualInput): Pr
   // 4. Enviar (Meta real ou mock). Em falha → log FAILED + lança.
   let sent: { id: string; raw: Json }
   try {
-    sent = await callMeta(cfg.phone_number_id, cfg.access_token, conv.wa_phone_number, content)
+    sent = await callMeta(cfg.phone_number_id, accessToken, conv.wa_phone_number, content)
   } catch (e) {
     await admin.from('communication_logs').insert({
       tenant_id:  input.tenant_id,
