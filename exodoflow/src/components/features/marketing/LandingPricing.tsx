@@ -23,6 +23,7 @@ export function LandingPricing() {
           <p className="mt-4 text-lg text-slate-600">
             Comece grátis e mude de plano quando precisar. Sem fidelização.
           </p>
+          <p className="mt-1 text-sm text-slate-400">Todos os preços incluem IVA.</p>
         </div>
 
         {/* Toggle mensal/anual */}

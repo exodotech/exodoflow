@@ -112,8 +112,8 @@ export const PLANS: Plan[] = [
   },
   {
     name: 'Starter',
-    priceMonthly: 29,
-    priceYearly: 290,
+    priceMonthly: 20,
+    priceYearly: 200,
     tagline: 'Para negócios em crescimento.',
     highlighted: true,
     badge: 'Mais popular',
@@ -127,8 +127,8 @@ export const PLANS: Plan[] = [
   },
   {
     name: 'Pro',
-    priceMonthly: 79,
-    priceYearly: 790,
+    priceMonthly: 40,
+    priceYearly: 400,
     tagline: 'Para automatizar com IA.',
     features: [
       'Recursos e clientes ilimitados',
