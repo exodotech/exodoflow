@@ -39,4 +39,27 @@ test.describe('Autenticação', () => {
     // Não há campo de password (sem formulário de signup)
     await expect(page.locator('input[type="password"]')).toHaveCount(0)
   })
+
+  test('logout termina a sessão e redireciona para /login', async ({ page }) => {
+    await login(page, 'owner')
+    await page.goto('/dashboard/perfil', { waitUntil: 'networkidle' })
+
+    // Clicar no botão de logout (pode estar em dropdown ou direto)
+    const botaoLogout = page.getByRole('button', { name: /sair|logout/i })
+    await expect(botaoLogout).toBeVisible({ timeout: 8_000 })
+    await botaoLogout.click()
+
+    // Após logout termina em /login
+    await page.waitForURL(/\/login/, { timeout: 15_000 })
+    await expect(page).toHaveURL(/\/login/)
+
+    // Tentar aceder ao dashboard sem sessão redireciona de volta ao login
+    await page.goto('/dashboard', { waitUntil: 'networkidle' })
+    await expect(page).toHaveURL(/\/login/)
+  })
+
+  test('visitante não autenticado é redirecionado ao tentar aceder ao dashboard', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'networkidle' })
+    await expect(page).toHaveURL(/\/login/)
+  })
 })
