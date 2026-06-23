@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
-  Building2, CreditCard, Plug, Layers,
+  Building2, CreditCard, Plug, Layers, Zap,
   Globe, MessageSquare, FileText, Palette, MessageCircle, BarChart2, CalendarClock, Bot, ShieldCheck, Lock,
 } from 'lucide-react'
 import PageHeader  from '@/components/design-system/PageHeader/PageHeader'
@@ -21,13 +21,14 @@ import { PainelAgenda }            from '@/components/features/configuracoes/Pai
 import { PainelAssistente }        from '@/components/features/configuracoes/PainelAssistente'
 import { PainelPrivacidade }       from '@/components/features/configuracoes/PainelPrivacidade'
 import { PainelSeguranca }         from '@/components/features/configuracoes/PainelSeguranca'
+import { PainelAutomacoes }        from '@/components/features/configuracoes/PainelAutomacoes'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useAuth }        from '@/providers/AuthProvider'
 import type { SupportedLocale } from '@/types/domain'
 
 type Tab =
   | 'empresa' | 'branding' | 'localizacao' | 'agenda' | 'assistente' | 'comunicacao' | 'whatsapp'
-  | 'templates_mensagem' | 'plano' | 'integracoes' | 'templates' | 'relatorios' | 'privacidade' | 'seguranca'
+  | 'templates_mensagem' | 'plano' | 'integracoes' | 'automacoes' | 'templates' | 'relatorios' | 'privacidade' | 'seguranca'
 
 const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'empresa',            label: 'Empresa',     icon: <Building2     className="w-4 h-4" /> },
@@ -40,6 +41,7 @@ const TABS: Array<{ value: Tab; label: string; icon: React.ReactNode }> = [
   { value: 'templates_mensagem', label: 'Mensagens',   icon: <FileText      className="w-4 h-4" /> },
   { value: 'plano',              label: 'Plano',       icon: <CreditCard    className="w-4 h-4" /> },
   { value: 'integracoes',        label: 'Integrações', icon: <Plug          className="w-4 h-4" /> },
+  { value: 'automacoes',         label: 'Automações',  icon: <Zap           className="w-4 h-4" /> },
   { value: 'templates',          label: 'Templates',   icon: <Layers        className="w-4 h-4" /> },
   { value: 'relatorios',         label: 'Relatórios',  icon: <BarChart2     className="w-4 h-4" /> },
   { value: 'privacidade',        label: 'Privacidade', icon: <ShieldCheck   className="w-4 h-4" /> },
@@ -118,6 +120,7 @@ export default function ConfiguracoesPage() {
       {activeTab === 'privacidade'        && <PainelPrivacidade />}
       {activeTab === 'seguranca'          && <PainelSeguranca />}
       {activeTab === 'integracoes'        && <PainelIntegracoes />}
+      {activeTab === 'automacoes'         && <PainelAutomacoes />}
       {activeTab === 'templates'          && <PainelTemplates locale={locale} niche={tenant?.business_type} />}
       {activeTab === 'relatorios'         && isManagerOrAbove && <PainelRelatorios />}
     </div>

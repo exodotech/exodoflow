@@ -55,6 +55,12 @@ export function PortalMarcacao({ slug }: { slug: string }) {
   const [tel,      setTel]      = useState('')
   const [erro,     setErro]     = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [modoEspera,   setModoEspera]   = useState(false)
+  const [esperaFeita,  setEsperaFeita]  = useState(false)
+  const [nomeEspera,   setNomeEspera]   = useState('')
+  const [telEspera,    setTelEspera]    = useState('')
+  const [dataEspera,   setDataEspera]   = useState('')
+  const [envEspera,    setEnvEspera]    = useState(false)
   const [lang,     setLang]     = useState<PortalLang>(() => {
     if (typeof window === 'undefined') return 'pt'
     return detectPortalLang(new URLSearchParams(window.location.search).get('lang'))
@@ -370,18 +376,95 @@ export function PortalMarcacao({ slug }: { slug: string }) {
                     <p className="text-sm text-slate-400">{t.loadingSlots}</p>
                   </div>
                 ) : horasDistintas.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Clock className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                    <p className="text-sm font-medium text-slate-600 mb-1">{t.noSlots}</p>
-                    <p className="text-xs text-slate-400">{t.noSlotsHint}</p>
-                    <button
-                      onClick={() => { setPasso('data'); setSlots([]) }}
-                      className="mt-4 text-sm font-medium underline"
-                      style={{ color: brand }}
-                    >
-                      {t.changeDate}
-                    </button>
-                  </div>
+                  esperaFeita ? (
+                    <div className="text-center py-10">
+                      <CheckCircle2 className="w-12 h-12 mx-auto mb-3" style={{ color: brand }} />
+                      <p className="text-base font-bold text-slate-900 mb-1">{t.waitlistSent}</p>
+                      <p className="text-sm text-slate-400">{t.waitlistSentHint}</p>
+                    </div>
+                  ) : modoEspera ? (
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 mb-1">{t.waitlistTitle}</h3>
+                      <p className="text-xs text-slate-400 mb-5">{t.waitlistHint}</p>
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <input
+                            value={nomeEspera} onChange={(e) => setNomeEspera(e.target.value)}
+                            placeholder={t.waitlistName}
+                            className="w-full h-11 pl-10 pr-4 rounded-xl border-2 border-slate-200 text-sm focus:outline-none"
+                            onFocus={(e) => { e.target.style.borderColor = brand }}
+                            onBlur={(e)  => { e.target.style.borderColor = '#e2e8f0' }}
+                          />
+                        </div>
+                        <div className="relative">
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <input
+                            value={telEspera} onChange={(e) => setTelEspera(e.target.value)}
+                            type="tel" placeholder={t.waitlistPhone}
+                            className="w-full h-11 pl-10 pr-4 rounded-xl border-2 border-slate-200 text-sm focus:outline-none"
+                            onFocus={(e) => { e.target.style.borderColor = brand }}
+                            onBlur={(e)  => { e.target.style.borderColor = '#e2e8f0' }}
+                          />
+                        </div>
+                        <input
+                          type="date" min={hoje} value={dataEspera} onChange={(e) => setDataEspera(e.target.value)}
+                          placeholder={t.waitlistDate}
+                          className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 text-sm focus:outline-none"
+                          onFocus={(e) => { e.target.style.borderColor = brand }}
+                          onBlur={(e)  => { e.target.style.borderColor = '#e2e8f0' }}
+                        />
+                        {erro && <p className="text-xs text-red-600">{erro}</p>}
+                        <button
+                          disabled={envEspera || nomeEspera.trim().length < 2}
+                          onClick={async () => {
+                            setEnvEspera(true); setErro(null)
+                            try {
+                              const r = await fetch(`/api/public/${slug}/waitlist`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  contact_name: nomeEspera.trim(),
+                                  contact_phone: telEspera.trim() || undefined,
+                                  service_id: servico?.id,
+                                  preferred_from: dataEspera || undefined,
+                                }),
+                              })
+                              if (!r.ok) { setErro(t.connectionError); return }
+                              setEsperaFeita(true)
+                            } catch { setErro(t.connectionError) }
+                            finally { setEnvEspera(false) }
+                          }}
+                          className="w-full h-12 rounded-2xl text-white font-semibold text-sm disabled:opacity-40 transition-opacity"
+                          style={{ backgroundColor: brand }}
+                        >
+                          {envEspera ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t.waitlistSubmit}
+                        </button>
+                        <button onClick={() => setModoEspera(false)} className="w-full text-sm text-slate-400 underline">{t.changeDate}</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-10">
+                      <Clock className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                      <p className="text-sm font-medium text-slate-600 mb-1">{t.noSlots}</p>
+                      <p className="text-xs text-slate-400 mb-4">{t.noSlotsHint}</p>
+                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                        <button
+                          onClick={() => { setPasso('data'); setSlots([]) }}
+                          className="text-sm font-medium px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                        >
+                          {t.changeDate}
+                        </button>
+                        <button
+                          onClick={() => setModoEspera(true)}
+                          className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-90"
+                          style={{ backgroundColor: brand }}
+                        >
+                          {t.joinWaitlist}
+                        </button>
+                      </div>
+                    </div>
+                  )
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {horasDistintas.map((s) => {

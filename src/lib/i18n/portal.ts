@@ -36,6 +36,15 @@ export interface PortalStrings {
   makeAnother: string
   connectionError: string
   back: string
+  joinWaitlist:    string
+  waitlistTitle:   string
+  waitlistHint:    string
+  waitlistName:    string
+  waitlistPhone:   string
+  waitlistDate:    string
+  waitlistSubmit:  string
+  waitlistSent:    string
+  waitlistSentHint:string
 }
 
 const pt: PortalStrings = {
@@ -72,6 +81,15 @@ const pt: PortalStrings = {
   makeAnother:     'Fazer outra marcação',
   connectionError: 'Erro de ligação. Tente novamente.',
   back:            'Voltar',
+  joinWaitlist:    'Entrar na lista de espera',
+  waitlistTitle:   'Lista de espera',
+  waitlistHint:    'Não há vagas nesta data. Deixe o seu contacto e avisamos quando surgir uma vaga.',
+  waitlistName:    'Nome',
+  waitlistPhone:   'Telefone',
+  waitlistDate:    'Disponível a partir de (opcional)',
+  waitlistSubmit:  'Entrar na lista',
+  waitlistSent:    'Adicionado à lista de espera!',
+  waitlistSentHint:'Avisaremos assim que surgir uma vaga disponível.',
 }
 
 const en: PortalStrings = {
@@ -108,6 +126,15 @@ const en: PortalStrings = {
   makeAnother:     'Make another booking',
   connectionError: 'Connection error. Please try again.',
   back:            'Back',
+  joinWaitlist:    'Join the waitlist',
+  waitlistTitle:   'Waitlist',
+  waitlistHint:    'No times available for this date. Leave your contact and we\'ll notify you when a slot opens.',
+  waitlistName:    'Name',
+  waitlistPhone:   'Phone',
+  waitlistDate:    'Available from (optional)',
+  waitlistSubmit:  'Join waitlist',
+  waitlistSent:    'Added to the waitlist!',
+  waitlistSentHint:'We\'ll notify you as soon as a slot becomes available.',
 }
 
 const es: PortalStrings = {
@@ -144,6 +171,15 @@ const es: PortalStrings = {
   makeAnother:     'Hacer otra reserva',
   connectionError: 'Error de conexión. Inténtelo de nuevo.',
   back:            'Volver',
+  joinWaitlist:    'Unirse a la lista de espera',
+  waitlistTitle:   'Lista de espera',
+  waitlistHint:    'No hay horarios para esta fecha. Deja tu contacto y te avisaremos cuando haya disponibilidad.',
+  waitlistName:    'Nombre',
+  waitlistPhone:   'Teléfono',
+  waitlistDate:    'Disponible desde (opcional)',
+  waitlistSubmit:  'Unirse a la lista',
+  waitlistSent:    '¡Añadido a la lista de espera!',
+  waitlistSentHint:'Te avisaremos en cuanto haya un hueco disponible.',
 }
 
 export const PORTAL_STRINGS: Record<PortalLang, PortalStrings> = { pt, en, es }
