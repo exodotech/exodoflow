@@ -1,57 +1,29 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  try {
-    return await handleRequest(request)
-  } catch {
-    // Qualquer falha no middleware (rede, parse, timeout) nunca bloqueia o tráfego.
-    return NextResponse.next({ request })
-  }
-}
-
-async function handleRequest(request: NextRequest) {
-  const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnon) {
-    return NextResponse.next({ request })
-  }
-
-  let response = NextResponse.next({ request })
-
-  const supabase = createServerClient(supabaseUrl, supabaseAnon, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-        response = NextResponse.next({ request })
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, options)
-        )
-      },
-    },
-  })
-
-  let user = null
-  try {
-    const { data } = await supabase.auth.getUser()
-    user = data.user
-  } catch {
-    user = null
-  }
-
+// Middleware leve: verificação de cookie sem chamadas HTTP ao Supabase.
+// A validação real do JWT é feita nos Server Components e Server Actions.
+// Supabase guarda a sessão num cookie com prefixo "sb-".
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/admin'))) {
+  const isDashboard = pathname.startsWith('/dashboard')
+  const isAdmin     = pathname.startsWith('/admin')
+  const isLogin     = pathname === '/login'
+
+  // Detectar se existe sessão Supabase activa (cookie sb-*-auth-token)
+  const hasSession = request.cookies.getAll().some(
+    (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'),
+  )
+
+  if (!hasSession && (isDashboard || isAdmin)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && pathname === '/login') {
+  if (hasSession && isLogin) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
