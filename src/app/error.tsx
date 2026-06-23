@@ -3,6 +3,7 @@
 // sem derrubar a aplicação inteira. O Next.js monta este componente
 // automaticamente quando um erro não tratado sobe até à rota.
 import { useEffect } from 'react'
+import { AlertTriangle } from 'lucide-react'
 import { reportError } from '@/lib/observability'
 
 export default function ErrorPage({
@@ -20,14 +21,14 @@ export default function ErrorPage({
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
         <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mb-4">
-          <span className="text-red-600 text-xl">!</span>
+          <AlertTriangle className="w-6 h-6 text-red-600" />
         </div>
         <h1 className="text-lg font-semibold text-gray-900 mb-2">
-          Algo correu mal
+          Ocorreu um erro inesperado
         </h1>
         <p className="text-sm text-gray-500 mb-6">
-          Ocorreu um erro inesperado. Pode tentar novamente — se o problema
-          persistir, contacte o suporte.
+          A página não conseguiu carregar. Tente novamente — se o problema
+          persistir, contacte o suporte em suporte@exodoflow.pt
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <button

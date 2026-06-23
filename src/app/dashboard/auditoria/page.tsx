@@ -123,7 +123,7 @@ export default function AuditoriaPage() {
       ) : error ? (
         <ErrorState title="Erro ao carregar auditoria" description={(error as Error).message} />
       ) : filtrados.length === 0 ? (
-        <EmptyState icon={<ShieldCheck className="w-12 h-12" />} title="Sem registos" description="As acções críticas aparecerão aqui." />
+        <EmptyState icon={<ShieldCheck className="w-12 h-12" />} title="Sem registos ainda" description="Logins, alterações de dados sensíveis e acções de equipa ficam registadas aqui automaticamente." />
       ) : (
         <>
           <div className="sm:hidden bg-white rounded-lg border border-gray-200 p-4">

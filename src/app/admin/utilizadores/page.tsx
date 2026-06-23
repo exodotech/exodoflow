@@ -58,7 +58,7 @@ export default function AdminUtilizadoresPage() {
       </div>
 
       {owners.length === 0 ? (
-        <EmptyState icon={<Users className="w-12 h-12" />} title="Nenhum owner" description="As empresas com proprietário aparecerão aqui." />
+        <EmptyState icon={<Users className="w-12 h-12" />} title="Nenhum owner ainda" description="Quando criar empresas e associar proprietários, eles aparecem aqui para gestão centralizada." />
       ) : (
         <>
           <div className="sm:hidden bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm p-4"><MobileCardList items={cardItems} /></div>

@@ -72,7 +72,7 @@ export default function AdminSistemaPage() {
           <ShieldCheck className="w-4 h-4 text-indigo-500" /> Auditoria de sistema
         </h2>
         {logs.length === 0 ? (
-          <EmptyState icon={<ShieldCheck className="w-12 h-12" />} title="Sem registos" description="As acções administrativas aparecerão aqui." />
+          <EmptyState icon={<ShieldCheck className="w-12 h-12" />} title="Sem registos ainda" description="Criação de empresas, alterações de planos e acções de superadmin ficam registadas aqui." />
         ) : (
           <div className="space-y-2">
             {logs.map((l) => (
