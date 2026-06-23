@@ -4,13 +4,23 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // Sem variáveis de ambiente o middleware não pode inicializar o cliente Supabase.
+  // Retorna NextResponse.next() para não bloquear o tráfego — o erro será visível
+  // nas páginas que tentarem aceder à BD, não numa falha opaca de middleware.
+  if (!supabaseUrl || !supabaseAnon) {
+    return NextResponse.next({ request })
+  }
+
   // Criar uma resposta base que será modificada com os cookies de sessão
   let supabaseResponse = NextResponse.next({ request })
 
   // Cliente Supabase leve para o middleware — usa apenas cookies de pedido/resposta
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnon,
     {
       cookies: {
         getAll() {
