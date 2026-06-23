@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS team_invites (
   status      TEXT        NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'accepted', 'expired', 'cancelled')),
   invited_by  UUID        REFERENCES profiles(id) ON DELETE SET NULL,
-  token       TEXT        UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token       TEXT        UNIQUE DEFAULT replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
   expires_at  TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '7 days',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
