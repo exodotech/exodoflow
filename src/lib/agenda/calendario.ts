@@ -45,8 +45,9 @@ export function diasDaSemana(key: string): string[] {
   return Array.from({ length: 7 }, (_, i) => somarDias(seg, i))
 }
 
-const DIAS_CURTOS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+const DIAS_CURTOS  = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const MESES        = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+const MESES_LONGOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 
 // 'Seg' (nome curto do dia da semana).
 export function nomeDiaCurto(key: string): string {
@@ -62,6 +63,44 @@ export function diaDoMes(key: string): string {
 export function formatarDataLonga(key: string): string {
   const [y, m, d] = key.split('-').map(Number)
   return `${d} ${MESES[m - 1]} ${y}`
+}
+
+// Primeiro dia do mês ('YYYY-MM-01').
+export function inicioMes(key: string): string {
+  return key.slice(0, 7) + '-01'
+}
+
+// 'junho 2026' — nome por extenso do mês.
+export function nomeMes(key: string): string {
+  const [y, m] = key.split('-').map(Number)
+  return `${MESES_LONGOS[m - 1]} ${y}`
+}
+
+// Avança/recua n meses (pode ser negativo).
+export function somarMeses(key: string, n: number): string {
+  const [y, m] = key.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1 + n, 1, 12))
+  return dt.toISOString().slice(0, 10)
+}
+
+// Grid do mês: array de chaves incluindo dias de preenchimento do mês
+// anterior e seguinte para formar semanas completas (Seg→Dom).
+export function gridMes(key: string): { key: string; mesAtual: boolean }[] {
+  const inicio   = inicioMes(key)
+  const [y, m]   = inicio.split('-').map(Number)
+  const diasMes  = new Date(Date.UTC(y, m, 0)).getUTCDate()
+  const dow1     = diaDaSemana(inicio)                        // 0=Dom
+  const offset   = dow1 === 0 ? 6 : dow1 - 1                 // padding antes do dia 1
+
+  const cells: { key: string; mesAtual: boolean }[] = []
+  for (let i = offset; i > 0; i--)          cells.push({ key: somarDias(inicio, -i),      mesAtual: false })
+  for (let d = 0; d < diasMes; d++)         cells.push({ key: somarDias(inicio, d),        mesAtual: true  })
+  const resto = cells.length % 7
+  if (resto > 0) {
+    const ultimo = cells[cells.length - 1].key
+    for (let i = 1; i <= 7 - resto; i++)    cells.push({ key: somarDias(ultimo, i),        mesAtual: false })
+  }
+  return cells
 }
 
 // Agrupa marcações por chave de data (no fuso do tenant).

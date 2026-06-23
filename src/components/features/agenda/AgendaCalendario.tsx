@@ -6,8 +6,8 @@ import React, { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, CalendarDays, Clock } from 'lucide-react'
 import Badge from '@/components/design-system/Badge/Badge'
 import {
-  hojeKey, somarDias, diasDaSemana, nomeDiaCurto, diaDoMes,
-  formatarDataLonga, agruparPorDia, horaNoFuso, inicioSemana,
+  hojeKey, somarDias, somarMeses, diasDaSemana, nomeDiaCurto, diaDoMes,
+  formatarDataLonga, nomeMes, gridMes, agruparPorDia, horaNoFuso, inicioSemana,
 } from '@/lib/agenda/calendario'
 import { rotularClienteBooking } from '@/lib/agenda/cliente-label'
 import type { BookingWithRelations, BookingStatus } from '@/types/domain'
@@ -23,26 +23,32 @@ interface Props {
 }
 
 export function AgendaCalendario({ bookings, timezone, statusLabels, statusVariant, acoes }: Props) {
-  const [modo, setModo]   = useState<'dia' | 'semana'>('dia')
+  const [modo, setModo]       = useState<'dia' | 'semana' | 'mes'>('dia')
   const [dataKey, setDataKey] = useState<string>(() => hojeKey(timezone))
   const [aberto, setAberto]   = useState<string | null>(null)
 
-  // Agrupa as marcações (não-canceladas) por dia, no fuso do tenant.
   const porDia = useMemo(
     () => agruparPorDia(bookings.filter((b) => b.status !== 'cancelled'), timezone),
     [bookings, timezone],
   )
 
-  const passo = modo === 'dia' ? 1 : 7
-  const navegar = (n: number) => { setDataKey((k) => somarDias(k, n * passo)); setAberto(null) }
-  const irHoje  = () => { setDataKey(hojeKey(timezone)); setAberto(null) }
+  const navegar = (n: number) => {
+    setDataKey((k) => {
+      if (modo === 'mes')    return somarMeses(k, n)
+      if (modo === 'semana') return somarDias(k, n * 7)
+      return somarDias(k, n)
+    })
+    setAberto(null)
+  }
+  const irHoje = () => { setDataKey(hojeKey(timezone)); setAberto(null) }
 
-  const hoje = hojeKey(timezone)
+  const hoje   = hojeKey(timezone)
   const semana = diasDaSemana(dataKey)
 
-  const tituloPeriodo = modo === 'dia'
-    ? formatarDataLonga(dataKey)
-    : `${diaDoMes(inicioSemana(dataKey))}–${diaDoMes(semana[6])} ${formatarDataLonga(semana[6]).slice(3)}`
+  const tituloPeriodo =
+    modo === 'dia'    ? formatarDataLonga(dataKey) :
+    modo === 'semana' ? `${diaDoMes(inicioSemana(dataKey))}–${diaDoMes(semana[6])} ${formatarDataLonga(semana[6]).slice(3)}` :
+                        nomeMes(dataKey)
 
   return (
     <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm overflow-hidden">
@@ -60,15 +66,15 @@ export function AgendaCalendario({ bookings, timezone, statusLabels, statusVaria
           </button>
           <span className="ml-2 text-sm font-semibold text-slate-800 capitalize">{tituloPeriodo}</span>
         </div>
-        {/* Toggle Dia/Semana */}
+        {/* Toggle Dia / Semana / Mês */}
         <div className="flex gap-1 p-1 rounded-lg bg-slate-100">
-          {(['dia', 'semana'] as const).map((m) => (
+          {(['dia', 'semana', 'mes'] as const).map((m) => (
             <button
               key={m}
               onClick={() => { setModo(m); setAberto(null) }}
               className={`px-3 py-1 rounded-md text-sm font-medium capitalize transition-colors ${modo === m ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              {m}
+              {m === 'mes' ? 'Mês' : m}
             </button>
           ))}
         </div>
@@ -81,9 +87,14 @@ export function AgendaCalendario({ bookings, timezone, statusLabels, statusVaria
           timezone={timezone} statusLabels={statusLabels} statusVariant={statusVariant}
           aberto={aberto} setAberto={setAberto} acoes={acoes}
         />
-      ) : (
+      ) : modo === 'semana' ? (
         <VistaSemana
           dias={semana} hoje={hoje} porDia={porDia} timezone={timezone}
+          onAbrirDia={(k) => { setDataKey(k); setModo('dia') }}
+        />
+      ) : (
+        <VistaMes
+          dataKey={dataKey} hoje={hoje} porDia={porDia} timezone={timezone}
           onAbrirDia={(k) => { setDataKey(k); setModo('dia') }}
         />
       )}
@@ -190,6 +201,74 @@ function VistaSemana({
           </div>
         )
       })}
+    </div>
+  )
+}
+
+// ── Vista de Mês ─────────────────────────────────────────────────────────────
+const CABECALHO_SEMANA = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+
+function VistaMes({
+  dataKey, hoje, porDia, timezone, onAbrirDia,
+}: {
+  dataKey: string; hoje: string
+  porDia: Map<string, BookingWithRelations[]>
+  timezone: string
+  onAbrirDia: (k: string) => void
+}) {
+  const grid = useMemo(() => gridMes(dataKey), [dataKey])
+
+  return (
+    <div className="overflow-x-auto">
+      {/* Cabeçalho de dias da semana */}
+      <div className="grid grid-cols-7 min-w-[560px] border-b border-slate-100">
+        {CABECALHO_SEMANA.map((d) => (
+          <div key={d} className="py-2 text-center text-xs font-medium text-slate-400">{d}</div>
+        ))}
+      </div>
+
+      {/* Grid de células */}
+      <div className="grid grid-cols-7 min-w-[560px]">
+        {grid.map(({ key: k, mesAtual }) => {
+          const itens  = porDia.get(k) ?? []
+          const ehHoje = k === hoje
+          return (
+            <button
+              key={k}
+              onClick={() => onAbrirDia(k)}
+              className={`min-h-[88px] p-1.5 border-b border-r border-slate-100 text-left hover:bg-slate-50/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--tenant-primary)] ${!mesAtual ? 'bg-slate-50/40' : ''}`}
+            >
+              {/* Número do dia */}
+              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold mb-1 ${
+                ehHoje
+                  ? 'bg-[color:var(--tenant-primary)] text-white'
+                  : mesAtual
+                    ? 'text-slate-700'
+                    : 'text-slate-300'
+              }`}>
+                {diaDoMes(k)}
+              </span>
+
+              {/* Marcações (máx 3 + contador) */}
+              <div className="space-y-0.5">
+                {itens.slice(0, 3).map((b) => (
+                  <div
+                    key={b.id}
+                    className="text-[10px] leading-tight px-1.5 py-0.5 rounded-sm font-medium truncate text-slate-700"
+                    style={{ backgroundColor: `color-mix(in srgb, ${b.service?.color ?? 'var(--tenant-primary)'} 18%, white)` }}
+                  >
+                    <span className="tabular-nums">{horaNoFuso(b.start_at, timezone)}</span>
+                    {' '}{b.service?.name ?? ''}
+                  </div>
+                ))}
+                {itens.length > 3 && (
+                  <p className="text-[10px] text-slate-400 pl-1">+{itens.length - 3} mais</p>
+                )}
+              </div>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
