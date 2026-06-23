@@ -1,16 +1,13 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-// Middleware leve: verificação de cookie sem chamadas HTTP ao Supabase.
-// A validação real do JWT é feita nos Server Components e Server Actions.
-// Supabase guarda a sessão num cookie com prefixo "sb-".
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isDashboard = pathname.startsWith('/dashboard')
   const isAdmin     = pathname.startsWith('/admin')
   const isLogin     = pathname === '/login'
 
-  // Detectar se existe sessão Supabase activa (cookie sb-*-auth-token)
   const hasSession = request.cookies.getAll().some(
     (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'),
   )
