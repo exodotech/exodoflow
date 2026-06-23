@@ -1,6 +1,7 @@
-// POST /api/billing/checkout — inicia a subscrição de um plano.
-// Autenticado; só OWNER (quem gere a faturação). tenant_id vem SEMPRE da sessão.
-// Em modo simulado ativa o plano e devolve a página de sucesso.
+// POST /api/billing/checkout — SUPERADMIN ONLY.
+// Owners NÃO podem mudar o próprio plano — apenas o superadmin pode atribuir
+// planos a tenants via /admin/empresas/[id]. Esta rota é mantida para
+// compatibilidade futura com Stripe webhooks e fluxos de activação.
 import { NextResponse }   from 'next/server'
 import { createClient }   from '@/lib/supabase/server'
 import { checkRateLimit, clientKeyFromRequest } from '@/lib/rate-limit'
@@ -18,27 +19,34 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase
     .from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (!profile?.tenant_id) return NextResponse.json({ error: 'Tenant não identificado.' }, { status: 400 })
-  if (profile.role !== 'owner') {
-    return NextResponse.json({ error: 'Apenas o proprietário pode gerir a subscrição.' }, { status: 403 })
+
+  // Apenas o superadmin pode acionar checkout. Owners e managers não.
+  if (profile?.role !== 'superadmin') {
+    return NextResponse.json(
+      { error: 'Alterações de plano são feitas pelo suporte. Contacte suporte@exodoflow.pt.' },
+      { status: 403 },
+    )
   }
 
-  let payload: { planSlug?: string; cycle?: string }
+  let payload: { planSlug?: string; cycle?: string; tenantId?: string }
   try { payload = await request.json() } catch { return NextResponse.json({ error: 'Pedido inválido.' }, { status: 400 }) }
 
   const planSlug = (payload.planSlug ?? '').trim()
+  const targetTenantId = (payload.tenantId ?? '').trim()
   const cycle: BillingCycle = payload.cycle === 'yearly' ? 'yearly' : 'monthly'
-  if (!planSlug) return NextResponse.json({ error: 'Plano em falta.' }, { status: 400 })
+  if (!planSlug || !targetTenantId) {
+    return NextResponse.json({ error: 'planSlug e tenantId são obrigatórios.' }, { status: 400 })
+  }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin
 
   try {
-    const r = await iniciarCheckout({ tenantId: profile.tenant_id, planSlug, cycle, appUrl })
+    const r = await iniciarCheckout({ tenantId: targetTenantId, planSlug, cycle, appUrl })
     await supabase.rpc('record_audit_log', {
-      p_action:     'billing.checkout',
+      p_action:     'billing.checkout.superadmin',
       p_table_name: 'tenants',
-      p_record_id:  profile.tenant_id,
-      p_metadata:   { plan: planSlug, cycle, mock: r.mock } as never,
+      p_record_id:  targetTenantId,
+      p_metadata:   { plan: planSlug, cycle, mock: r.mock, by: user.id } as never,
     })
     return NextResponse.json({ ok: true, url: r.url, mock: r.mock }, { status: 200 })
   } catch (e) {

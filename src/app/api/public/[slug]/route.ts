@@ -11,5 +11,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     return NextResponse.json({ error: 'Portal indisponível.' }, { status: 404 })
   }
   const services = await getPortalServicos(tenant.id)
-  return NextResponse.json({ tenant, services })
+  return NextResponse.json(
+    { tenant, services },
+    { headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' } },
+  )
 }

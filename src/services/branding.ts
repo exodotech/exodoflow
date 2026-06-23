@@ -49,9 +49,21 @@ export async function salvarBranding(input: BrandingSettingsInput): Promise<void
   await registarAuditoria('branding.update', { table: 'tenants', recordId: profile.tenant_id })
 }
 
+const ALLOWED_MIME: Record<string, string> = {
+  'image/png':  'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+}
+const MAX_LOGO_BYTES = 2 * 1024 * 1024 // 2 MB
+
 // Faz upload do logo para o Storage (pasta {tenant_id}/)
 // Devolve a URL pública do ficheiro
 export async function uploadLogo(file: File): Promise<string> {
+  const mime = file.type.toLowerCase()
+  const ext  = ALLOWED_MIME[mime]
+  if (!ext) throw new Error('Formato inválido. Use PNG, JPEG ou WebP.')
+  if (file.size > MAX_LOGO_BYTES) throw new Error('O ficheiro não pode exceder 2 MB.')
+
   const supabase = createClient()
 
   const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -65,12 +77,11 @@ export async function uploadLogo(file: File): Promise<string> {
 
   if (profileError || !profile) throw new Error('Perfil não encontrado')
 
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
   const path = `${profile.tenant_id}/logo.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('tenant-logos')
-    .upload(path, file, { upsert: true, contentType: file.type })
+    .upload(path, file, { upsert: true, contentType: mime })
 
   if (uploadError) throw new Error(`Erro no upload: ${uploadError.message}`)
 
